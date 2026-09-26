@@ -1,0 +1,31 @@
+{
+  "app": {
+    "name": "Espacio docente",
+    "setupBanner": "Supabase todavía no está configurado: el inicio de sesión está desactivado. Ver README.md."
+  },
+  "nav": {
+    "dashboard": "Inicio",
+    "classes": "Cursos",
+    "students": "Estudiantes",
+    "settings": "Configuración"
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "google": "Continuar con Google",
+    "error": "No se pudo iniciar sesión. Probá de nuevo."
+  },
+  "dashboard": {
+    "title": "Inicio",
+    "empty": "Todavía no hay cursos. Empezá creando el ciclo lectivo."
+  },
+  "classes": {
+    "title": "Cursos"
+  },
+  "students": {
+    "title": "Estudiantes"
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": "Idioma"
+  }
+}

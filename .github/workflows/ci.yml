@@ -1,0 +1,45 @@
+name: CI
+
+# Runs on every pull request into a protected branch, and again on the branch
+# itself after a merge. The pull_request run is the one that gates a merge; the
+# push run is what tells you main is still green once something has landed.
+on:
+  pull_request:
+    branches: [main, development]
+  push:
+    branches: [main, development]
+
+# A newer commit makes an in-flight run pointless, so stop it and start again.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` rather than `npm install`: it installs exactly what the
+      # lockfile says and fails if the lockfile and package.json disagree.
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      # Also runs TypeScript. No Supabase secrets here on purpose: the app is
+      # built to compile without them (the database is opened on first use).
+      - name: Build
+        run: npm run build

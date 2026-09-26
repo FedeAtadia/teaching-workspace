@@ -1,0 +1,31 @@
+{
+  "app": {
+    "name": "Teaching workspace",
+    "setupBanner": "Supabase isn't configured yet, so sign-in is off. See README.md."
+  },
+  "nav": {
+    "dashboard": "Home",
+    "classes": "Classes",
+    "students": "Students",
+    "settings": "Settings"
+  },
+  "login": {
+    "title": "Sign in",
+    "google": "Continue with Google",
+    "error": "Couldn't sign in. Try again."
+  },
+  "dashboard": {
+    "title": "Home",
+    "empty": "No classes yet. Start by creating the school year."
+  },
+  "classes": {
+    "title": "Classes"
+  },
+  "students": {
+    "title": "Students"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language"
+  }
+}
