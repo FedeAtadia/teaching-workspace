@@ -45,7 +45,7 @@ When a second teacher or developer joins, set it back to 1 in
 1. Create the repository and push both branches:
 
    ```bash
-   gh repo create FedeAtadia/teaching-workspace --private --source . --push
+   gh repo create FedeAtadia/teaching-workspace --public --source . --push
    ```
 
    ```bash
@@ -65,9 +65,13 @@ When a second teacher or developer joins, set it back to 1 in
    gh api --method POST repos/FedeAtadia/teaching-workspace/rulesets --input .github/rulesets/main.json
    ```
 
-   Rulesets on a private repository need GitHub Pro (or the repo made public).
-   On the free plan the import is refused; the workflow still runs, the rules
-   just are not enforced.
+   The repository is public because rulesets on a private one need GitHub
+   Pro; on the free plan the API refuses them outright. Public means the
+   code, never the data: grades live in Supabase and keys in `.env.local`
+   and Vercel, none of which are committed.
+
+Until Vercel is connected, the required `Vercel` check never reports, so every
+pull request waits on it. Merge with the admin bypass until then.
 
 ## Checking it took
 
