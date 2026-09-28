@@ -21,6 +21,10 @@
     "afternoon": "Afternoon",
     "evening": "Evening"
   },
+  "terms": {
+    "1": "1st term",
+    "2": "2nd term"
+  },
   "errors": {
     "required": "Fill in this field.",
     "tooLong": "That's too long.",
@@ -60,6 +64,104 @@
     "errors": {
       "duplicate": "That course already has this subject."
     }
+  },
+  "classPage": {
+    "back": "Classes",
+    "tabs": {
+      "students": "Students",
+      "standards": "Passing standards",
+      "units": "Units",
+      "tasks": "Tasks",
+      "grades": "Grades"
+    },
+    "errors": {
+      "notFound": "This class wasn't found. Go back to the list and try again."
+    },
+    "students": {
+      "empty": "This course has no students yet. Add them from Students.",
+      "count": "{count, plural, one {# student} other {# students}}",
+      "lastName": "Last name",
+      "firstName": "First name"
+    },
+    "standards": {
+      "intro": "They apply to the whole school year.",
+      "add": "Add standard",
+      "dialogTitle": "New passing standard",
+      "empty": "No passing standards yet.",
+      "fields": {
+        "title": "Standard",
+        "description": "Description (optional)"
+      }
+    },
+    "units": {
+      "intro": "The topics taught across the year.",
+      "add": "Add unit",
+      "dialogTitle": "New unit",
+      "empty": "No units yet.",
+      "fields": {
+        "title": "Unit",
+        "term": "Term",
+        "noTerm": "No term"
+      }
+    },
+    "tasks": {
+      "intro": "Each task is scored student by student.",
+      "add": "Add task",
+      "dialogTitle": "New task",
+      "empty": "No tasks yet.",
+      "back": "Tasks",
+      "scored": "{scored} of {total} scored",
+      "noStudents": "This course has no students to score yet.",
+      "fields": {
+        "title": "Title",
+        "term": "Term",
+        "unit": "Unit",
+        "noUnit": "No unit",
+        "date": "Date",
+        "description": "Brief description",
+        "criteria": "Specific standard",
+        "standards": "Passing standards it assesses"
+      }
+    },
+    "scoring": {
+      "student": "Student",
+      "score": "Score",
+      "status": "Status",
+      "notes": "Notes",
+      "passing": "Pass",
+      "failing": "Fail",
+      "saved": "Saved.",
+      "fixErrors": "Nothing was saved: fix the marked scores.",
+      "notFound": "This task wasn't found. Go back to Tasks and try again.",
+      "statuses": {
+        "graded": "Scored",
+        "missing": "Not handed in",
+        "excused": "Excused"
+      },
+      "errors": {
+        "invalidScore": "Must be a score from 1 to 10 (e.g. 7.5).",
+        "notesTooLong": "The notes are too long."
+      }
+    },
+    "grades": {
+      "student": "Student",
+      "average": "Average",
+      "missing": "Not handed in",
+      "missingShort": "NH",
+      "excused": "Excused",
+      "excusedShort": "E",
+      "noTasks": "This term has no tasks yet.",
+      "noStudents": "This course has no students yet.",
+      "legend": "In red: below {passMark}. NH: not handed in. E: excused. The average leaves out tasks not handed in; they're shown next to it."
+    }
+  },
+  "studentPage": {
+    "back": "Students",
+    "left": "(no longer in this course)",
+    "noCourses": "Not in any course yet.",
+    "noClasses": "This course has no classes yet.",
+    "noTasks": "No tasks yet.",
+    "average": "Average"
   },
   "students": {
     "title": "Students",

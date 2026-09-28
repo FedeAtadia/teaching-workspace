@@ -118,12 +118,110 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 - **STUDENT-3** Students are listed by last name, then first name, in Spanish
   alphabetical order (accents do not push a name to the end).
 
+## ROSTER — A class's students
+
+*Enforced by `src/db/queries/classDetail.ts`. Covered by
+`src/db/queries/classDetail.test.ts`.*
+
+- **ROSTER-1** A class page lists the students of its course who are still
+  active in it, in STUDENT-3 order.
+
+## STD — Passing standards
+
+*Enforced by `src/lib/validation.ts`, `src/db/queries/classDetail.ts`. Covered
+by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
+
+- **STD-1** A class has passing standards (criterios de aprobación), which
+  apply to the whole year. Each has a title (trimmed, 1 to 200 characters) and
+  may have a description (up to 1000 characters).
+- **STD-2** Standards are listed in the order they were added.
+
+## UNIT — Units
+
+*Enforced by `src/lib/validation.ts`, `src/db/queries/classDetail.ts`. Covered
+by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
+
+- **UNIT-1** A class has units, the topics taught across the year. Each has a
+  title (trimmed, 1 to 120 characters) and may say which cuatrimestre of the
+  class's school year it belongs to.
+- **UNIT-2** Units are listed in the order they were added.
+
+## TASK — Tasks
+
+*Enforced by `src/lib/validation.ts`, `src/lib/format.ts`,
+`src/db/queries/tasks.ts`. Covered by `src/lib/validation.test.ts`,
+`src/lib/format.test.ts`, `src/db/queries/tasks.test.ts`.*
+
+- **TASK-1** A task belongs to a class and to one cuatrimestre of the class's
+  school year. It has a title (trimmed, 1 to 120 characters).
+- **TASK-2** A task may also have: a unit of the same class, a date, a brief
+  description (up to 280 characters), its own specific standard (up to 1000
+  characters), and the class passing standards it assesses. A unit, a
+  cuatrimestre or a standard from anywhere else is rejected.
+- **TASK-3** A class's tasks are listed by cuatrimestre, then by date (tasks
+  without a date last), then in the order they were added.
+- **TASK-4** A date is shown as the day it was entered, whatever the time
+  zone: `2026-05-10` is 10/5/2026 in es-AR and 5/10/2026 in English.
+
+## SCORE — Scoring a task
+
+*Enforced by `src/lib/scoresForm.ts`, `src/db/queries/tasks.ts`. Covered by
+`src/lib/scoresForm.test.ts`, `src/db/queries/tasks.test.ts`.*
+
+- **SCORE-1** A task is scored on one page listing every student of the
+  course (ROSTER-1). Each student gets a score typed as in INPUT-1..3, and
+  optional notes (up to 1000 characters). One save stores them all, or — if
+  any score is not a valid grade — none, and says which ones are wrong.
+- **SCORE-2** Instead of a score, a student can be marked as not handed in
+  (`missing`) or excused. Those have no score; notes are kept.
+- **SCORE-3** A student left without a score, not marked, and without notes
+  is not scored yet: nothing is stored for them, and a score saved before is
+  removed. Notes without a score are kept, with no score.
+- **SCORE-4** Saving again updates each student's score; a student never has
+  two scores for the same task.
+- **SCORE-5** A saved score is shown as passing or not, against the class's
+  pass mark (GRADE-2, GRADE-3).
+
+## BOOK — The class gradebook
+
+*Enforced by `src/db/queries/tasks.ts`, `src/lib/grading.ts`,
+`src/lib/format.ts`. Covered by `src/db/queries/tasks.test.ts`,
+`src/lib/grading.test.ts`, `src/lib/format.test.ts`.*
+
+- **BOOK-1** For one cuatrimestre at a time, the gradebook shows the course's
+  students (ROSTER-1) against that cuatrimestre's tasks (TASK-3): each cell is
+  the score, a mark for not handed in or excused, or empty. A student who
+  joined the course late simply has empty cells.
+- **BOOK-2** Each student's row ends with their suggested average and number
+  of tasks not handed in (SUGGEST-1, SUGGEST-2), shown as passing or not.
+- **BOOK-3** Grades are written with the language's decimal separator:
+  `7,5` in es-AR, `7.5` in English.
+
+## HISTORY — A student's school history
+
+*Enforced by `src/db/queries/history.ts`. Covered by
+`src/db/queries/history.test.ts`.*
+
+- **HISTORY-1** Each student in the Students list opens their history: every
+  course they have been in, newest school year first (COURSE-3), including
+  courses they have left, marked as such.
+- **HISTORY-2** Under each course, every class of it, in subject order —
+  including classes added after the student joined (STUDENT-2).
+- **HISTORY-3** Under each class, cuatrimestre by cuatrimestre, the class's
+  tasks (TASK-3) with this student's score, mark (not handed in, excused) or
+  nothing yet, and their notes; then the student's suggested average and
+  tasks not handed in for that cuatrimestre (SUGGEST-1, SUGGEST-2), shown as
+  passing or not against the class's pass mark.
+
 ## OWNER — Each teacher's data
 
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
 
 - **OWNER-1** A teacher only ever sees, and only ever adds to, their own
-  school years, courses, classes and students.
+  school years, courses, classes, students, standards, units, tasks and
+  scores. Opening another teacher's class, task or student — or one that does
+  not exist — shows "not found", and nothing can be added to it or saved on
+  it.
 
 ---
 

@@ -196,7 +196,8 @@ export const tasks = pgTable("tasks", {
     .references(() => terms.id, { onDelete: "restrict" }),
   unitId: uuid("unit_id").references(() => units.id, { onDelete: "set null" }),
   title: text("title").notNull(),
-  description: text("description"),
+  description: text("description"), // brief, up to 280 (TASK-2)
+  criteria: text("criteria"), // the task's own specific standard (TASK-2)
   assignedOn: date("assigned_on"),
   dueOn: date("due_on"),
   createdAt: createdAt(),

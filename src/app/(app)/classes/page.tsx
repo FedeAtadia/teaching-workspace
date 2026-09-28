@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AddClassDialog } from "@/components/classes/AddClassDialog";
 import { PageHeader } from "@/components/PageHeader";
@@ -47,7 +48,11 @@ export default async function ClassesPage() {
           <TableBody>
             {rows.map((c) => (
               <TableRow key={c.id}>
-                <TableCell className="font-medium">{c.name}</TableCell>
+                <TableCell className="font-medium">
+                  <Link href={`/classes/${c.id}`} className="underline-offset-4 hover:underline">
+                    {c.name}
+                  </Link>
+                </TableCell>
                 <TableCell>{formatCourse(c.year, c.division)}</TableCell>
                 <TableCell>{tShift(c.shift)}</TableCell>
                 <TableCell>{c.schoolYear}</TableCell>

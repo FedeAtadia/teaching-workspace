@@ -22,12 +22,14 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims checks the session's signature locally against the project's
+  // published keys (fetched once, then cached), refreshing an expired session
+  // first. getUser would ask the Auth server on every request: ~100 ms each.
+  const { data } = await supabase.auth.getClaims();
+  const signedIn = !!data?.claims.sub;
 
   const isPublic = PUBLIC_PATHS.some((p) => request.nextUrl.pathname.startsWith(p));
-  if (!user && !isPublic) {
+  if (!signedIn && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
