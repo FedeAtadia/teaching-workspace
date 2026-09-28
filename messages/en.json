@@ -21,6 +21,10 @@
     "afternoon": "Afternoon",
     "evening": "Evening"
   },
+  "terms": {
+    "1": "1st term",
+    "2": "2nd term"
+  },
   "errors": {
     "required": "Fill in this field.",
     "tooLong": "That's too long.",
@@ -59,6 +63,44 @@
     },
     "errors": {
       "duplicate": "That course already has this subject."
+    }
+  },
+  "classPage": {
+    "back": "Classes",
+    "tabs": {
+      "students": "Students",
+      "standards": "Passing standards",
+      "units": "Units"
+    },
+    "errors": {
+      "notFound": "This class wasn't found. Go back to the list and try again."
+    },
+    "students": {
+      "empty": "This course has no students yet. Add them from Students.",
+      "count": "{count, plural, one {# student} other {# students}}",
+      "lastName": "Last name",
+      "firstName": "First name"
+    },
+    "standards": {
+      "intro": "They apply to the whole school year.",
+      "add": "Add standard",
+      "dialogTitle": "New passing standard",
+      "empty": "No passing standards yet.",
+      "fields": {
+        "title": "Standard",
+        "description": "Description (optional)"
+      }
+    },
+    "units": {
+      "intro": "The topics taught across the year.",
+      "add": "Add unit",
+      "dialogTitle": "New unit",
+      "empty": "No units yet.",
+      "fields": {
+        "title": "Unit",
+        "term": "Term",
+        "noTerm": "No term"
+      }
     }
   },
   "students": {

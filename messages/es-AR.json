@@ -21,6 +21,10 @@
     "afternoon": "Tarde",
     "evening": "Vespertino"
   },
+  "terms": {
+    "1": "1° cuatrimestre",
+    "2": "2° cuatrimestre"
+  },
   "errors": {
     "required": "Completá este campo.",
     "tooLong": "Es demasiado largo.",
@@ -59,6 +63,44 @@
     },
     "errors": {
       "duplicate": "Ese curso ya tiene esa materia."
+    }
+  },
+  "classPage": {
+    "back": "Cursos",
+    "tabs": {
+      "students": "Estudiantes",
+      "standards": "Criterios de aprobación",
+      "units": "Unidades"
+    },
+    "errors": {
+      "notFound": "No se encontró este curso. Volvé a la lista y probá de nuevo."
+    },
+    "students": {
+      "empty": "Este curso todavía no tiene estudiantes. Agregalos desde Estudiantes.",
+      "count": "{count, plural, one {# estudiante} other {# estudiantes}}",
+      "lastName": "Apellido",
+      "firstName": "Nombre"
+    },
+    "standards": {
+      "intro": "Valen para todo el ciclo lectivo.",
+      "add": "Agregar criterio",
+      "dialogTitle": "Nuevo criterio de aprobación",
+      "empty": "Todavía no hay criterios de aprobación.",
+      "fields": {
+        "title": "Criterio",
+        "description": "Descripción (opcional)"
+      }
+    },
+    "units": {
+      "intro": "Los temas que se dan a lo largo del año.",
+      "add": "Agregar unidad",
+      "dialogTitle": "Nueva unidad",
+      "empty": "Todavía no hay unidades.",
+      "fields": {
+        "title": "Unidad",
+        "term": "Cuatrimestre",
+        "noTerm": "Sin cuatrimestre"
+      }
     }
   },
   "students": {

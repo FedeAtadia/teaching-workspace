@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classInput, studentInput, toFieldErrors } from "./validation";
+import { classInput, standardInput, studentInput, toFieldErrors, unitInput } from "./validation";
 
 const validClass = {
   name: "Matemática",
@@ -65,6 +65,43 @@ describe("adding a student (STUDENT)", () => {
 
   it("rejects an empty name (STUDENT-1)", () => {
     expect(studentInput.safeParse({ ...validStudent, lastName: " " }).success).toBe(false);
+  });
+});
+
+const CLASS_ID = "0b7f3c2e-4a1d-4c8e-9f6a-2d5b8e1c3a7f";
+
+describe("adding a passing standard (STD)", () => {
+  it("trims the title and keeps an empty description as none (STD-1)", () => {
+    expect(standardInput.parse({ classId: CLASS_ID, title: " Resuelve ecuaciones ", description: "" })).toEqual({
+      classId: CLASS_ID,
+      title: "Resuelve ecuaciones",
+      description: null,
+    });
+  });
+
+  it("needs a title of at most 200 characters (STD-1)", () => {
+    expect(standardInput.safeParse({ classId: CLASS_ID, title: "", description: "" }).success).toBe(false);
+    expect(standardInput.safeParse({ classId: CLASS_ID, title: "x".repeat(201), description: "" }).success).toBe(false);
+  });
+
+  it("caps the description at 1000 characters (STD-1)", () => {
+    expect(standardInput.safeParse({ classId: CLASS_ID, title: "T", description: "x".repeat(1001) }).success).toBe(false);
+  });
+});
+
+describe("adding a unit (UNIT)", () => {
+  it("needs a title and may leave the cuatrimestre out (UNIT-1)", () => {
+    expect(unitInput.parse({ classId: CLASS_ID, title: " Funciones ", termId: "" })).toEqual({
+      classId: CLASS_ID,
+      title: "Funciones",
+      termId: null,
+    });
+    expect(unitInput.safeParse({ classId: CLASS_ID, title: " ", termId: "" }).success).toBe(false);
+    expect(unitInput.safeParse({ classId: CLASS_ID, title: "x".repeat(121), termId: "" }).success).toBe(false);
+  });
+
+  it("only takes a real cuatrimestre id (UNIT-1)", () => {
+    expect(unitInput.safeParse({ classId: CLASS_ID, title: "T", termId: "first" }).success).toBe(false);
   });
 });
 

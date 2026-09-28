@@ -118,12 +118,42 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 - **STUDENT-3** Students are listed by last name, then first name, in Spanish
   alphabetical order (accents do not push a name to the end).
 
+## ROSTER — A class's students
+
+*Enforced by `src/db/queries/classDetail.ts`. Covered by
+`src/db/queries/classDetail.test.ts`.*
+
+- **ROSTER-1** A class page lists the students of its course who are still
+  active in it, in STUDENT-3 order.
+
+## STD — Passing standards
+
+*Enforced by `src/lib/validation.ts`, `src/db/queries/classDetail.ts`. Covered
+by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
+
+- **STD-1** A class has passing standards (criterios de aprobación), which
+  apply to the whole year. Each has a title (trimmed, 1 to 200 characters) and
+  may have a description (up to 1000 characters).
+- **STD-2** Standards are listed in the order they were added.
+
+## UNIT — Units
+
+*Enforced by `src/lib/validation.ts`, `src/db/queries/classDetail.ts`. Covered
+by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
+
+- **UNIT-1** A class has units, the topics taught across the year. Each has a
+  title (trimmed, 1 to 120 characters) and may say which cuatrimestre of the
+  class's school year it belongs to.
+- **UNIT-2** Units are listed in the order they were added.
+
 ## OWNER — Each teacher's data
 
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
 
 - **OWNER-1** A teacher only ever sees, and only ever adds to, their own
-  school years, courses, classes and students.
+  school years, courses, classes, students, standards and units. Opening
+  another teacher's class — or a class that does not exist — shows "not
+  found", and nothing can be added to it.
 
 ---
 
