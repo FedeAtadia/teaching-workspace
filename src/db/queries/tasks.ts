@@ -6,6 +6,7 @@ import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
 import { courseStudents, scores, standards, taskStandards, tasks, terms, units } from "@/db/schema";
+import { isTaskFilePath } from "@/lib/attachments";
 import { suggestTermGrade, type Suggestion } from "@/lib/grading";
 import type { ScoreRow, ScoreStatus } from "@/lib/scoresForm";
 import type { TaskInput } from "@/lib/validation";
@@ -110,6 +111,8 @@ export async function listTasks(db: Db, teacherId: string, cls: Pick<ClassDetail
 
 export type TaskDetail = Omit<TaskRow, "scored"> & {
   criteria: string | null;
+  attachmentPath: string | null;
+  attachmentName: string | null;
   standards: { id: string; title: string }[];
 };
 
@@ -132,6 +135,8 @@ export async function getTask(
         dueOn: tasks.dueOn,
         description: tasks.description,
         criteria: tasks.criteria,
+        attachmentPath: tasks.attachmentPath,
+        attachmentName: tasks.attachmentName,
       })
       .from(tasks)
       .innerJoin(terms, eq(tasks.termId, terms.id))
@@ -146,6 +151,29 @@ export async function getTask(
   ]);
   if (!row) return null;
   return { ...row, standards: linked };
+}
+
+/**
+ * FILE-2, FILE-3: record the task's attached file, or clear it with null.
+ * Returns the path it had before, for the caller to delete from Storage.
+ */
+export async function setTaskAttachment(
+  db: Db,
+  teacherId: string,
+  cls: Pick<ClassDetail, "id">,
+  taskId: string,
+  file: { path: string; name: string } | null,
+): Promise<{ ok: true; previousPath: string | null } | NotFound> {
+  if (!isUuid(taskId)) return notFound;
+  if (file && !isTaskFilePath(file.path, teacherId, taskId)) return notFound;
+  const where = and(eq(tasks.id, taskId), eq(tasks.classId, cls.id), eq(tasks.teacherId, teacherId));
+  const [current] = await db.select({ path: tasks.attachmentPath }).from(tasks).where(where);
+  if (!current) return notFound;
+  await db
+    .update(tasks)
+    .set({ attachmentPath: file?.path ?? null, attachmentName: file?.name.slice(0, 200) ?? null })
+    .where(where);
+  return { ok: true, previousPath: current.path };
 }
 
 /** The saved scores of one task. */

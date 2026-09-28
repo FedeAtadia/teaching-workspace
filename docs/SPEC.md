@@ -197,6 +197,24 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 - **BOOK-3** Grades are written with the language's decimal separator:
   `7,5` in es-AR, `7.5` in English.
 
+## FILE — Task attachments
+
+*Enforced by `src/lib/attachments.ts`, `src/db/queries/tasks.ts`,
+`supabase/storage.sql`. Covered by `src/lib/attachments.test.ts`,
+`src/db/queries/tasks.test.ts`.*
+
+- **FILE-1** A task can have one attached file — the task itself, say — that
+  is a PDF, PNG or JPEG of at most 20 MB. Anything else is refused before it
+  is uploaded, with a message saying why.
+- **FILE-2** Attached files are private. Each is stored in the teacher's own
+  folder (`<teacher id>/<task id>/<file name>`), with the name made safe for
+  storage but kept readable (`Guía Nº 1.pdf` → `Guia-N-1.pdf`); a teacher can
+  only read, add or remove files in their own folder, and the app only ever
+  records a path in that task's folder.
+- **FILE-3** Attaching a new file replaces the previous one, and removing it
+  deletes the file and the link. Opening it gives a link that works for one
+  minute, and only for the teacher the task belongs to.
+
 ## HISTORY — A student's school history
 
 *Enforced by `src/db/queries/history.ts`. Covered by
@@ -233,3 +251,7 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   Supabase project to run against. The forms that call the queries above
   (the add-class and add-student dialogs) are checked by hand for the same
   reason: every page behind them needs a signed-in teacher.
+- **FILE-2**'s folder rules and **FILE-3**'s upload, removal and one-minute
+  link run in Supabase Storage, which the in-memory test database doesn't
+  have. The rules are in `supabase/storage.sql` and were checked by hand:
+  upload, open, replace and remove on the dev project.

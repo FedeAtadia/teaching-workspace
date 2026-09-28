@@ -198,6 +198,10 @@ export const tasks = pgTable("tasks", {
   title: text("title").notNull(),
   description: text("description"), // brief, up to 280 (TASK-2)
   criteria: text("criteria"), // the task's own specific standard (TASK-2)
+  // FILE-1..3: the attached file in Storage (bucket task-files), and the
+  // name it had when uploaded, shown to the teacher.
+  attachmentPath: text("attachment_path"),
+  attachmentName: text("attachment_name"),
   assignedOn: date("assigned_on"),
   dueOn: date("due_on"),
   createdAt: createdAt(),

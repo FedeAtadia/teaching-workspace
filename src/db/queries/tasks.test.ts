@@ -16,7 +16,15 @@ import {
   type ClassDetail,
 } from "./classDetail";
 import { createStudent } from "./students";
-import { createTask, getGradebook, getTask, listTaskScores, listTasks, saveScores } from "./tasks";
+import {
+  createTask,
+  getGradebook,
+  getTask,
+  listTaskScores,
+  listTasks,
+  saveScores,
+  setTaskAttachment,
+} from "./tasks";
 
 let db: Db;
 beforeAll(async () => {
@@ -209,6 +217,49 @@ describe("scoring a task (SCORE)", () => {
       }),
     ).toEqual({ ok: false, error: "notFound" });
     expect(await listTaskScores(db, s.teacher, id)).toEqual([]);
+  });
+});
+
+describe("attaching a file (FILE)", () => {
+  it("records the file on the task, and hands back the one it replaces (FILE-3)", async () => {
+    const s = await setup();
+    const id = await newTask(s);
+    const first = { path: `${s.teacher}/${id}/tp1.pdf`, name: "TP 1.pdf" };
+    const second = { path: `${s.teacher}/${id}/tp1-corregido.pdf`, name: "TP 1 corregido.pdf" };
+
+    expect(await setTaskAttachment(db, s.teacher, s.cls, id, first)).toEqual({ ok: true, previousPath: null });
+    expect(await setTaskAttachment(db, s.teacher, s.cls, id, second)).toEqual({
+      ok: true,
+      previousPath: first.path,
+    });
+    expect(await getTask(db, s.teacher, s.cls, id)).toMatchObject({
+      attachmentPath: second.path,
+      attachmentName: "TP 1 corregido.pdf",
+    });
+  });
+
+  it("clears the file, handing back its path to delete (FILE-3)", async () => {
+    const s = await setup();
+    const id = await newTask(s);
+    const file = { path: `${s.teacher}/${id}/tp1.pdf`, name: "tp1.pdf" };
+    await setTaskAttachment(db, s.teacher, s.cls, id, file);
+
+    expect(await setTaskAttachment(db, s.teacher, s.cls, id, null)).toEqual({ ok: true, previousPath: file.path });
+    expect(await getTask(db, s.teacher, s.cls, id)).toMatchObject({ attachmentPath: null, attachmentName: null });
+  });
+
+  it("refuses a path outside the task's folder, and another teacher's task (FILE-2, OWNER-1)", async () => {
+    const s = await setup();
+    const id = await newTask(s);
+    const notFound = { ok: false, error: "notFound" };
+    expect(
+      await setTaskAttachment(db, s.teacher, s.cls, id, { path: `${s.teacher}/otra-tarea/x.pdf`, name: "x.pdf" }),
+    ).toEqual(notFound);
+    const intruder = newTeacher();
+    expect(
+      await setTaskAttachment(db, intruder, s.cls, id, { path: `${intruder}/${id}/x.pdf`, name: "x.pdf" }),
+    ).toEqual(notFound);
+    expect(await getTask(db, s.teacher, s.cls, id)).toMatchObject({ attachmentPath: null });
   });
 });
 
