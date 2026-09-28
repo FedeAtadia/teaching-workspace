@@ -123,6 +123,16 @@
         "standards": "Criterios de aprobación que evalúa"
       }
     },
+    "deleteTask": {
+      "button": "Eliminar tarea",
+      "title": "¿Eliminar «{title}»?",
+      "body": "{scored, plural, =0 {Todavía no tiene notas cargadas.} one {Se borra también la nota cargada.} other {Se borran también las # notas cargadas.}}",
+      "withFile": "Y el archivo adjunto.",
+      "cannotUndo": "No se puede deshacer.",
+      "confirm": "Eliminar",
+      "deleting": "Eliminando…",
+      "failed": "No se pudo eliminar. Recargá la página y probá de nuevo."
+    },
     "attachment": {
       "title": "Archivo de la tarea",
       "upload": "Adjuntar archivo",

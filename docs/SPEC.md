@@ -162,6 +162,9 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   without a date last), then in the order they were added.
 - **TASK-4** A date is shown as the day it was entered, whatever the time
   zone: `2026-05-10` is 10/5/2026 in es-AR and 5/10/2026 in English.
+- **TASK-5** A task can be deleted from its page, after a confirmation that
+  says how many scores go with it. Its scores, its links to standards and its
+  attached file are deleted too; nothing else changes.
 
 ## SCORE — Scoring a task
 

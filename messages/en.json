@@ -123,6 +123,16 @@
         "standards": "Passing standards it assesses"
       }
     },
+    "deleteTask": {
+      "button": "Delete task",
+      "title": "Delete “{title}”?",
+      "body": "{scored, plural, =0 {It has no scores yet.} one {Its saved score is deleted too.} other {Its # saved scores are deleted too.}}",
+      "withFile": "So is the attached file.",
+      "cannotUndo": "This can't be undone.",
+      "confirm": "Delete",
+      "deleting": "Deleting…",
+      "failed": "Couldn't delete it. Reload the page and try again."
+    },
     "attachment": {
       "title": "Task file",
       "upload": "Attach a file",

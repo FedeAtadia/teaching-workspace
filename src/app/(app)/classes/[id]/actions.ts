@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/db";
 import { createStandard, createUnit, getClass, listClassStudents } from "@/db/queries/classDetail";
-import { createTask, saveScores, setTaskAttachment } from "@/db/queries/tasks";
+import { redirect } from "next/navigation";
+import { createTask, deleteTask, saveScores, setTaskAttachment } from "@/db/queries/tasks";
 import { ATTACHMENT_BUCKET } from "@/lib/attachments";
 import { requireTeacherId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -91,6 +92,20 @@ export async function removeTaskFile(input: { classId: string; taskId: string })
   if (result.previousPath) await deleteStoredFile(result.previousPath);
   revalidatePath(`/classes/${cls.id}/tasks/${input.taskId}`);
   return { ok: true };
+}
+
+/** TASK-5: deletes the task, its scores and its file, then goes back to Tasks. */
+export async function deleteTaskAction(input: { classId: string; taskId: string }): Promise<FileResult> {
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const cls = await getClass(db, teacherId, input.classId);
+  if (!cls) return { ok: false, error: "notFound" };
+  const result = await deleteTask(db, teacherId, cls, input.taskId);
+  if (!result.ok) return result;
+  if (result.attachmentPath) await deleteStoredFile(result.attachmentPath);
+  revalidatePath(`/classes/${cls.id}/tasks`);
+  revalidatePath(`/classes/${cls.id}/grades`);
+  redirect(`/classes/${cls.id}/tasks`);
 }
 
 export type ScoresState = FormState<"notFound"> & {

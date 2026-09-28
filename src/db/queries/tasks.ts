@@ -176,6 +176,24 @@ export async function setTaskAttachment(
   return { ok: true, previousPath: current.path };
 }
 
+/**
+ * TASK-5. Scores and standard links go with it (ON DELETE CASCADE). Returns
+ * the attached file's path, for the caller to delete from Storage.
+ */
+export async function deleteTask(
+  db: Db,
+  teacherId: string,
+  cls: Pick<ClassDetail, "id">,
+  taskId: string,
+): Promise<{ ok: true; attachmentPath: string | null } | NotFound> {
+  if (!isUuid(taskId)) return notFound;
+  const [deleted] = await db
+    .delete(tasks)
+    .where(and(eq(tasks.id, taskId), eq(tasks.classId, cls.id), eq(tasks.teacherId, teacherId)))
+    .returning({ attachmentPath: tasks.attachmentPath });
+  return deleted ? { ok: true, attachmentPath: deleted.attachmentPath } : notFound;
+}
+
 /** The saved scores of one task. */
 export async function listTaskScores(db: Db, teacherId: string, taskId: string): Promise<ScoreRow[]> {
   if (!isUuid(taskId)) return [];

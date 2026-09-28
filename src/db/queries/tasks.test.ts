@@ -18,6 +18,7 @@ import {
 import { createStudent } from "./students";
 import {
   createTask,
+  deleteTask,
   getGradebook,
   getTask,
   listTaskScores,
@@ -217,6 +218,40 @@ describe("scoring a task (SCORE)", () => {
       }),
     ).toEqual({ ok: false, error: "notFound" });
     expect(await listTaskScores(db, s.teacher, id)).toEqual([]);
+  });
+});
+
+describe("deleting a task (TASK-5)", () => {
+  it("deletes the task with its scores and standard links, and hands back its file", async () => {
+    const s = await setup();
+    await createStandard(db, s.teacher, { classId: s.cls.id, title: "Resuelve", description: null });
+    const [standard] = await listStandards(db, s.teacher, s.cls.id);
+    const doomed = await newTask(s, { title: "Borrar", standardIds: [standard.id] });
+    const kept = await newTask(s, { title: "Queda" });
+    for (const id of [doomed, kept]) {
+      await saveScores(db, s.teacher, s.cls, id, {
+        save: [{ studentId: s.students.Pérez, status: "graded", value: 8, notes: null }],
+        clear: [],
+      });
+    }
+    await setTaskAttachment(db, s.teacher, s.cls, doomed, { path: `${s.teacher}/${doomed}/tp.pdf`, name: "tp.pdf" });
+
+    expect(await deleteTask(db, s.teacher, s.cls, doomed)).toEqual({
+      ok: true,
+      attachmentPath: `${s.teacher}/${doomed}/tp.pdf`,
+    });
+    expect((await listTasks(db, s.teacher, s.cls)).map((t) => t.title)).toEqual(["Queda"]);
+    expect(await listTaskScores(db, s.teacher, doomed)).toEqual([]);
+    // The other task's score and the standard itself are untouched.
+    expect(await listTaskScores(db, s.teacher, kept)).toHaveLength(1);
+    expect(await listStandards(db, s.teacher, s.cls.id)).toHaveLength(1);
+  });
+
+  it("deletes nothing of another teacher's (OWNER-1)", async () => {
+    const s = await setup();
+    const id = await newTask(s);
+    expect(await deleteTask(db, newTeacher(), s.cls, id)).toEqual({ ok: false, error: "notFound" });
+    expect(await listTasks(db, s.teacher, s.cls)).toHaveLength(1);
   });
 });
 
