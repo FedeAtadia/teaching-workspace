@@ -13,7 +13,8 @@
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "storage:apply": "node scripts/apply-storage.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

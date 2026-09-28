@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
+import { DeleteTaskButton } from "@/components/classes/DeleteTaskButton";
 import { ScoresForm } from "@/components/classes/ScoresForm";
+import { TaskAttachment } from "@/components/classes/TaskAttachment";
 import { listClassStudents } from "@/db/queries/classDetail";
 import { getTask, listTaskScores } from "@/db/queries/tasks";
 import { formatDate, formatGrade } from "@/lib/format";
@@ -29,7 +31,16 @@ export default async function TaskPage({ params }: PageProps<"/classes/[id]/task
       <Link href={`/classes/${id}/tasks`} className="text-sm text-muted-foreground hover:text-foreground">
         ← {t("back")}
       </Link>
-      <h2 className="mt-2 text-xl font-semibold">{task.title}</h2>
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+        <h2 className="text-xl font-semibold">{task.title}</h2>
+        <DeleteTaskButton
+          classId={id}
+          taskId={task.id}
+          title={task.title}
+          scored={saved.filter((s) => s.value !== null || s.status !== "graded").length}
+          hasFile={task.attachmentPath !== null}
+        />
+      </div>
       <p className="text-sm text-muted-foreground">
         {[tTerm(String(task.termPosition)), task.dueOn && formatDate(task.dueOn, locale), task.unitTitle]
           .filter(Boolean)
@@ -62,6 +73,13 @@ export default async function TaskPage({ params }: PageProps<"/classes/[id]/task
           </div>
         )}
       </dl>
+
+      <TaskAttachment
+        classId={id}
+        taskId={task.id}
+        teacherId={teacherId}
+        current={task.attachmentName ? { name: task.attachmentName } : null}
+      />
 
       <div className="mt-6">
         {roster.length === 0 ? (

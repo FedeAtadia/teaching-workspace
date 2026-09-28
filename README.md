@@ -53,10 +53,17 @@ for working, `prod` for Vercel — so experiments never touch real grades.
 
 1. Create a project at supabase.com.
 2. Copy `.env.example` to `.env.local` and fill in the three values.
-3. Create the tables (the first migration is already in `drizzle/`):
+3. Create the tables (the migrations are in `drizzle/`):
 
    ```bash
    npm run db:migrate
+   ```
+
+   Then the private file bucket for task attachments and its access rules
+   (`supabase/storage.sql`):
+
+   ```bash
+   npm run storage:apply
    ```
 
 4. Turn on Google sign-in: in Google Cloud Console create an OAuth client

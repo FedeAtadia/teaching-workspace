@@ -117,5 +117,9 @@ which `next build` would load):
 $env:DATABASE_URL = (@(Get-Content .env.prod) -match '^DATABASE_URL=')[0] -replace '^DATABASE_URL=', ''; npm run db:migrate; Remove-Item Env:DATABASE_URL
 ```
 
+A release that changes `supabase/storage.sql` (the file bucket and its access
+rules) applies it the same way, with `npm run storage:apply` in place of
+`npm run db:migrate`. It can be re-run safely.
+
 Changing behaviour is specified in [SPEC.md](SPEC.md); how to work on it is in
 [WORKFLOW.md](WORKFLOW.md).
