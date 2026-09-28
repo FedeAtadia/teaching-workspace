@@ -12,9 +12,9 @@ import { loadClass } from "./data";
 
 export default async function ClassStudentsPage({ params }: PageProps<"/classes/[id]">) {
   const { id } = await params;
-  const { db, teacherId } = await loadClass(id);
+  const { db, teacherId, cls } = await loadClass(id);
   const t = await getTranslations("classPage.students");
-  const roster = await listClassStudents(db, teacherId, id);
+  const roster = await listClassStudents(db, teacherId, cls);
 
   if (roster.length === 0) return <p className="text-sm text-muted-foreground">{t("empty")}</p>;
   return (

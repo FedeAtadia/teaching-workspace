@@ -33,7 +33,9 @@ async function setup() {
   });
   if (!created.ok) throw new Error("setup failed");
   const [course] = await listCourses(db, teacher);
-  return { teacher, classId: created.classId, courseId: course.id };
+  const cls = await getClass(db, teacher, created.classId);
+  if (!cls) throw new Error("setup failed");
+  return { teacher, classId: created.classId, courseId: course.id, cls };
 }
 
 describe("opening a class", () => {
@@ -59,15 +61,15 @@ describe("opening a class", () => {
 
 describe("a class's students (ROSTER)", () => {
   it("lists the course's active students in last-name order (ROSTER-1)", async () => {
-    const { teacher, classId, courseId } = await setup();
+    const { teacher, courseId, cls } = await setup();
     for (const [firstName, lastName] of [["Luis", "Pérez"], ["Zoe", "Álvarez"], ["Ana", "Benítez"]]) {
       await createStudent(db, teacher, { firstName, lastName, courseId });
     }
     // Benítez leaves the course: the class list must drop them.
-    const [benitez] = (await listClassStudents(db, teacher, classId)).filter((s) => s.lastName === "Benítez");
+    const [benitez] = (await listClassStudents(db, teacher, cls)).filter((s) => s.lastName === "Benítez");
     await db.update(courseStudents).set({ status: "withdrawn" }).where(eq(courseStudents.studentId, benitez.id));
 
-    const roster = await listClassStudents(db, teacher, classId);
+    const roster = await listClassStudents(db, teacher, cls);
     expect(roster.map((s) => s.lastName)).toEqual(["Álvarez", "Pérez"]);
   });
 });
@@ -98,8 +100,8 @@ describe("passing standards (STD)", () => {
 
 describe("units (UNIT)", () => {
   it("lists units in the order added, with their cuatrimestre if given (UNIT-1, UNIT-2)", async () => {
-    const { teacher, classId } = await setup();
-    const terms = await listTerms(db, teacher, classId);
+    const { teacher, classId, cls } = await setup();
+    const terms = await listTerms(db, teacher, cls);
     expect(terms.map((t) => t.position)).toEqual([1, 2]);
 
     await createUnit(db, teacher, { classId, title: "Funciones", termId: terms[0].id });
@@ -123,7 +125,9 @@ describe("units (UNIT)", () => {
       schoolYear: 2025,
     });
     if (!other.ok) throw new Error("setup failed");
-    const [otherTerm] = await listTerms(db, teacher, other.classId);
+    const otherClass = await getClass(db, teacher, other.classId);
+    if (!otherClass) throw new Error("setup failed");
+    const [otherTerm] = await listTerms(db, teacher, otherClass);
 
     expect(await createUnit(db, teacher, { classId, title: "Mezcla", termId: otherTerm.id })).toEqual({
       ok: false,
