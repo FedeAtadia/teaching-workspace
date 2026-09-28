@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { classInput, standardInput, studentInput, toFieldErrors, unitInput } from "./validation";
+import {
+  classInput,
+  standardInput,
+  studentInput,
+  taskInput,
+  toFieldErrors,
+  unitInput,
+} from "./validation";
 
 const validClass = {
   name: "Matemática",
@@ -102,6 +109,62 @@ describe("adding a unit (UNIT)", () => {
 
   it("only takes a real cuatrimestre id (UNIT-1)", () => {
     expect(unitInput.safeParse({ classId: CLASS_ID, title: "T", termId: "first" }).success).toBe(false);
+  });
+});
+
+describe("adding a task (TASK)", () => {
+  const TERM = "5c2d1b0a-9e8f-4a7b-8c6d-5e4f3a2b1c0d";
+  const STD = "7a6b5c4d-3e2f-4a1b-8c9d-0e1f2a3b4c5d";
+  const base = {
+    classId: CLASS_ID,
+    title: " TP 1: Funciones ",
+    termId: TERM,
+    unitId: "",
+    dueOn: "",
+    description: "",
+    criteria: "",
+    standardIds: [] as string[],
+  };
+
+  it("needs a title and a cuatrimestre; everything else may be left empty (TASK-1, TASK-2)", () => {
+    expect(taskInput.parse(base)).toEqual({
+      classId: CLASS_ID,
+      title: "TP 1: Funciones",
+      termId: TERM,
+      unitId: null,
+      dueOn: null,
+      description: null,
+      criteria: null,
+      standardIds: [],
+    });
+    expect(taskInput.safeParse({ ...base, title: " " }).success).toBe(false);
+    expect(taskInput.safeParse({ ...base, termId: "" }).success).toBe(false);
+  });
+
+  it("takes a date, a brief description, a specific standard and linked standards (TASK-2)", () => {
+    const parsed = taskInput.parse({
+      ...base,
+      dueOn: "2026-05-10",
+      description: "Ejercicios 1 a 10",
+      criteria: "Grafica correctamente",
+      standardIds: [STD],
+    });
+    expect(parsed).toMatchObject({
+      dueOn: "2026-05-10",
+      description: "Ejercicios 1 a 10",
+      criteria: "Grafica correctamente",
+      standardIds: [STD],
+    });
+  });
+
+  it("keeps the description brief and the specific standard under 1000 characters (TASK-2)", () => {
+    expect(taskInput.safeParse({ ...base, description: "x".repeat(281) }).success).toBe(false);
+    expect(taskInput.safeParse({ ...base, criteria: "x".repeat(1001) }).success).toBe(false);
+  });
+
+  it("rejects a date that is not a calendar date (TASK-2)", () => {
+    expect(taskInput.safeParse({ ...base, dueOn: "10/05/2026" }).success).toBe(false);
+    expect(taskInput.safeParse({ ...base, dueOn: "2026-02-30" }).success).toBe(false);
   });
 });
 

@@ -54,6 +54,24 @@ export const unitInput = z.object({
 });
 export type UnitInput = z.infer<typeof unitInput>;
 
+const optionalUuid = z.union([z.literal(""), z.uuid()]).transform((v) => v || null);
+
+/**
+ * TASK-1, TASK-2. `standardIds` comes from checkboxes, so the action reads it
+ * with `formData.getAll` rather than `Object.fromEntries`.
+ */
+export const taskInput = z.object({
+  classId: z.uuid(),
+  title: z.string().trim().min(1).max(120),
+  termId: z.uuid(),
+  unitId: optionalUuid,
+  dueOn: z.union([z.literal(""), z.iso.date()]).transform((v) => v || null),
+  description: optionalText(280),
+  criteria: optionalText(1000),
+  standardIds: z.array(z.uuid()),
+});
+export type TaskInput = z.infer<typeof taskInput>;
+
 /** A message key per field, looked up under `errors.` in messages/. */
 export type FieldError = "required" | "tooLong" | "invalid";
 

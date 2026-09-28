@@ -26,7 +26,10 @@ export type FieldSpec =
       label: string;
       options: { value: string; label: string }[];
       defaultValue?: string;
-    };
+    }
+  | { kind: "date"; name: string; label: string }
+  /** Sends one `name` entry per ticked box; the action reads them with getAll. */
+  | { kind: "checkboxes"; name: string; label: string; options: { value: string; label: string }[] };
 
 /**
  * A button that opens a small form in a dialog, sends it to a Server Action,
@@ -40,9 +43,12 @@ export function FormDialog({
   fields,
   hidden = {},
   formErrors = {},
+  wide = false,
 }: {
   triggerLabel: string;
   title: string;
+  /** A wider dialog, for forms with many fields. */
+  wide?: boolean;
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
   fields: FieldSpec[];
   /** Sent with the form but not shown, e.g. the class id. */
@@ -54,7 +60,10 @@ export function FormDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button />}>{triggerLabel}</DialogTrigger>
-      <DialogContent showCloseButton={false}>
+      <DialogContent
+        showCloseButton={false}
+        className={wide ? "max-h-[90vh] overflow-y-auto sm:max-w-lg" : "max-h-[90vh] overflow-y-auto"}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -134,6 +143,33 @@ function DialogForm({
                 aria-invalid={invalid}
                 className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive dark:bg-input/30"
               />
+            )}
+            {f.kind === "date" && (
+              <Input
+                id={id}
+                name={f.name}
+                type="date"
+                defaultValue={v[f.name]}
+                aria-invalid={invalid}
+                className="w-44"
+              />
+            )}
+            {f.kind === "checkboxes" && (
+              <div id={id} className="grid gap-1.5">
+                {f.options.map((o) => (
+                  <label key={o.value} className="flex items-start gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      name={f.name}
+                      value={o.value}
+                      // Refilled after an error: the action sends the ticked ids joined by commas.
+                      defaultChecked={(v[f.name] ?? "").split(",").includes(o.value)}
+                      className="mt-0.5 size-4 accent-primary"
+                    />
+                    {o.label}
+                  </label>
+                ))}
+              </div>
             )}
             {f.kind === "select" && (
               <NativeSelect
