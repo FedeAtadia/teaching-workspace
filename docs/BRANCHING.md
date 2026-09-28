@@ -70,9 +70,6 @@ When a second teacher or developer joins, set it back to 1 in
    code, never the data: grades live in Supabase and keys in `.env.local`
    and Vercel, none of which are committed.
 
-Until Vercel is connected, the required `Vercel` check never reports, so every
-pull request waits on it. Merge with the admin bypass until then.
-
 ## Checking it took
 
 ```bash

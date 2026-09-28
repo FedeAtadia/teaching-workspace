@@ -44,15 +44,19 @@ export const teacherSettings = pgTable("teacher_settings", {
 
 // ─── Calendar ───────────────────────────────────────────────────────────────
 
-export const academicYears = pgTable("academic_years", {
-  id: id(),
-  teacherId: teacherId(),
-  name: text("name").notNull(), // "2026"
-  startsOn: date("starts_on"),
-  endsOn: date("ends_on"),
-  archived: boolean("archived").notNull().default(false),
-  createdAt: createdAt(),
-}).enableRLS();
+export const academicYears = pgTable(
+  "academic_years",
+  {
+    id: id(),
+    teacherId: teacherId(),
+    name: text("name").notNull(), // "2026"
+    startsOn: date("starts_on"),
+    endsOn: date("ends_on"),
+    archived: boolean("archived").notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [unique().on(t.teacherId, t.name)],
+).enableRLS();
 
 /** The two cuatrimestres of a year. `position` 1 or 2; the last one is final. */
 export const terms = pgTable(
@@ -73,20 +77,46 @@ export const terms = pgTable(
 
 // ─── Classes and people ─────────────────────────────────────────────────────
 
-export const classes = pgTable("classes", {
-  id: id(),
-  teacherId: teacherId(),
-  academicYearId: uuid("academic_year_id")
-    .notNull()
-    .references(() => academicYears.id, { onDelete: "restrict" }),
-  name: text("name").notNull(), // "Matemática"
-  section: text("section"), // "4° A"
-  school: text("school"),
-  // Null means "use the teacher's default" (teacher_settings.pass_mark).
-  passMark: grade("pass_mark"),
-  notes: text("notes"),
-  createdAt: createdAt(),
-}).enableRLS();
+export const shift = pgEnum("shift", ["morning", "afternoon", "evening"]);
+
+/**
+ * A curso: "4° A, mañana, 2026" (COURSE-1). Classes are subjects taught to a
+ * course; students belong to a course, and so to all of its classes.
+ */
+export const courses = pgTable(
+  "courses",
+  {
+    id: id(),
+    teacherId: teacherId(),
+    academicYearId: uuid("academic_year_id")
+      .notNull()
+      .references(() => academicYears.id, { onDelete: "restrict" }),
+    year: integer("year").notNull(), // 1–6
+    division: text("division").notNull(), // "A"
+    shift: shift("shift").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [unique().on(t.teacherId, t.academicYearId, t.year, t.division, t.shift)],
+).enableRLS();
+
+/** A subject taught to one course (CLASS-1). */
+export const classes = pgTable(
+  "classes",
+  {
+    id: id(),
+    teacherId: teacherId(),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+    name: text("name").notNull(), // the subject: "Matemática"
+    school: text("school"),
+    // Null means "use the teacher's default" (teacher_settings.pass_mark).
+    passMark: grade("pass_mark"),
+    notes: text("notes"),
+    createdAt: createdAt(),
+  },
+  (t) => [unique().on(t.courseId, t.name)], // CLASS-5
+).enableRLS();
 
 /** Students are records, not users. They never sign in. */
 export const students = pgTable("students", {
@@ -101,20 +131,21 @@ export const students = pgTable("students", {
 
 export const enrollmentStatus = pgEnum("enrollment_status", ["active", "withdrawn"]);
 
-export const enrollments = pgTable(
-  "enrollments",
+/** Who is in each course (STUDENT-2). */
+export const courseStudents = pgTable(
+  "course_students",
   {
     teacherId: teacherId(),
-    classId: uuid("class_id")
+    courseId: uuid("course_id")
       .notNull()
-      .references(() => classes.id, { onDelete: "cascade" }),
+      .references(() => courses.id, { onDelete: "cascade" }),
     studentId: uuid("student_id")
       .notNull()
       .references(() => students.id, { onDelete: "cascade" }),
     status: enrollmentStatus("status").notNull().default("active"),
-    enrolledOn: date("enrolled_on").default(sql`current_date`),
+    joinedOn: date("joined_on").default(sql`current_date`),
   },
-  (t) => [primaryKey({ columns: [t.classId, t.studentId] })],
+  (t) => [primaryKey({ columns: [t.courseId, t.studentId] })],
 ).enableRLS();
 
 // ─── What is taught ─────────────────────────────────────────────────────────

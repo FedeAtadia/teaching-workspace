@@ -28,7 +28,8 @@ requirement. Spec, test and code move in one commit.
 | --- | --- | --- |
 | Grading rules (pass/fail, ranges, averages) | `src/lib/grading.ts` | Pure functions, testable without a database or DOM |
 | Tables and columns | `src/db/schema.ts` | One file is the whole data model |
-| Reading and writing data | Server Actions and Server Components | Queries run on the server through `getDb()`; nothing talks to Postgres from the browser |
+| Queries (read and write) | `src/db/queries/` | Take the database as an argument and a `teacherId`; tested against an in-memory Postgres (`src/test/db.ts`) built from the real migrations |
+| Calling them | Server Actions (`actions.ts` next to the page) and Server Components | Validate with `src/lib/validation.ts`, get the teacher from `requireTeacherId()`, pass `getDb()`; nothing talks to Postgres from the browser |
 | Sign-in and session | `src/lib/supabase/`, `src/proxy.ts` | |
 | Texts shown to the teacher | `messages/es-AR.json`, `messages/en.json` | Never hard-code a string in a component (LOCALE-3) |
 | Presentation | `src/components/`, `src/app/` | No rules here. If a component decides something, it belongs in `src/lib/` |
