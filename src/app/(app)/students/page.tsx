@@ -69,8 +69,16 @@ export default async function StudentsPage() {
           <TableBody>
             {students.map((s) => (
               <TableRow key={s.id}>
-                <TableCell className="font-medium">{s.lastName}</TableCell>
-                <TableCell>{s.firstName}</TableCell>
+                <TableCell className="font-medium">
+                  <Link href={`/students/${s.id}`} className="underline-offset-4 hover:underline">
+                    {s.lastName}
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <Link href={`/students/${s.id}`} className="underline-offset-4 hover:underline">
+                    {s.firstName}
+                  </Link>
+                </TableCell>
                 <TableCell>{s.courses.map(courseLabel).join(", ")}</TableCell>
               </TableRow>
             ))}

@@ -155,6 +155,14 @@
       "legend": "In red: below {passMark}. NH: not handed in. E: excused. The average leaves out tasks not handed in; they're shown next to it."
     }
   },
+  "studentPage": {
+    "back": "Students",
+    "left": "(no longer in this course)",
+    "noCourses": "Not in any course yet.",
+    "noClasses": "This course has no classes yet.",
+    "noTasks": "No tasks yet.",
+    "average": "Average"
+  },
   "students": {
     "title": "Students",
     "add": "Add student",

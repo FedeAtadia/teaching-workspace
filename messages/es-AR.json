@@ -155,6 +155,14 @@
       "legend": "En rojo, debajo de {passMark}. NE: no entregó. J: justificado. El promedio no cuenta las tareas no entregadas; se muestran aparte."
     }
   },
+  "studentPage": {
+    "back": "Estudiantes",
+    "left": "(ya no está en este curso)",
+    "noCourses": "Todavía no está en ningún curso.",
+    "noClasses": "Este curso todavía no tiene materias.",
+    "noTasks": "Todavía no hay tareas.",
+    "average": "Promedio"
+  },
   "students": {
     "title": "Estudiantes",
     "add": "Agregar estudiante",

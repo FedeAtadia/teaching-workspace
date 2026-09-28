@@ -197,14 +197,31 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 - **BOOK-3** Grades are written with the language's decimal separator:
   `7,5` in es-AR, `7.5` in English.
 
+## HISTORY — A student's school history
+
+*Enforced by `src/db/queries/history.ts`. Covered by
+`src/db/queries/history.test.ts`.*
+
+- **HISTORY-1** Each student in the Students list opens their history: every
+  course they have been in, newest school year first (COURSE-3), including
+  courses they have left, marked as such.
+- **HISTORY-2** Under each course, every class of it, in subject order —
+  including classes added after the student joined (STUDENT-2).
+- **HISTORY-3** Under each class, cuatrimestre by cuatrimestre, the class's
+  tasks (TASK-3) with this student's score, mark (not handed in, excused) or
+  nothing yet, and their notes; then the student's suggested average and
+  tasks not handed in for that cuatrimestre (SUGGEST-1, SUGGEST-2), shown as
+  passing or not against the class's pass mark.
+
 ## OWNER — Each teacher's data
 
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
 
 - **OWNER-1** A teacher only ever sees, and only ever adds to, their own
   school years, courses, classes, students, standards, units, tasks and
-  scores. Opening another teacher's class or task — or one that does not
-  exist — shows "not found", and nothing can be added to it or saved on it.
+  scores. Opening another teacher's class, task or student — or one that does
+  not exist — shows "not found", and nothing can be added to it or saved on
+  it.
 
 ---
 

@@ -12,10 +12,14 @@ Planned work, in order. Nothing here is a requirement yet: a feature moves into
 - [x] Students: create, in a course (STUDENT).
 - [ ] Students: edit, move between courses, import a roster from CSV
   (semicolon or comma).
-- Units (topics) per class, with class-wide and unit standards.
-- Tasks per term/unit, linked to the standards they assess.
-- Gradebook: students × tasks grid, inline score entry (`7,5`), status
-  (graded / missing / excused), notes per score. TanStack Table.
+- [x] Class page: students, passing standards, units (ROSTER, STD, UNIT).
+- [x] Tasks per cuatrimestre/unit, with a specific standard and the passing
+  standards they assess (TASK).
+- [x] Scoring one task at a time, with statuses and notes (SCORE); gradebook
+  per cuatrimestre with averages (BOOK).
+- [x] Student history across school years (HISTORY).
+- [ ] Task attachments (PDF) in Supabase Storage.
+- [ ] Editing and deleting standards, units, tasks.
 - Observations: work in class, participation.
 - Term grades: suggested average, allowed range from the first cuatrimestre
   (TERM-2), reason required outside it (TERM-4).
