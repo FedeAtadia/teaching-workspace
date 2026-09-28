@@ -70,9 +70,6 @@ When a second teacher or developer joins, set it back to 1 in
    code, never the data: grades live in Supabase and keys in `.env.local`
    and Vercel, none of which are committed.
 
-Until Vercel is connected, the required `Vercel` check never reports, so every
-pull request waits on it. Merge with the admin bypass until then.
-
 ## Checking it took
 
 ```bash
@@ -95,10 +92,29 @@ gh pr create --base development
 
 Cut every branch from `development`, never from `main`.
 
+A release leaves `main` one merge commit ahead of `development`. `main`
+requires the release branch to be up to date, and `development` takes no
+direct pushes, so the first branch after a release brings that commit along
+before its pull request:
+
+```bash
+git fetch origin && git merge origin/main
+```
+
 Releasing is a pull request like any other:
 
 ```bash
 gh pr create --base main --head development --title "Release"
+```
+
+A release that carries a migration (a new file in `drizzle/`) applies it to
+prod **before** the release merges. The code still live never reads the new
+tables, so migrating first leaves no broken window. The prod connection string
+lives in `.env.prod` (git-ignored; deliberately not `.env.production.local`,
+which `next build` would load):
+
+```bash
+$env:DATABASE_URL = (@(Get-Content .env.prod) -match '^DATABASE_URL=')[0] -replace '^DATABASE_URL=', ''; npm run db:migrate; Remove-Item Env:DATABASE_URL
 ```
 
 Changing behaviour is specified in [SPEC.md](SPEC.md); how to work on it is in

@@ -5,11 +5,13 @@ Planned work, in order. Nothing here is a requirement yet: a feature moves into
 
 ## Phase 1 — Core (replaces the spreadsheets)
 
-- Connect Supabase, run the first migration, sign in with Google.
-- School years and their two cuatrimestres.
-- Classes: create, edit, archive. Pass mark per class.
-- Students: create, edit, import a roster from CSV (semicolon or comma).
-- Enrol students in classes.
+- [x] Connect Supabase, run the first migration, sign in with Google.
+- [x] School years and their two cuatrimestres (created with a year's first class).
+- [x] Classes: create (CLASS, COURSE).
+- [ ] Classes: edit, archive. Pass mark per class.
+- [x] Students: create, in a course (STUDENT).
+- [ ] Students: edit, move between courses, import a roster from CSV
+  (semicolon or comma).
 - Units (topics) per class, with class-wide and unit standards.
 - Tasks per term/unit, linked to the standards they assess.
 - Gradebook: students × tasks grid, inline score entry (`7,5`), status
@@ -17,7 +19,7 @@ Planned work, in order. Nothing here is a requirement yet: a feature moves into
 - Observations: work in class, participation.
 - Term grades: suggested average, allowed range from the first cuatrimestre
   (TERM-2), reason required outside it (TERM-4).
-- UI kit: shadcn/ui (`npx shadcn@latest init` — needs internet).
+- [x] UI kit: shadcn/ui.
 
 ## Phase 2 — Exports
 

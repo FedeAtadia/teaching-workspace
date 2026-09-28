@@ -77,6 +77,54 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   value falls back to Spanish (Argentina).
 - **LOCALE-3** Every text exists in both languages.
 
+## CLASS — Classes
+
+*Enforced by `src/lib/validation.ts`, `src/db/queries/classes.ts`. Covered by
+`src/lib/validation.test.ts`, `src/db/queries/classes.test.ts`.*
+
+- **CLASS-1** A class is one subject (its name, e.g. Matemática) taught to one
+  course in one school year.
+- **CLASS-2** A class is added with five fields: subject, course year (1° to
+  6°), division, shift (mañana, tarde or vespertino) and school year (a year
+  between 2000 and 2100). The subject is trimmed and 1 to 80 characters long.
+- **CLASS-3** The division is trimmed and upper-cased, and is 1 to 10
+  characters long: `" a"` is stored as `"A"`.
+- **CLASS-4** The first class of a school year creates that school year, with
+  its two cuatrimestres (TERM-1).
+- **CLASS-5** A course cannot have the same subject twice; adding it again is
+  rejected with a message, and nothing is saved.
+
+## COURSE — Courses
+
+*Enforced by `src/lib/courses.ts`, `src/db/queries/classes.ts`. Covered by
+`src/lib/courses.test.ts`, `src/db/queries/classes.test.ts`.*
+
+- **COURSE-1** Classes with the same school year, course year, division and
+  shift share one course (a curso: "4° A, mañana, 2026").
+- **COURSE-2** A course is written as its year with a degree sign and its
+  division: `4° A`.
+- **COURSE-3** Courses are listed newest school year first, then by course
+  year, division and shift (mañana, tarde, vespertino).
+
+## STUDENT — Students
+
+*Enforced by `src/lib/validation.ts`, `src/db/queries/students.ts`. Covered by
+`src/lib/validation.test.ts`, `src/db/queries/students.test.ts`.*
+
+- **STUDENT-1** A student is added with a first name, a last name and a
+  course. Names are trimmed and 1 to 80 characters long.
+- **STUDENT-2** A student belongs to a course, and so to every class of that
+  course — including classes added to it later.
+- **STUDENT-3** Students are listed by last name, then first name, in Spanish
+  alphabetical order (accents do not push a name to the end).
+
+## OWNER — Each teacher's data
+
+*Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
+
+- **OWNER-1** A teacher only ever sees, and only ever adds to, their own
+  school years, courses, classes and students.
+
 ---
 
 ## Known gaps
@@ -84,4 +132,6 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 - **TERM-4**'s "the teacher gives a reason" is a UI requirement; only the range
   check is tested until the term-grade screen exists.
 - Sign-in (Google through Supabase) has no automated test yet; it needs a
-  Supabase project to run against.
+  Supabase project to run against. The forms that call the queries above
+  (the add-class and add-student dialogs) are checked by hand for the same
+  reason: every page behind them needs a signed-in teacher.

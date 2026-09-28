@@ -19,6 +19,9 @@ next-intl (Español (Argentina) / English) · Vitest · hosted on Vercel.
 
 ## Running it
 
+Node 24, the version in `.nvmrc` (`nvm use 24`). CI and Vercel use the same
+one: a lockfile written by another Node's npm can fail `npm ci` in CI.
+
 ```bash
 npm install
 ```

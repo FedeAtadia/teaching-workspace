@@ -9,6 +9,23 @@
     "students": "Students",
     "settings": "Settings"
   },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "done": "Done",
+    "notConfigured": "Connect Supabase to start adding data."
+  },
+  "shifts": {
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening"
+  },
+  "errors": {
+    "required": "Fill in this field.",
+    "tooLong": "That's too long.",
+    "invalid": "Check this value."
+  },
   "login": {
     "title": "Sign in",
     "google": "Continue with Google",
@@ -16,13 +33,56 @@
   },
   "dashboard": {
     "title": "Home",
-    "empty": "No classes yet. Start by creating the school year."
+    "empty": "No classes yet. Start by adding one in Classes."
   },
   "classes": {
-    "title": "Classes"
+    "title": "Classes",
+    "add": "Add class",
+    "dialogTitle": "New class",
+    "empty": "You haven't added any classes yet.",
+    "fields": {
+      "name": "Subject",
+      "namePlaceholder": "Mathematics",
+      "year": "Year",
+      "chooseYear": "Choose the year",
+      "division": "Division",
+      "divisionPlaceholder": "A",
+      "shift": "Shift",
+      "schoolYear": "School year"
+    },
+    "columns": {
+      "subject": "Subject",
+      "course": "Course",
+      "shift": "Shift",
+      "schoolYear": "School year",
+      "students": "Students"
+    },
+    "errors": {
+      "duplicate": "That course already has this subject."
+    }
   },
   "students": {
-    "title": "Students"
+    "title": "Students",
+    "add": "Add student",
+    "dialogTitle": "New student",
+    "empty": "You haven't added any students yet.",
+    "noCourses": "Add a class first.",
+    "goToClasses": "Go to Classes",
+    "added": "Added {name}. You can type the next one.",
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "course": "Course",
+      "chooseCourse": "Choose the course"
+    },
+    "columns": {
+      "lastName": "Last name",
+      "firstName": "First name",
+      "course": "Course"
+    },
+    "errors": {
+      "courseNotFound": "That course no longer exists. Choose another."
+    }
   },
   "settings": {
     "title": "Settings",

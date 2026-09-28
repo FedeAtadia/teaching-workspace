@@ -9,6 +9,23 @@
     "students": "Estudiantes",
     "settings": "Configuración"
   },
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "done": "Listo",
+    "notConfigured": "Conectá Supabase para empezar a cargar datos."
+  },
+  "shifts": {
+    "morning": "Mañana",
+    "afternoon": "Tarde",
+    "evening": "Vespertino"
+  },
+  "errors": {
+    "required": "Completá este campo.",
+    "tooLong": "Es demasiado largo.",
+    "invalid": "Revisá este valor."
+  },
   "login": {
     "title": "Iniciar sesión",
     "google": "Continuar con Google",
@@ -16,13 +33,56 @@
   },
   "dashboard": {
     "title": "Inicio",
-    "empty": "Todavía no hay cursos. Empezá creando el ciclo lectivo."
+    "empty": "Todavía no hay cursos. Empezá agregando uno en Cursos."
   },
   "classes": {
-    "title": "Cursos"
+    "title": "Cursos",
+    "add": "Agregar curso",
+    "dialogTitle": "Nuevo curso",
+    "empty": "Todavía no agregaste ningún curso.",
+    "fields": {
+      "name": "Materia",
+      "namePlaceholder": "Matemática",
+      "year": "Año",
+      "chooseYear": "Elegí el año",
+      "division": "División",
+      "divisionPlaceholder": "A",
+      "shift": "Turno",
+      "schoolYear": "Ciclo lectivo"
+    },
+    "columns": {
+      "subject": "Materia",
+      "course": "Curso",
+      "shift": "Turno",
+      "schoolYear": "Ciclo lectivo",
+      "students": "Estudiantes"
+    },
+    "errors": {
+      "duplicate": "Ese curso ya tiene esa materia."
+    }
   },
   "students": {
-    "title": "Estudiantes"
+    "title": "Estudiantes",
+    "add": "Agregar estudiante",
+    "dialogTitle": "Nuevo estudiante",
+    "empty": "Todavía no agregaste estudiantes.",
+    "noCourses": "Primero agregá un curso.",
+    "goToClasses": "Ir a Cursos",
+    "added": "Agregado: {name}. Podés seguir con el siguiente.",
+    "fields": {
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "course": "Curso",
+      "chooseCourse": "Elegí el curso"
+    },
+    "columns": {
+      "lastName": "Apellido",
+      "firstName": "Nombre",
+      "course": "Curso"
+    },
+    "errors": {
+      "courseNotFound": "Ese curso ya no existe. Elegí otro."
+    }
   },
   "settings": {
     "title": "Configuración",
