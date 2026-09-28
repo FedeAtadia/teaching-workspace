@@ -25,6 +25,8 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
           { href: base, label: t("tabs.students") },
           { href: `${base}/standards`, label: t("tabs.standards") },
           { href: `${base}/units`, label: t("tabs.units") },
+          { href: `${base}/tasks`, label: t("tabs.tasks") },
+          { href: `${base}/grades`, label: t("tabs.grades") },
         ]}
       />
       <div className="mt-6">{children}</div>

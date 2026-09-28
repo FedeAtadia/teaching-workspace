@@ -70,7 +70,9 @@
     "tabs": {
       "students": "Estudiantes",
       "standards": "Criterios de aprobación",
-      "units": "Unidades"
+      "units": "Unidades",
+      "tasks": "Tareas",
+      "grades": "Calificaciones"
     },
     "errors": {
       "notFound": "No se encontró este curso. Volvé a la lista y probá de nuevo."
@@ -101,6 +103,56 @@
         "term": "Cuatrimestre",
         "noTerm": "Sin cuatrimestre"
       }
+    },
+    "tasks": {
+      "intro": "Cada tarea se califica estudiante por estudiante.",
+      "add": "Agregar tarea",
+      "dialogTitle": "Nueva tarea",
+      "empty": "Todavía no hay tareas.",
+      "back": "Tareas",
+      "scored": "{scored} de {total} calificados",
+      "noStudents": "Este curso todavía no tiene estudiantes para calificar.",
+      "fields": {
+        "title": "Título",
+        "term": "Cuatrimestre",
+        "unit": "Unidad",
+        "noUnit": "Sin unidad",
+        "date": "Fecha",
+        "description": "Descripción breve",
+        "criteria": "Criterio específico",
+        "standards": "Criterios de aprobación que evalúa"
+      }
+    },
+    "scoring": {
+      "student": "Estudiante",
+      "score": "Nota",
+      "status": "Estado",
+      "notes": "Observaciones",
+      "passing": "Aprobado",
+      "failing": "Desaprobado",
+      "saved": "Guardado.",
+      "fixErrors": "No se guardó nada: corregí las notas marcadas.",
+      "notFound": "No se encontró esta tarea. Volvé a Tareas y probá de nuevo.",
+      "statuses": {
+        "graded": "Con nota",
+        "missing": "No entregó",
+        "excused": "Justificado"
+      },
+      "errors": {
+        "invalidScore": "Tiene que ser una nota del 1 al 10 (por ejemplo 7,5).",
+        "notesTooLong": "Las observaciones son demasiado largas."
+      }
+    },
+    "grades": {
+      "student": "Estudiante",
+      "average": "Promedio",
+      "missing": "No entregó",
+      "missingShort": "NE",
+      "excused": "Justificado",
+      "excusedShort": "J",
+      "noTasks": "Este cuatrimestre todavía no tiene tareas.",
+      "noStudents": "Este curso todavía no tiene estudiantes.",
+      "legend": "En rojo, debajo de {passMark}. NE: no entregó. J: justificado. El promedio no cuenta las tareas no entregadas; se muestran aparte."
     }
   },
   "students": {

@@ -146,14 +146,65 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   class's school year it belongs to.
 - **UNIT-2** Units are listed in the order they were added.
 
+## TASK — Tasks
+
+*Enforced by `src/lib/validation.ts`, `src/lib/format.ts`,
+`src/db/queries/tasks.ts`. Covered by `src/lib/validation.test.ts`,
+`src/lib/format.test.ts`, `src/db/queries/tasks.test.ts`.*
+
+- **TASK-1** A task belongs to a class and to one cuatrimestre of the class's
+  school year. It has a title (trimmed, 1 to 120 characters).
+- **TASK-2** A task may also have: a unit of the same class, a date, a brief
+  description (up to 280 characters), its own specific standard (up to 1000
+  characters), and the class passing standards it assesses. A unit, a
+  cuatrimestre or a standard from anywhere else is rejected.
+- **TASK-3** A class's tasks are listed by cuatrimestre, then by date (tasks
+  without a date last), then in the order they were added.
+- **TASK-4** A date is shown as the day it was entered, whatever the time
+  zone: `2026-05-10` is 10/5/2026 in es-AR and 5/10/2026 in English.
+
+## SCORE — Scoring a task
+
+*Enforced by `src/lib/scoresForm.ts`, `src/db/queries/tasks.ts`. Covered by
+`src/lib/scoresForm.test.ts`, `src/db/queries/tasks.test.ts`.*
+
+- **SCORE-1** A task is scored on one page listing every student of the
+  course (ROSTER-1). Each student gets a score typed as in INPUT-1..3, and
+  optional notes (up to 1000 characters). One save stores them all, or — if
+  any score is not a valid grade — none, and says which ones are wrong.
+- **SCORE-2** Instead of a score, a student can be marked as not handed in
+  (`missing`) or excused. Those have no score; notes are kept.
+- **SCORE-3** A student left without a score, not marked, and without notes
+  is not scored yet: nothing is stored for them, and a score saved before is
+  removed. Notes without a score are kept, with no score.
+- **SCORE-4** Saving again updates each student's score; a student never has
+  two scores for the same task.
+- **SCORE-5** A saved score is shown as passing or not, against the class's
+  pass mark (GRADE-2, GRADE-3).
+
+## BOOK — The class gradebook
+
+*Enforced by `src/db/queries/tasks.ts`, `src/lib/grading.ts`,
+`src/lib/format.ts`. Covered by `src/db/queries/tasks.test.ts`,
+`src/lib/grading.test.ts`, `src/lib/format.test.ts`.*
+
+- **BOOK-1** For one cuatrimestre at a time, the gradebook shows the course's
+  students (ROSTER-1) against that cuatrimestre's tasks (TASK-3): each cell is
+  the score, a mark for not handed in or excused, or empty. A student who
+  joined the course late simply has empty cells.
+- **BOOK-2** Each student's row ends with their suggested average and number
+  of tasks not handed in (SUGGEST-1, SUGGEST-2), shown as passing or not.
+- **BOOK-3** Grades are written with the language's decimal separator:
+  `7,5` in es-AR, `7.5` in English.
+
 ## OWNER — Each teacher's data
 
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
 
 - **OWNER-1** A teacher only ever sees, and only ever adds to, their own
-  school years, courses, classes, students, standards and units. Opening
-  another teacher's class — or a class that does not exist — shows "not
-  found", and nothing can be added to it.
+  school years, courses, classes, students, standards, units, tasks and
+  scores. Opening another teacher's class or task — or one that does not
+  exist — shows "not found", and nothing can be added to it or saved on it.
 
 ---
 

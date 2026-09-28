@@ -22,6 +22,13 @@
       "when": 1790601485444,
       "tag": "0002_drop-enrollments",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790633319271,
+      "tag": "0003_task-criteria",
+      "breakpoints": true
     }
   ]
 }
