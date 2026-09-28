@@ -30,6 +30,30 @@ export const studentInput = z.object({
 });
 export type StudentInput = z.infer<typeof studentInput>;
 
+/** Optional free text: trimmed, and an empty field is stored as null. */
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((s) => s || null);
+
+/** STD-1 */
+export const standardInput = z.object({
+  classId: z.uuid(),
+  title: z.string().trim().min(1).max(200),
+  description: optionalText(1000),
+});
+export type StandardInput = z.infer<typeof standardInput>;
+
+/** UNIT-1: the cuatrimestre is optional; the form's "none" option sends "". */
+export const unitInput = z.object({
+  classId: z.uuid(),
+  title: z.string().trim().min(1).max(120),
+  termId: z.union([z.literal(""), z.uuid()]).transform((v) => v || null),
+});
+export type UnitInput = z.infer<typeof unitInput>;
+
 /** A message key per field, looked up under `errors.` in messages/. */
 export type FieldError = "required" | "tooLong" | "invalid";
 
