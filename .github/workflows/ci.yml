@@ -24,9 +24,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # The Node version in .nvmrc, the same one used locally. It matters
+      # beyond the runtime: each Node ships its own npm, and npm 10 and 11
+      # disagree about which optional packages a lockfile must list, so a
+      # lockfile written on one fails `npm ci` on the other.
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
 
       # `npm ci` rather than `npm install`: it installs exactly what the
