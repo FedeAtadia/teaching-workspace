@@ -1,7 +1,7 @@
 // Everything on a class's own page: the class itself, its course's students,
 // its passing standards and its units. Scoped to one teacher (OWNER-1).
 
-import { and, asc, eq, max } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
 import {
@@ -54,14 +54,15 @@ export async function getClass(db: Db, teacherId: string, classId: string): Prom
 
 export type RosterStudent = { id: string; firstName: string; lastName: string };
 
-/** ROSTER-1 */
+/**
+ * ROSTER-1. Takes the class already loaded by `getClass` (which checked it is
+ * this teacher's) rather than looking it up again: one query fewer per page.
+ */
 export async function listClassStudents(
   db: Db,
   teacherId: string,
-  classId: string,
+  cls: Pick<ClassDetail, "courseId">,
 ): Promise<RosterStudent[]> {
-  const cls = await getClass(db, teacherId, classId);
-  if (!cls) return [];
   const rows = await db
     .select({ id: students.id, firstName: students.firstName, lastName: students.lastName })
     .from(courseStudents)
@@ -92,36 +93,36 @@ export async function listStandards(db: Db, teacherId: string, classId: string):
 
 export type AddResult = { ok: true } | { ok: false; error: "notFound" };
 
-/** STD-1 */
+/** The next position at the end of a class's list, worked out by the insert itself. */
+const nextPosition = (table: typeof standards | typeof units, classId: string) =>
+  sql<number>`(select coalesce(max(${table.position}), 0) + 1 from ${table} where ${table.classId} = ${classId})`;
+
+/** STD-1. Two round trips: the ownership check, then the insert. */
 export async function createStandard(db: Db, teacherId: string, input: StandardInput): Promise<AddResult> {
-  return db.transaction(async (tx) => {
-    if (!(await getClass(tx, teacherId, input.classId))) return { ok: false, error: "notFound" } as const;
-    const [{ last }] = await tx
-      .select({ last: max(standards.position) })
-      .from(standards)
-      .where(eq(standards.classId, input.classId));
-    await tx.insert(standards).values({
-      teacherId,
-      scope: "class",
-      classId: input.classId,
-      title: input.title,
-      description: input.description,
-      position: (last ?? 0) + 1,
-    });
-    return { ok: true } as const;
+  if (!(await getClass(db, teacherId, input.classId))) return { ok: false, error: "notFound" };
+  await db.insert(standards).values({
+    teacherId,
+    scope: "class",
+    classId: input.classId,
+    title: input.title,
+    description: input.description,
+    position: nextPosition(standards, input.classId),
   });
+  return { ok: true };
 }
 
 export type TermRow = { id: string; position: number };
 
-/** The two cuatrimestres of the class's school year (TERM-1). */
-export async function listTerms(db: Db, teacherId: string, classId: string): Promise<TermRow[]> {
-  const cls = await getClass(db, teacherId, classId);
-  if (!cls) return [];
+/** The two cuatrimestres of the class's school year (TERM-1). Takes the loaded class. */
+export async function listTerms(
+  db: Db,
+  teacherId: string,
+  cls: Pick<ClassDetail, "academicYearId">,
+): Promise<TermRow[]> {
   return db
     .select({ id: terms.id, position: terms.position })
     .from(terms)
-    .where(eq(terms.academicYearId, cls.academicYearId))
+    .where(and(eq(terms.academicYearId, cls.academicYearId), eq(terms.teacherId, teacherId)))
     .orderBy(asc(terms.position));
 }
 
@@ -138,26 +139,24 @@ export async function listUnits(db: Db, teacherId: string, classId: string): Pro
     .orderBy(asc(units.position));
 }
 
-/** UNIT-1 */
+/** UNIT-1. Two or three round trips: ownership, the cuatrimestre if given, the insert. */
 export async function createUnit(db: Db, teacherId: string, input: UnitInput): Promise<AddResult> {
-  return db.transaction(async (tx) => {
-    if (!(await getClass(tx, teacherId, input.classId))) return { ok: false, error: "notFound" } as const;
-    if (input.termId) {
-      // The cuatrimestre must be one of this class's own school year.
-      const own = await listTerms(tx, teacherId, input.classId);
-      if (!own.some((t) => t.id === input.termId)) return { ok: false, error: "notFound" } as const;
-    }
-    const [{ last }] = await tx
-      .select({ last: max(units.position) })
-      .from(units)
-      .where(eq(units.classId, input.classId));
-    await tx.insert(units).values({
-      teacherId,
-      classId: input.classId,
-      termId: input.termId,
-      title: input.title,
-      position: (last ?? 0) + 1,
-    });
-    return { ok: true } as const;
+  const cls = await getClass(db, teacherId, input.classId);
+  if (!cls) return { ok: false, error: "notFound" };
+  if (input.termId) {
+    // The cuatrimestre must be one of this class's own school year.
+    const [own] = await db
+      .select({ id: terms.id })
+      .from(terms)
+      .where(and(eq(terms.id, input.termId), eq(terms.academicYearId, cls.academicYearId)));
+    if (!own) return { ok: false, error: "notFound" };
+  }
+  await db.insert(units).values({
+    teacherId,
+    classId: input.classId,
+    termId: input.termId,
+    title: input.title,
+    position: nextPosition(units, input.classId),
   });
+  return { ok: true };
 }

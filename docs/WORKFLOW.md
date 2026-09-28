@@ -34,6 +34,21 @@ requirement. Spec, test and code move in one commit.
 | Texts shown to the teacher | `messages/es-AR.json`, `messages/en.json` | Never hard-code a string in a component (LOCALE-3) |
 | Presentation | `src/components/`, `src/app/` | No rules here. If a component decides something, it belongs in `src/lib/` |
 
+Keeping pages fast. The database is in São Paulo and every query is a round
+trip (about 60 ms from Argentina), so what matters is how many a page makes,
+one after another:
+
+- **Checking the sign-in costs no round trip.** `requireTeacherId()` and the
+  proxy use `getClaims()`, which verifies the session locally. Don't switch
+  back to `getUser()`: it asks the Auth server on every call.
+- **Load a thing once per request.** Pages under a class get it from
+  `loadClass()` (`classes/[id]/data.ts`, cached per request) and pass it to
+  queries, rather than each query looking the class up again.
+- **Every section has a `loading.tsx`**, so a click shows a placeholder at
+  once instead of leaving the old page up.
+- **Functions run in São Paulo** (`vercel.json` → `gru1`), next to the
+  database. A function in another region pays the distance on every query.
+
 Two consequences worth stating plainly:
 
 - **A component must never own a rule.** If you find yourself writing

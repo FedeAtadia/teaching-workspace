@@ -6,11 +6,11 @@ import { loadClass } from "../data";
 
 export default async function UnitsPage({ params }: PageProps<"/classes/[id]/units">) {
   const { id } = await params;
-  const { db, teacherId } = await loadClass(id);
+  const { db, teacherId, cls } = await loadClass(id);
   const t = await getTranslations("classPage.units");
   const tTerm = await getTranslations("terms");
   const tErr = await getTranslations("classPage.errors");
-  const [list, terms] = await Promise.all([listUnits(db, teacherId, id), listTerms(db, teacherId, id)]);
+  const [list, terms] = await Promise.all([listUnits(db, teacherId, id), listTerms(db, teacherId, cls)]);
 
   return (
     <>
