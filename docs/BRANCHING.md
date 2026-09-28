@@ -114,7 +114,7 @@ lives in `.env.prod` (git-ignored; deliberately not `.env.production.local`,
 which `next build` would load):
 
 ```bash
-$env:DATABASE_URL = ((Get-Content .env.prod) -match '^DATABASE_URL=' -replace '^DATABASE_URL=', ''); npm run db:migrate; Remove-Item Env:DATABASE_URL
+$env:DATABASE_URL = (@(Get-Content .env.prod) -match '^DATABASE_URL=')[0] -replace '^DATABASE_URL=', ''; npm run db:migrate; Remove-Item Env:DATABASE_URL
 ```
 
 Changing behaviour is specified in [SPEC.md](SPEC.md); how to work on it is in
