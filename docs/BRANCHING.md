@@ -26,6 +26,19 @@ request, so requiring one would mean bypassing the rule on every release.
 When a second teacher or developer joins, set it back to 1 in
 `.github/rulesets/main.json` and re-apply.
 
+## Who merges
+
+**Only the repository owner merges pull requests** — into `development` and
+into `main` alike. An assistant or any other contributor opens the pull
+request, says it is open and what its checks show, and stops there; it never
+runs `gh pr merge` or presses the button, even with the checks green.
+
+Everything up to the merge is still theirs to do: the branch, the tests, the
+dev migrations, and for a release, preparing prod (migrations and Storage from
+`.env.prod`, below) before opening the release pull request. Since the rules
+above require no approval, this is the one step that keeps a person in front
+of every change that lands.
+
 ## Why each rule is there
 
 - **Pull request required.** Every change is visible before it lands and CI has
