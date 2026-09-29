@@ -123,6 +123,31 @@
         "standards": "Criterios de aprobación que evalúa"
       }
     },
+    "deleteTask": {
+      "button": "Eliminar tarea",
+      "title": "¿Eliminar «{title}»?",
+      "body": "{scored, plural, =0 {Todavía no tiene notas cargadas.} one {Se borra también la nota cargada.} other {Se borran también las # notas cargadas.}}",
+      "withFile": "Y el archivo adjunto.",
+      "cannotUndo": "No se puede deshacer.",
+      "confirm": "Eliminar",
+      "deleting": "Eliminando…",
+      "failed": "No se pudo eliminar. Recargá la página y probá de nuevo."
+    },
+    "attachment": {
+      "title": "Archivo de la tarea",
+      "upload": "Adjuntar archivo",
+      "replace": "Reemplazar",
+      "remove": "Quitar",
+      "hint": "PDF, PNG o JPG, hasta 20 MB.",
+      "working": "Guardando…",
+      "errors": {
+        "empty": "El archivo está vacío.",
+        "wrongType": "Solo se pueden adjuntar PDF, PNG o JPG.",
+        "tooBig": "El archivo pesa más de 20 MB.",
+        "uploadFailed": "No se pudo subir el archivo. Revisá la conexión y probá de nuevo.",
+        "notFound": "No se encontró esta tarea. Volvé a Tareas y probá de nuevo."
+      }
+    },
     "scoring": {
       "student": "Estudiante",
       "score": "Nota",

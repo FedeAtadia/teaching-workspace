@@ -26,6 +26,19 @@ request, so requiring one would mean bypassing the rule on every release.
 When a second teacher or developer joins, set it back to 1 in
 `.github/rulesets/main.json` and re-apply.
 
+## Who merges
+
+**Only the repository owner merges pull requests** — into `development` and
+into `main` alike. An assistant or any other contributor opens the pull
+request, says it is open and what its checks show, and stops there; it never
+runs `gh pr merge` or presses the button, even with the checks green.
+
+Everything up to the merge is still theirs to do: the branch, the tests, the
+dev migrations, and for a release, preparing prod (migrations and Storage from
+`.env.prod`, below) before opening the release pull request. Since the rules
+above require no approval, this is the one step that keeps a person in front
+of every change that lands.
+
 ## Why each rule is there
 
 - **Pull request required.** Every change is visible before it lands and CI has
@@ -116,6 +129,10 @@ which `next build` would load):
 ```bash
 $env:DATABASE_URL = (@(Get-Content .env.prod) -match '^DATABASE_URL=')[0] -replace '^DATABASE_URL=', ''; npm run db:migrate; Remove-Item Env:DATABASE_URL
 ```
+
+A release that changes `supabase/storage.sql` (the file bucket and its access
+rules) applies it the same way, with `npm run storage:apply` in place of
+`npm run db:migrate`. It can be re-run safely.
 
 Changing behaviour is specified in [SPEC.md](SPEC.md); how to work on it is in
 [WORKFLOW.md](WORKFLOW.md).
