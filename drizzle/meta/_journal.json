@@ -36,6 +36,27 @@
       "when": 1790635331726,
       "tag": "0004_task-attachments",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790682629838,
+      "tag": "0005_schools",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790682635173,
+      "tag": "0006_backfill-schools",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790682658114,
+      "tag": "0007_schools-required",
+      "breakpoints": true
     }
   ]
 }

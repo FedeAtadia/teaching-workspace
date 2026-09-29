@@ -38,7 +38,8 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
         {courses.map((course) => (
           <section key={course.courseId}>
             <h2 className="mb-3 flex flex-wrap items-baseline gap-x-3 text-lg font-semibold">
-              {course.schoolYear} · {formatCourse(course.year, course.division)} · {tShift(course.shift)}
+              {course.schoolYear} · {formatCourse(course.year, course.division)} · {tShift(course.shift)} ·{" "}
+              {course.school}
               {course.status === "withdrawn" && (
                 <span className="text-sm font-normal text-muted-foreground">{t("left")}</span>
               )}

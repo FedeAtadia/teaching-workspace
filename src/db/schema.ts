@@ -17,6 +17,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -79,15 +80,31 @@ export const terms = pgTable(
 
 export const shift = pgEnum("shift", ["morning", "afternoon", "evening"]);
 
+/** Where a teacher works (SCHOOL-1). Names are unique per teacher, ignoring case (SCHOOL-3). */
+export const schools = pgTable(
+  "schools",
+  {
+    id: id(),
+    teacherId: teacherId(),
+    name: text("name").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("schools_teacher_name_ci").on(t.teacherId, sql`lower(${t.name})`)],
+).enableRLS();
+
 /**
- * A curso: "4° A, mañana, 2026" (COURSE-1). Classes are subjects taught to a
- * course; students belong to a course, and so to all of its classes.
+ * A curso: "4° A, mañana, 2026" at one school (COURSE-1, SCHOOL-2). Classes
+ * are subjects taught to a course; students belong to a course, and so to all
+ * of its classes.
  */
 export const courses = pgTable(
   "courses",
   {
     id: id(),
     teacherId: teacherId(),
+    schoolId: uuid("school_id")
+      .notNull()
+      .references(() => schools.id, { onDelete: "restrict" }),
     academicYearId: uuid("academic_year_id")
       .notNull()
       .references(() => academicYears.id, { onDelete: "restrict" }),
@@ -96,7 +113,7 @@ export const courses = pgTable(
     shift: shift("shift").notNull(),
     createdAt: createdAt(),
   },
-  (t) => [unique().on(t.teacherId, t.academicYearId, t.year, t.division, t.shift)],
+  (t) => [unique().on(t.teacherId, t.schoolId, t.academicYearId, t.year, t.division, t.shift)],
 ).enableRLS();
 
 /** A subject taught to one course (CLASS-1). */
@@ -109,7 +126,6 @@ export const classes = pgTable(
       .notNull()
       .references(() => courses.id, { onDelete: "cascade" }),
     name: text("name").notNull(), // the subject: "Matemática"
-    school: text("school"),
     // Null means "use the teacher's default" (teacher_settings.pass_mark).
     passMark: grade("pass_mark"),
     notes: text("notes"),

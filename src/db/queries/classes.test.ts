@@ -16,6 +16,7 @@ const cls = (over: Partial<ClassInput> = {}): ClassInput => ({
   year: 4,
   division: "A",
   shift: "morning",
+  school: "Escuela 5",
   schoolYear: 2026,
   ...over,
 });

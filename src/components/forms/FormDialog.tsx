@@ -18,7 +18,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import type { FormState } from "@/lib/formState";
 
 export type FieldSpec =
-  | { kind: "text"; name: string; label: string; maxLength: number; placeholder?: string }
+  | { kind: "text"; name: string; label: string; maxLength: number; placeholder?: string; defaultValue?: string }
   | { kind: "textarea"; name: string; label: string; maxLength: number; rows?: number }
   | {
       kind: "select";
@@ -126,7 +126,7 @@ function DialogForm({
               <Input
                 id={id}
                 name={f.name}
-                defaultValue={v[f.name]}
+                defaultValue={v[f.name] ?? f.defaultValue}
                 maxLength={f.maxLength}
                 placeholder={f.placeholder}
                 aria-invalid={invalid}

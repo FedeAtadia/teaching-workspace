@@ -45,6 +45,8 @@
     "dialogTitle": "Nuevo curso",
     "empty": "Todavía no agregaste ningún curso.",
     "fields": {
+      "school": "Escuela",
+      "schoolPlaceholder": "Escuela N° 5",
       "name": "Materia",
       "namePlaceholder": "Matemática",
       "year": "Año",
@@ -213,6 +215,17 @@
   },
   "settings": {
     "title": "Configuración",
-    "language": "Idioma"
+    "language": "Idioma",
+    "schools": {
+      "title": "Escuelas",
+      "intro": "Se crean al agregar un curso. Acá podés cambiarles el nombre.",
+      "empty": "Todavía no hay escuelas: se crean con tu primer curso.",
+      "courses": "{count, plural, one {# curso} other {# cursos}}",
+      "rename": "Cambiar nombre",
+      "renameTitle": "Cambiar el nombre de «{name}»",
+      "name": "Nombre de la escuela",
+      "duplicate": "Ya tenés otra escuela con ese nombre.",
+      "notFound": "No se encontró esa escuela. Recargá la página."
+    }
   }
 }

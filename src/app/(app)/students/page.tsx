@@ -35,8 +35,10 @@ export default async function StudentsPage() {
   const teacherId = await requireTeacherId();
   const [courses, students] = await Promise.all([listCourses(db, teacherId), listStudents(db, teacherId)]);
 
-  const courseLabel = (c: { year: number; division: string; shift: Shift; schoolYear: string }) =>
-    `${formatCourse(c.year, c.division)} · ${tShift(c.shift)} · ${c.schoolYear}`;
+  // The school only adds noise for a teacher at one school; with two, it tells the courses apart.
+  const severalSchools = new Set(courses.map((c) => c.school)).size > 1;
+  const courseLabel = (c: { year: number; division: string; shift: Shift; schoolYear: string; school: string }) =>
+    `${formatCourse(c.year, c.division)} · ${tShift(c.shift)} · ${c.schoolYear}` + (severalSchools ? ` · ${c.school}` : "");
 
   const action =
     courses.length > 0 ? (
