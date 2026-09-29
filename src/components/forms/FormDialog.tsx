@@ -1,5 +1,6 @@
 "use client";
 
+import { Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import { Field } from "@/components/forms/Field";
@@ -19,7 +20,7 @@ import type { FormState } from "@/lib/formState";
 
 export type FieldSpec =
   | { kind: "text"; name: string; label: string; maxLength: number; placeholder?: string; defaultValue?: string }
-  | { kind: "textarea"; name: string; label: string; maxLength: number; rows?: number }
+  | { kind: "textarea"; name: string; label: string; maxLength: number; rows?: number; defaultValue?: string }
   | {
       kind: "select";
       name: string;
@@ -27,14 +28,22 @@ export type FieldSpec =
       options: { value: string; label: string }[];
       defaultValue?: string;
     }
-  | { kind: "date"; name: string; label: string }
+  | { kind: "date"; name: string; label: string; defaultValue?: string }
   /** Sends one `name` entry per ticked box; the action reads them with getAll. */
-  | { kind: "checkboxes"; name: string; label: string; options: { value: string; label: string }[] };
+  | {
+      kind: "checkboxes";
+      name: string;
+      label: string;
+      options: { value: string; label: string }[];
+      /** The values ticked when the form opens. */
+      defaultValue?: string[];
+    };
 
 /**
  * A button that opens a small form in a dialog, sends it to a Server Action,
- * shows per-field errors, and closes once saved. Used for the simple "add"
- * forms (standards, units); richer forms build their own.
+ * shows per-field errors, and closes once saved. Used for the add and edit
+ * forms of standards, units and tasks; an edit form passes each field's
+ * current value as its `defaultValue`.
  */
 export function FormDialog({
   triggerLabel,
@@ -44,8 +53,12 @@ export function FormDialog({
   hidden = {},
   formErrors = {},
   wide = false,
+  trigger = "add",
 }: {
+  /** The button's text; for "editIcon" its accessible name and tooltip. */
   triggerLabel: string;
+  /** "add": the main button. "edit": an outlined button with a pencil. "editIcon": just the pencil. */
+  trigger?: "add" | "edit" | "editIcon";
   title: string;
   /** A wider dialog, for forms with many fields. */
   wide?: boolean;
@@ -59,7 +72,20 @@ export function FormDialog({
   const [open, setOpen] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>{triggerLabel}</DialogTrigger>
+      {trigger === "add" && <DialogTrigger render={<Button />}>{triggerLabel}</DialogTrigger>}
+      {trigger === "edit" && (
+        <DialogTrigger render={<Button variant="outline" size="sm" />}>
+          <Pencil aria-hidden />
+          {triggerLabel}
+        </DialogTrigger>
+      )}
+      {trigger === "editIcon" && (
+        <DialogTrigger
+          render={<Button variant="ghost" size="icon-sm" aria-label={triggerLabel} title={triggerLabel} />}
+        >
+          <Pencil aria-hidden />
+        </DialogTrigger>
+      )}
       <DialogContent
         showCloseButton={false}
         className={wide ? "max-h-[90vh] overflow-y-auto sm:max-w-lg" : "max-h-[90vh] overflow-y-auto"}
@@ -137,7 +163,7 @@ function DialogForm({
               <textarea
                 id={id}
                 name={f.name}
-                defaultValue={v[f.name]}
+                defaultValue={v[f.name] ?? f.defaultValue}
                 maxLength={f.maxLength}
                 rows={f.rows ?? 3}
                 aria-invalid={invalid}
@@ -149,7 +175,7 @@ function DialogForm({
                 id={id}
                 name={f.name}
                 type="date"
-                defaultValue={v[f.name]}
+                defaultValue={v[f.name] ?? f.defaultValue}
                 aria-invalid={invalid}
                 className="w-44"
               />
@@ -163,7 +189,11 @@ function DialogForm({
                       name={f.name}
                       value={o.value}
                       // Refilled after an error: the action sends the ticked ids joined by commas.
-                      defaultChecked={(v[f.name] ?? "").split(",").includes(o.value)}
+                      defaultChecked={
+                        v[f.name] !== undefined
+                          ? v[f.name].split(",").includes(o.value)
+                          : (f.defaultValue ?? []).includes(o.value)
+                      }
                       className="mt-0.5 size-4 accent-primary"
                     />
                     {o.label}

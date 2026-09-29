@@ -12,11 +12,15 @@ import {
   schools,
   standards,
   students,
+  taskStandards,
+  tasks,
   terms,
   units,
 } from "@/db/schema";
 import { compareStudents, type Shift } from "@/lib/courses";
-import type { StandardInput, UnitInput } from "@/lib/validation";
+import type { StandardEdit, StandardInput, UnitEdit, UnitInput } from "@/lib/validation";
+
+const isUuid = (v: string) => z.uuid().safeParse(v).success;
 
 export type ClassDetail = {
   id: string;
@@ -34,7 +38,7 @@ export type ClassDetail = {
 /** The class, or null when it isn't this teacher's (or doesn't exist). */
 export async function getClass(db: Db, teacherId: string, classId: string): Promise<ClassDetail | null> {
   // A malformed id in the URL would make Postgres throw; it is just "not found".
-  if (!z.uuid().safeParse(classId).success) return null;
+  if (!isUuid(classId)) return null;
   const [row] = await db
     .select({
       id: classes.id,
@@ -81,13 +85,25 @@ export async function listClassStudents(
   return rows.sort(compareStudents);
 }
 
-export type StandardRow = { id: string; title: string; description: string | null };
+export type StandardRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  /** Tasks that assess it, for the delete confirmation (STD-4). */
+  tasks: number;
+};
+
 
 /** STD-2 */
 export async function listStandards(db: Db, teacherId: string, classId: string): Promise<StandardRow[]> {
-  if (!z.uuid().safeParse(classId).success) return [];
+  if (!isUuid(classId)) return [];
   return db
-    .select({ id: standards.id, title: standards.title, description: standards.description })
+    .select({
+      id: standards.id,
+      title: standards.title,
+      description: standards.description,
+      tasks: sql<number>`(select count(*)::int from ${taskStandards} where ${taskStandards.standardId} = ${standards.id})`,
+    })
     .from(standards)
     .where(
       and(eq(standards.classId, classId), eq(standards.teacherId, teacherId), eq(standards.scope, "class")),
@@ -96,6 +112,7 @@ export async function listStandards(db: Db, teacherId: string, classId: string):
 }
 
 export type AddResult = { ok: true } | { ok: false; error: "notFound" };
+const notFound = { ok: false, error: "notFound" } as const;
 
 /** The next position at the end of a class's list, worked out by the insert itself. */
 const nextPosition = (table: typeof standards | typeof units, classId: string) =>
@@ -103,7 +120,7 @@ const nextPosition = (table: typeof standards | typeof units, classId: string) =
 
 /** STD-1. Two round trips: the ownership check, then the insert. */
 export async function createStandard(db: Db, teacherId: string, input: StandardInput): Promise<AddResult> {
-  if (!(await getClass(db, teacherId, input.classId))) return { ok: false, error: "notFound" };
+  if (!(await getClass(db, teacherId, input.classId))) return notFound;
   await db.insert(standards).values({
     teacherId,
     scope: "class",
@@ -113,6 +130,36 @@ export async function createStandard(db: Db, teacherId: string, input: StandardI
     position: nextPosition(standards, input.classId),
   });
   return { ok: true };
+}
+
+const ownStandard = (teacherId: string, classId: string, standardId: string) =>
+  and(eq(standards.id, standardId), eq(standards.classId, classId), eq(standards.teacherId, teacherId));
+
+/**
+ * STD-3. One round trip: the update only matches a standard of this teacher
+ * in this class, so a missing or foreign one changes nothing.
+ */
+export async function updateStandard(db: Db, teacherId: string, input: StandardEdit): Promise<AddResult> {
+  const updated = await db
+    .update(standards)
+    .set({ title: input.title, description: input.description })
+    .where(ownStandard(teacherId, input.classId, input.standardId))
+    .returning({ id: standards.id });
+  return updated.length > 0 ? { ok: true } : notFound;
+}
+
+/** STD-4. Its links to tasks go with it (ON DELETE CASCADE); the tasks stay. */
+export async function deleteStandard(
+  db: Db,
+  teacherId: string,
+  input: { classId: string; standardId: string },
+): Promise<AddResult> {
+  if (!isUuid(input.classId) || !isUuid(input.standardId)) return notFound;
+  const deleted = await db
+    .delete(standards)
+    .where(ownStandard(teacherId, input.classId, input.standardId))
+    .returning({ id: standards.id });
+  return deleted.length > 0 ? { ok: true } : notFound;
 }
 
 export type TermRow = { id: string; position: number };
@@ -130,31 +177,49 @@ export async function listTerms(
     .orderBy(asc(terms.position));
 }
 
-export type UnitRow = { id: string; title: string; termPosition: number | null };
+export type UnitRow = {
+  id: string;
+  title: string;
+  termId: string | null;
+  termPosition: number | null;
+  /** Tasks in it, for the delete confirmation (UNIT-4). */
+  tasks: number;
+};
 
 /** UNIT-2 */
 export async function listUnits(db: Db, teacherId: string, classId: string): Promise<UnitRow[]> {
-  if (!z.uuid().safeParse(classId).success) return [];
+  if (!isUuid(classId)) return [];
   return db
-    .select({ id: units.id, title: units.title, termPosition: terms.position })
+    .select({
+      id: units.id,
+      title: units.title,
+      termId: units.termId,
+      termPosition: terms.position,
+      tasks: sql<number>`(select count(*)::int from ${tasks} where ${tasks.unitId} = ${units.id})`,
+    })
     .from(units)
     .leftJoin(terms, eq(units.termId, terms.id))
     .where(and(eq(units.classId, classId), eq(units.teacherId, teacherId)))
     .orderBy(asc(units.position));
 }
 
+/**
+ * The class, if it is this teacher's and the cuatrimestre (when given) is of
+ * its own school year (UNIT-1, UNIT-3).
+ */
+async function classForUnit(db: Db, teacherId: string, input: UnitInput): Promise<ClassDetail | null> {
+  const cls = await getClass(db, teacherId, input.classId);
+  if (!cls || !input.termId) return cls;
+  const [own] = await db
+    .select({ id: terms.id })
+    .from(terms)
+    .where(and(eq(terms.id, input.termId), eq(terms.academicYearId, cls.academicYearId)));
+  return own ? cls : null;
+}
+
 /** UNIT-1. Two or three round trips: ownership, the cuatrimestre if given, the insert. */
 export async function createUnit(db: Db, teacherId: string, input: UnitInput): Promise<AddResult> {
-  const cls = await getClass(db, teacherId, input.classId);
-  if (!cls) return { ok: false, error: "notFound" };
-  if (input.termId) {
-    // The cuatrimestre must be one of this class's own school year.
-    const [own] = await db
-      .select({ id: terms.id })
-      .from(terms)
-      .where(and(eq(terms.id, input.termId), eq(terms.academicYearId, cls.academicYearId)));
-    if (!own) return { ok: false, error: "notFound" };
-  }
+  if (!(await classForUnit(db, teacherId, input))) return notFound;
   await db.insert(units).values({
     teacherId,
     classId: input.classId,
@@ -163,4 +228,32 @@ export async function createUnit(db: Db, teacherId: string, input: UnitInput): P
     position: nextPosition(units, input.classId),
   });
   return { ok: true };
+}
+
+const ownUnit = (teacherId: string, classId: string, unitId: string) =>
+  and(eq(units.id, unitId), eq(units.classId, classId), eq(units.teacherId, teacherId));
+
+/** UNIT-3. Checked like UNIT-1, then updated only if the unit is this class's. */
+export async function updateUnit(db: Db, teacherId: string, input: UnitEdit): Promise<AddResult> {
+  if (!(await classForUnit(db, teacherId, input))) return notFound;
+  const updated = await db
+    .update(units)
+    .set({ title: input.title, termId: input.termId })
+    .where(ownUnit(teacherId, input.classId, input.unitId))
+    .returning({ id: units.id });
+  return updated.length > 0 ? { ok: true } : notFound;
+}
+
+/** UNIT-4. Its tasks stay, without a unit (ON DELETE SET NULL). */
+export async function deleteUnit(
+  db: Db,
+  teacherId: string,
+  input: { classId: string; unitId: string },
+): Promise<AddResult> {
+  if (!isUuid(input.classId) || !isUuid(input.unitId)) return notFound;
+  const deleted = await db
+    .delete(units)
+    .where(ownUnit(teacherId, input.classId, input.unitId))
+    .returning({ id: units.id });
+  return deleted.length > 0 ? { ok: true } : notFound;
 }

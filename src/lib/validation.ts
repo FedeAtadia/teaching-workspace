@@ -56,6 +56,10 @@ export const standardInput = z.object({
 });
 export type StandardInput = z.infer<typeof standardInput>;
 
+/** STD-3 */
+export const standardEdit = standardInput.extend({ standardId: z.uuid() });
+export type StandardEdit = z.infer<typeof standardEdit>;
+
 /** UNIT-1: the cuatrimestre is optional; the form's "none" option sends "". */
 export const unitInput = z.object({
   classId: z.uuid(),
@@ -63,6 +67,10 @@ export const unitInput = z.object({
   termId: z.union([z.literal(""), z.uuid()]).transform((v) => v || null),
 });
 export type UnitInput = z.infer<typeof unitInput>;
+
+/** UNIT-3 */
+export const unitEdit = unitInput.extend({ unitId: z.uuid() });
+export type UnitEdit = z.infer<typeof unitEdit>;
 
 const optionalUuid = z.union([z.literal(""), z.uuid()]).transform((v) => v || null);
 
@@ -81,6 +89,10 @@ export const taskInput = z.object({
   standardIds: z.array(z.uuid()),
 });
 export type TaskInput = z.infer<typeof taskInput>;
+
+/** TASK-6 */
+export const taskEdit = taskInput.extend({ taskId: z.uuid() });
+export type TaskEdit = z.infer<typeof taskEdit>;
 
 /** A message key per field, looked up under `errors.` in messages/. */
 export type FieldError = "required" | "tooLong" | "invalid";

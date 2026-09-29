@@ -2,16 +2,33 @@
 
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/db";
-import { createStandard, createUnit, getClass, listClassStudents } from "@/db/queries/classDetail";
+import {
+  createStandard,
+  createUnit,
+  deleteStandard,
+  deleteUnit,
+  getClass,
+  listClassStudents,
+  updateStandard,
+  updateUnit,
+} from "@/db/queries/classDetail";
 import { redirect } from "next/navigation";
-import { createTask, deleteTask, saveScores, setTaskAttachment } from "@/db/queries/tasks";
+import { createTask, deleteTask, saveScores, setTaskAttachment, updateTask } from "@/db/queries/tasks";
 import { ATTACHMENT_BUCKET } from "@/lib/attachments";
 import { requireTeacherId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { FormState } from "@/lib/formState";
 import { DEFAULT_RULES } from "@/lib/grading";
 import { parseScoresForm, type ScoreEntryError } from "@/lib/scoresForm";
-import { standardInput, taskInput, toFieldErrors, unitInput } from "@/lib/validation";
+import {
+  standardEdit,
+  standardInput,
+  taskEdit,
+  taskInput,
+  toFieldErrors,
+  unitEdit,
+  unitInput,
+} from "@/lib/validation";
 
 export async function addStandard(_prev: FormState, formData: FormData): Promise<FormState> {
   const values = Object.fromEntries(formData) as Record<string, string>;
@@ -25,6 +42,34 @@ export async function addStandard(_prev: FormState, formData: FormData): Promise
   return { status: "saved" };
 }
 
+/**
+ * After a change or a deletion: every tab of the class, since a standard's or
+ * unit's name also shows on the tasks.
+ */
+function refreshClass(classId: string) {
+  revalidatePath(`/classes/${classId}`, "layout");
+}
+
+/** STD-3 */
+export async function editStandard(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = standardEdit.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+
+  const result = await updateStandard(getDb(), await requireTeacherId(), parsed.data);
+  if (!result.ok) return { status: "error", formError: result.error, values };
+
+  refreshClass(parsed.data.classId);
+  return { status: "saved" };
+}
+
+/** STD-4 */
+export async function removeStandard(input: { classId: string; standardId: string }): Promise<ActionResult> {
+  const result = await deleteStandard(getDb(), await requireTeacherId(), input);
+  if (result.ok) refreshClass(input.classId);
+  return result;
+}
+
 export async function addUnit(_prev: FormState, formData: FormData): Promise<FormState> {
   const values = Object.fromEntries(formData) as Record<string, string>;
   const parsed = unitInput.safeParse(values);
@@ -35,6 +80,26 @@ export async function addUnit(_prev: FormState, formData: FormData): Promise<For
 
   revalidatePath(`/classes/${parsed.data.classId}/units`);
   return { status: "saved" };
+}
+
+/** UNIT-3 */
+export async function editUnit(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = unitEdit.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+
+  const result = await updateUnit(getDb(), await requireTeacherId(), parsed.data);
+  if (!result.ok) return { status: "error", formError: result.error, values };
+
+  refreshClass(parsed.data.classId);
+  return { status: "saved" };
+}
+
+/** UNIT-4 */
+export async function removeUnit(input: { classId: string; unitId: string }): Promise<ActionResult> {
+  const result = await deleteUnit(getDb(), await requireTeacherId(), input);
+  if (result.ok) refreshClass(input.classId);
+  return result;
 }
 
 export async function addTask(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -51,7 +116,21 @@ export async function addTask(_prev: FormState, formData: FormData): Promise<For
   return { status: "saved" };
 }
 
-export type FileResult = { ok: true } | { ok: false; error: "notFound" };
+/** TASK-6 */
+export async function editTask(_prev: FormState, formData: FormData): Promise<FormState> {
+  const standardIds = formData.getAll("standardIds").map(String);
+  const values = { ...(Object.fromEntries(formData) as Record<string, string>), standardIds: standardIds.join(",") };
+  const parsed = taskEdit.safeParse({ ...values, standardIds });
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+
+  const result = await updateTask(getDb(), await requireTeacherId(), parsed.data);
+  if (!result.ok) return { status: "error", formError: result.error, values };
+
+  refreshClass(parsed.data.classId);
+  return { status: "saved" };
+}
+
+export type ActionResult = { ok: true } | { ok: false; error: "notFound" };
 
 /** Deletes a file from Storage as the signed-in teacher (their folder only). */
 async function deleteStoredFile(path: string) {
@@ -69,7 +148,7 @@ export async function recordTaskFile(input: {
   taskId: string;
   path: string;
   name: string;
-}): Promise<FileResult> {
+}): Promise<ActionResult> {
   const db = getDb();
   const teacherId = await requireTeacherId();
   const cls = await getClass(db, teacherId, input.classId);
@@ -82,7 +161,7 @@ export async function recordTaskFile(input: {
 }
 
 /** FILE-3: removes the task's file and the link to it. */
-export async function removeTaskFile(input: { classId: string; taskId: string }): Promise<FileResult> {
+export async function removeTaskFile(input: { classId: string; taskId: string }): Promise<ActionResult> {
   const db = getDb();
   const teacherId = await requireTeacherId();
   const cls = await getClass(db, teacherId, input.classId);
@@ -95,7 +174,7 @@ export async function removeTaskFile(input: { classId: string; taskId: string })
 }
 
 /** TASK-5: deletes the task, its scores and its file, then goes back to Tasks. */
-export async function deleteTaskAction(input: { classId: string; taskId: string }): Promise<FileResult> {
+export async function deleteTaskAction(input: { classId: string; taskId: string }): Promise<ActionResult> {
   const db = getDb();
   const teacherId = await requireTeacherId();
   const cls = await getClass(db, teacherId, input.classId);

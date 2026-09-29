@@ -155,6 +155,11 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   apply to the whole year. Each has a title (trimmed, 1 to 200 characters) and
   may have a description (up to 1000 characters).
 - **STD-2** Standards are listed in the order they were added.
+- **STD-3** A standard's title and description can be changed, with the
+  STD-1 rules. It keeps its place in the list and its links to tasks.
+- **STD-4** A standard can be deleted, after a confirmation that says how
+  many tasks assess it. Its links to those tasks go with it; the tasks, their
+  scores and the other standards stay.
 
 ## UNIT — Units
 
@@ -165,6 +170,11 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   title (trimmed, 1 to 120 characters) and may say which cuatrimestre of the
   class's school year it belongs to.
 - **UNIT-2** Units are listed in the order they were added.
+- **UNIT-3** A unit's title and cuatrimestre can be changed, with the UNIT-1
+  rules. It keeps its place in the list and its tasks.
+- **UNIT-4** A unit can be deleted, after a confirmation that says how many
+  tasks are in it. Those tasks stay, with their scores, and no longer have a
+  unit.
 
 ## TASK — Tasks
 
@@ -185,6 +195,9 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 - **TASK-5** A task can be deleted from its page, after a confirmation that
   says how many scores go with it. Its scores, its links to standards and its
   attached file are deleted too; nothing else changes.
+- **TASK-6** Everything given when adding a task (TASK-1, TASK-2) can be
+  changed from its page, with the same rules. The standards it assesses are
+  replaced by the ones ticked. Its scores and attached file stay.
 
 ## SCORE — Scoring a task
 
@@ -297,11 +310,11 @@ Covered by `src/lib/theme.test.ts`.*
 
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
 
-- **OWNER-1** A teacher only ever sees, and only ever adds to, their own
+- **OWNER-1** A teacher only ever sees, adds to, changes or deletes their own
   schools, school years, courses, classes, students, standards, units, tasks
   and scores. Opening another teacher's class, task or student — or one that does
-  not exist — shows "not found", and nothing can be added to it or saved on
-  it.
+  not exist — shows "not found", and nothing can be added to it, saved on it,
+  changed or deleted.
 
 ---
 

@@ -25,6 +25,7 @@ import {
   listTasks,
   saveScores,
   setTaskAttachment,
+  updateTask,
 } from "./tasks";
 
 let db: Db;
@@ -219,6 +220,79 @@ describe("scoring a task (SCORE)", () => {
       }),
     ).toEqual({ ok: false, error: "notFound" });
     expect(await listTaskScores(db, s.teacher, id)).toEqual([]);
+  });
+});
+
+describe("changing a task (TASK-6)", () => {
+  it("changes every field and replaces its standards, keeping its scores and file", async () => {
+    const s = await setup();
+    for (const title of ["Resuelve", "Justifica"]) {
+      await createStandard(db, s.teacher, { classId: s.cls.id, title, description: null });
+    }
+    await createUnit(db, s.teacher, { classId: s.cls.id, title: "Funciones", termId: null });
+    const [resuelve, justifica] = await listStandards(db, s.teacher, s.cls.id);
+    const [unit] = await listUnits(db, s.teacher, s.cls.id);
+    const id = await newTask(s, { unitId: unit.id, dueOn: "2026-05-10", standardIds: [resuelve.id] });
+    await saveScores(db, s.teacher, s.cls, id, {
+      save: [{ studentId: s.students.Pérez, status: "graded", value: 8, notes: null }],
+      clear: [],
+    });
+    await setTaskAttachment(db, s.teacher, s.cls, id, { path: `${s.teacher}/${id}/tp.pdf`, name: "tp.pdf" });
+
+    expect(
+      await updateTask(db, s.teacher, {
+        ...task(s),
+        taskId: id,
+        title: "TP 1 corregido",
+        termId: s.term2,
+        unitId: null,
+        dueOn: "2026-08-20",
+        description: "Nueva consigna",
+        criteria: "Nuevo criterio",
+        standardIds: [justifica.id],
+      }),
+    ).toEqual({ ok: true });
+    expect(await getTask(db, s.teacher, s.cls, id)).toMatchObject({
+      title: "TP 1 corregido",
+      termId: s.term2,
+      termPosition: 2,
+      unitId: null,
+      unitTitle: null,
+      dueOn: "2026-08-20",
+      description: "Nueva consigna",
+      criteria: "Nuevo criterio",
+      attachmentName: "tp.pdf",
+      standards: [{ id: justifica.id, title: "Justifica" }],
+    });
+    expect(await listTaskScores(db, s.teacher, id)).toHaveLength(1);
+  });
+
+  it("rejects a cuatrimestre, unit or standard that isn't this class's, changing nothing", async () => {
+    const s = await setup();
+    const other = await setup();
+    await createStandard(db, other.teacher, { classId: other.cls.id, title: "Ajeno", description: null });
+    await createUnit(db, other.teacher, { classId: other.cls.id, title: "Ajena", termId: null });
+    const [foreignStandard] = await listStandards(db, other.teacher, other.cls.id);
+    const [foreignUnit] = await listUnits(db, other.teacher, other.cls.id);
+    const id = await newTask(s);
+
+    const notFound = { ok: false, error: "notFound" };
+    const edit = (over: Partial<TaskInput>) => updateTask(db, s.teacher, { ...task(s, over), taskId: id, title: "X" });
+    expect(await edit({ termId: other.term1 })).toEqual(notFound);
+    expect(await edit({ unitId: foreignUnit.id })).toEqual(notFound);
+    expect(await edit({ standardIds: [foreignStandard.id] })).toEqual(notFound);
+    expect((await getTask(db, s.teacher, s.cls, id))?.title).toBe("TP 1");
+  });
+
+  it("changes nothing of another teacher's, or a task of another class (OWNER-1)", async () => {
+    const s = await setup();
+    const other = await setup();
+    const id = await newTask(s);
+    const notFound = { ok: false, error: "notFound" };
+    expect(await updateTask(db, newTeacher(), { ...task(s), taskId: id, title: "Intruso" })).toEqual(notFound);
+    // The other teacher's own class in the form, with this task's id.
+    expect(await updateTask(db, other.teacher, { ...task(other), taskId: id, title: "Intruso" })).toEqual(notFound);
+    expect((await getTask(db, s.teacher, s.cls, id))?.title).toBe("TP 1");
   });
 });
 
