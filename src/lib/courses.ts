@@ -12,6 +12,16 @@ export function formatCourse(year: number, division: string): string {
   return `${year}° ${division}`;
 }
 
+/**
+ * HOME-2: saved scores over tasks × students, as a whole percentage. Capped at
+ * 100 because students who left keep their scores.
+ */
+export function progress(scored: number, tasks: number, students: number): number {
+  const total = tasks * students;
+  if (total === 0) return 0;
+  return Math.min(100, Math.round((scored / total) * 100));
+}
+
 const collator = new Intl.Collator("es", { sensitivity: "base", numeric: true });
 
 export type CourseSortKey = {

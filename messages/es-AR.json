@@ -7,7 +7,10 @@
     "dashboard": "Inicio",
     "classes": "Cursos",
     "students": "Estudiantes",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "menu": "Menú principal",
+    "collapse": "Contraer menú",
+    "expand": "Expandir menú"
   },
   "common": {
     "cancel": "Cancelar",
@@ -37,7 +40,23 @@
   },
   "dashboard": {
     "title": "Inicio",
-    "empty": "Todavía no hay cursos. Empezá agregando uno en Cursos."
+    "greeting": "Hola, profe",
+    "subtitle": "Tus cursos, de un vistazo.",
+    "myClasses": "Tus cursos",
+    "empty": "Todavía no hay cursos. Agregá el primero.",
+    "stats": {
+      "classes": "{count, plural, one {curso} other {cursos}}",
+      "students": "{count, plural, one {estudiante} other {estudiantes}}",
+      "pending": "{count, plural, one {nota por cargar} other {notas por cargar}}"
+    },
+    "card": {
+      "students": "{count, plural, =0 {Sin estudiantes todavía} one {# estudiante} other {# estudiantes}}",
+      "progress": "{progress}% calificado",
+      "next": "Próxima: {title} · {date}",
+      "nextUndated": "Próxima: {title}",
+      "allScored": "Todo calificado",
+      "noTasks": "Todavía sin tareas"
+    }
   },
   "classes": {
     "title": "Cursos",
@@ -113,6 +132,7 @@
       "empty": "Todavía no hay tareas.",
       "back": "Tareas",
       "scored": "{scored} de {total} calificados",
+      "file": "Archivo",
       "noStudents": "Este curso todavía no tiene estudiantes para calificar.",
       "fields": {
         "title": "Título",
@@ -216,6 +236,12 @@
   "settings": {
     "title": "Configuración",
     "language": "Idioma",
+    "theme": {
+      "title": "Apariencia",
+      "system": "Sistema",
+      "light": "Claro",
+      "dark": "Oscuro"
+    },
     "schools": {
       "title": "Escuelas",
       "intro": "Se crean al agregar un curso. Acá podés cambiarles el nombre.",

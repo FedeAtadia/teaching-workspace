@@ -7,7 +7,10 @@
     "dashboard": "Home",
     "classes": "Classes",
     "students": "Students",
-    "settings": "Settings"
+    "settings": "Settings",
+    "menu": "Main menu",
+    "collapse": "Collapse menu",
+    "expand": "Expand menu"
   },
   "common": {
     "cancel": "Cancel",
@@ -37,7 +40,23 @@
   },
   "dashboard": {
     "title": "Home",
-    "empty": "No classes yet. Start by adding one in Classes."
+    "greeting": "Hello, teacher",
+    "subtitle": "Your classes at a glance.",
+    "myClasses": "Your classes",
+    "empty": "No classes yet. Add the first one.",
+    "stats": {
+      "classes": "{count, plural, one {class} other {classes}}",
+      "students": "{count, plural, one {student} other {students}}",
+      "pending": "{count, plural, one {score to enter} other {scores to enter}}"
+    },
+    "card": {
+      "students": "{count, plural, =0 {No students yet} one {# student} other {# students}}",
+      "progress": "{progress}% scored",
+      "next": "Next: {title} · {date}",
+      "nextUndated": "Next: {title}",
+      "allScored": "All scored",
+      "noTasks": "No tasks yet"
+    }
   },
   "classes": {
     "title": "Classes",
@@ -113,6 +132,7 @@
       "empty": "No tasks yet.",
       "back": "Tasks",
       "scored": "{scored} of {total} scored",
+      "file": "File",
       "noStudents": "This course has no students to score yet.",
       "fields": {
         "title": "Title",
@@ -216,6 +236,12 @@
   "settings": {
     "title": "Settings",
     "language": "Language",
+    "theme": {
+      "title": "Appearance",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
     "schools": {
       "title": "Schools",
       "intro": "They're created when you add a class. You can rename them here.",

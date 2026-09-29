@@ -254,6 +254,45 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   tasks not handed in for that cuatrimestre (SUGGEST-1, SUGGEST-2), shown as
   passing or not against the class's pass mark.
 
+## HOME — The home page
+
+*Enforced by `src/db/queries/home.ts`, `src/lib/courses.ts`. Covered by
+`src/db/queries/home.test.ts`, `src/lib/courses.test.ts`.*
+
+- **HOME-1** Home shows how many classes and students the teacher has and how
+  many scores are still to enter, then one card per class (COURSE-3 order)
+  with its subject, course, shift, school and number of active students; the
+  whole card opens the class.
+- **HOME-2** Each card shows how much of the class is scored: the scores and
+  marks saved for its active students over its tasks × active students, as a
+  whole percentage — 0 with no tasks or no students, never above 100.
+- **HOME-3** Each card names the class's next pending task: the earliest
+  dated one that some active student has no score or mark for (tasks without
+  a date after all dated ones), or says that everything is scored.
+
+## THEME — Light and dark
+
+*Enforced by `src/lib/theme.ts`, `src/app/layout.tsx`, `src/app/globals.css`.
+Covered by `src/lib/theme.test.ts`.*
+
+- **THEME-1** The app follows the device's light or dark setting until the
+  teacher picks Claro or Oscuro in Configuración; Sistema goes back to
+  following the device. Any other stored value counts as Sistema.
+- **THEME-2** The choice is stored and applied as the page is served, so a
+  page never flashes the other theme first.
+
+## NAV — Getting around
+
+*Enforced by `src/components/Sidebar.tsx`, `src/lib/theme.ts`. Covered by
+`src/lib/theme.test.ts`; the rest by hand (Known gaps).*
+
+- **NAV-1** The side menu can be collapsed to its icons and expanded again;
+  the choice is remembered and applied as the page is served. On a phone the
+  menu opens from a button instead.
+- **NAV-2** Anything that opens a page — a class card, a student's row, a task
+  — does so from anywhere on it, not only from its name, and is still a single
+  link for the keyboard and screen readers.
+
 ## OWNER — Each teacher's data
 
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
@@ -274,6 +313,9 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   Supabase project to run against. The forms that call the queries above
   (the add-class and add-student dialogs) are checked by hand for the same
   reason: every page behind them needs a signed-in teacher.
+- **NAV-1**'s collapsing and phone menu and **NAV-2**'s whole-row links are
+  interface behaviour, checked by hand in the browser; there are no component
+  tests yet.
 - **FILE-2**'s folder rules and **FILE-3**'s upload, removal and one-minute
   link run in Supabase Storage, which the in-memory test database doesn't
   have. The rules are in `supabase/storage.sql` and were checked by hand:

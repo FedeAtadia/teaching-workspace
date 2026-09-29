@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/BackLink";
 import { getLocale, getTranslations } from "next-intl/server";
 import { DeleteTaskButton } from "@/components/classes/DeleteTaskButton";
 import { ScoresForm } from "@/components/classes/ScoresForm";
@@ -28,11 +28,9 @@ export default async function TaskPage({ params }: PageProps<"/classes/[id]/task
 
   return (
     <>
-      <Link href={`/classes/${id}/tasks`} className="text-sm text-muted-foreground hover:text-foreground">
-        ← {t("back")}
-      </Link>
-      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-        <h2 className="text-xl font-semibold">{task.title}</h2>
+      <BackLink href={`/classes/${id}/tasks`} label={t("back")} />
+      <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+        <h2 className="text-2xl font-extrabold">{task.title}</h2>
         <DeleteTaskButton
           classId={id}
           taskId={task.id}
