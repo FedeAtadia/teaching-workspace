@@ -18,8 +18,8 @@ Planned work, in order. Nothing here is a requirement yet: a feature moves into
 - [x] Scoring one task at a time, with statuses and notes (SCORE); gradebook
   per cuatrimestre with averages (BOOK).
 - [x] Student history across school years (HISTORY).
-- [ ] Task attachments (PDF) in Supabase Storage.
-- [ ] Editing and deleting standards, units, tasks.
+- [x] Task attachments (PDF) in Supabase Storage.
+- [x] Editing and deleting standards, units, tasks.
 - Observations: work in class, participation.
 - Term grades: suggested average, allowed range from the first cuatrimestre
   (TERM-2), reason required outside it (TERM-4).

@@ -8,6 +8,7 @@ import { listTasks, type TaskRow } from "@/db/queries/tasks";
 import { formatDate } from "@/lib/format";
 import { addTask } from "../actions";
 import { loadClass } from "../data";
+import { taskFields } from "./fields";
 
 export default async function TasksPage({ params }: PageProps<"/classes/[id]/tasks">) {
   const { id } = await params;
@@ -39,35 +40,7 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
           action={addTask}
           hidden={{ classId: id }}
           formErrors={{ notFound: tErr("notFound") }}
-          fields={[
-            { kind: "text", name: "title", label: t("fields.title"), maxLength: 120 },
-            {
-              kind: "select",
-              name: "termId",
-              label: t("fields.term"),
-              options: terms.map((term) => ({ value: term.id, label: tTerm(String(term.position)) })),
-              defaultValue: terms[0]?.id,
-            },
-            {
-              kind: "select",
-              name: "unitId",
-              label: t("fields.unit"),
-              options: [{ value: "", label: t("fields.noUnit") }, ...units.map((u) => ({ value: u.id, label: u.title }))],
-            },
-            { kind: "date", name: "dueOn", label: t("fields.date") },
-            { kind: "textarea", name: "description", label: t("fields.description"), maxLength: 280, rows: 2 },
-            { kind: "textarea", name: "criteria", label: t("fields.criteria"), maxLength: 1000, rows: 3 },
-            ...(standards.length > 0
-              ? [
-                  {
-                    kind: "checkboxes" as const,
-                    name: "standardIds",
-                    label: t("fields.standards"),
-                    options: standards.map((s) => ({ value: s.id, label: s.title })),
-                  },
-                ]
-              : []),
-          ]}
+          fields={await taskFields({ terms, units, standards })}
         />
       </div>
 

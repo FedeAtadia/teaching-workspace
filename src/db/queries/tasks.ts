@@ -9,7 +9,7 @@ import { courseStudents, scores, standards, taskStandards, tasks, terms, units }
 import { isTaskFilePath } from "@/lib/attachments";
 import { suggestTermGrade, type Suggestion } from "@/lib/grading";
 import type { ScoreRow, ScoreStatus } from "@/lib/scoresForm";
-import type { TaskInput } from "@/lib/validation";
+import type { TaskEdit, TaskInput } from "@/lib/validation";
 import { getClass, listClassStudents, type ClassDetail, type RosterStudent } from "./classDetail";
 
 const isUuid = (v: string) => z.uuid().safeParse(v).success;
@@ -17,16 +17,18 @@ const isUuid = (v: string) => z.uuid().safeParse(v).success;
 type NotFound = { ok: false; error: "notFound" };
 const notFound: NotFound = { ok: false, error: "notFound" };
 
-/** TASK-1, TASK-2 */
-export async function createTask(
+/**
+ * TASK-2: the class, if it is this teacher's and the cuatrimestre, unit and
+ * standards are all its own; and the standard ids without repeats.
+ */
+async function checkTaskInput(
   db: Db,
   teacherId: string,
   input: TaskInput,
-): Promise<{ ok: true; taskId: string } | NotFound> {
+): Promise<{ cls: ClassDetail; standardIds: string[] } | null> {
   const cls = await getClass(db, teacherId, input.classId);
-  if (!cls) return notFound;
+  if (!cls) return null;
 
-  // The cuatrimestre, unit and standards must all be this class's own.
   // Checked in parallel: one round trip's wait instead of three.
   const standardIds = [...new Set(input.standardIds)];
   const [term, unit, ownStandards] = await Promise.all([
@@ -47,7 +49,19 @@ export async function createTask(
           .where(and(inArray(standards.id, standardIds), eq(standards.classId, cls.id)))
       : Promise.resolve([]),
   ]);
-  if (term.length === 0 || unit.length === 0 || ownStandards.length !== standardIds.length) return notFound;
+  if (term.length === 0 || unit.length === 0 || ownStandards.length !== standardIds.length) return null;
+  return { cls, standardIds };
+}
+
+/** TASK-1, TASK-2 */
+export async function createTask(
+  db: Db,
+  teacherId: string,
+  input: TaskInput,
+): Promise<{ ok: true; taskId: string } | NotFound> {
+  const checked = await checkTaskInput(db, teacherId, input);
+  if (!checked) return notFound;
+  const { cls, standardIds } = checked;
 
   const taskId = await db.transaction(async (tx) => {
     const [created] = await tx
@@ -71,6 +85,40 @@ export async function createTask(
     return created.id;
   });
   return { ok: true, taskId };
+}
+
+/**
+ * TASK-6. Checked like TASK-2; then, in one transaction, the task is updated
+ * (only if it is this class's) and its standard links replaced. Scores and the
+ * attached file are not touched.
+ */
+export async function updateTask(db: Db, teacherId: string, input: TaskEdit): Promise<{ ok: true } | NotFound> {
+  const checked = await checkTaskInput(db, teacherId, input);
+  if (!checked) return notFound;
+  const { cls, standardIds } = checked;
+
+  return db.transaction(async (tx) => {
+    const updated = await tx
+      .update(tasks)
+      .set({
+        termId: input.termId,
+        unitId: input.unitId,
+        title: input.title,
+        dueOn: input.dueOn,
+        description: input.description,
+        criteria: input.criteria,
+      })
+      .where(and(eq(tasks.id, input.taskId), eq(tasks.classId, cls.id), eq(tasks.teacherId, teacherId)))
+      .returning({ id: tasks.id });
+    if (updated.length === 0) return notFound;
+    await tx.delete(taskStandards).where(eq(taskStandards.taskId, input.taskId));
+    if (standardIds.length > 0) {
+      await tx
+        .insert(taskStandards)
+        .values(standardIds.map((standardId) => ({ teacherId, taskId: input.taskId, standardId })));
+    }
+    return { ok: true } as const;
+  });
 }
 
 export type TaskRow = {
@@ -113,6 +161,7 @@ export async function listTasks(db: Db, teacherId: string, cls: Pick<ClassDetail
 }
 
 export type TaskDetail = Omit<TaskRow, "scored" | "hasFile"> & {
+  unitId: string | null;
   criteria: string | null;
   attachmentPath: string | null;
   attachmentName: string | null;
@@ -134,6 +183,7 @@ export async function getTask(
         title: tasks.title,
         termId: tasks.termId,
         termPosition: terms.position,
+        unitId: tasks.unitId,
         unitTitle: units.title,
         dueOn: tasks.dueOn,
         description: tasks.description,

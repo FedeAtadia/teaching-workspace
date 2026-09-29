@@ -1,26 +1,35 @@
 import { notFound } from "next/navigation";
 import { BackLink } from "@/components/BackLink";
 import { getLocale, getTranslations } from "next-intl/server";
-import { DeleteTaskButton } from "@/components/classes/DeleteTaskButton";
 import { ScoresForm } from "@/components/classes/ScoresForm";
 import { TaskAttachment } from "@/components/classes/TaskAttachment";
-import { listClassStudents } from "@/db/queries/classDetail";
+import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { FormDialog } from "@/components/forms/FormDialog";
+import { listClassStudents, listStandards, listTerms, listUnits } from "@/db/queries/classDetail";
 import { getTask, listTaskScores } from "@/db/queries/tasks";
 import { formatDate, formatGrade } from "@/lib/format";
 import { DEFAULT_RULES, isPassing } from "@/lib/grading";
+import { deleteTaskAction, editTask } from "../../actions";
 import { loadClass } from "../../data";
+import { taskFields } from "../fields";
 
 export default async function TaskPage({ params }: PageProps<"/classes/[id]/tasks/[taskId]">) {
   const { id, taskId } = await params;
   const { db, teacherId, cls } = await loadClass(id);
-  const [task, roster, saved] = await Promise.all([
+  const [task, roster, saved, terms, units, standards] = await Promise.all([
     getTask(db, teacherId, cls, taskId),
     listClassStudents(db, teacherId, cls),
     listTaskScores(db, teacherId, taskId),
+    listTerms(db, teacherId, cls),
+    listUnits(db, teacherId, id),
+    listStandards(db, teacherId, id),
   ]);
   if (!task) notFound();
 
   const t = await getTranslations("classPage.tasks");
+  const tDelete = await getTranslations("classPage.deleteTask");
+  const tErr = await getTranslations("classPage.errors");
+  const scored = saved.filter((s) => s.value !== null || s.status !== "graded").length;
   const tTerm = await getTranslations("terms");
   const locale = await getLocale();
   const rules = { ...DEFAULT_RULES, passMark: cls.passMark ?? DEFAULT_RULES.passMark };
@@ -31,13 +40,26 @@ export default async function TaskPage({ params }: PageProps<"/classes/[id]/task
       <BackLink href={`/classes/${id}/tasks`} label={t("back")} />
       <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
         <h2 className="text-2xl font-extrabold">{task.title}</h2>
-        <DeleteTaskButton
-          classId={id}
-          taskId={task.id}
-          title={task.title}
-          scored={saved.filter((s) => s.value !== null || s.status !== "graded").length}
-          hasFile={task.attachmentPath !== null}
-        />
+        <div className="flex flex-wrap gap-2">
+          <FormDialog
+            wide
+            trigger="edit"
+            triggerLabel={t("edit")}
+            title={t("editTitle")}
+            action={editTask}
+            hidden={{ classId: id, taskId: task.id }}
+            formErrors={{ notFound: tErr("notFound") }}
+            fields={await taskFields({ terms, units, standards }, task)}
+          />
+          <ConfirmDeleteButton
+            label={tDelete("button")}
+            title={tDelete("title", { title: task.title })}
+            body={[tDelete("body", { scored }), task.attachmentPath !== null && tDelete("withFile")]
+              .filter(Boolean)
+              .join(" ")}
+            action={deleteTaskAction.bind(null, { classId: id, taskId: task.id })}
+          />
+        </div>
       </div>
       <p className="text-sm text-muted-foreground">
         {[tTerm(String(task.termPosition)), task.dueOn && formatDate(task.dueOn, locale), task.unitTitle]
