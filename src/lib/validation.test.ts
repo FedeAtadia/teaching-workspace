@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   classInput,
   schoolInput,
+  standardEdit,
   standardInput,
   studentInput,
+  taskEdit,
   taskInput,
   toFieldErrors,
+  unitEdit,
   unitInput,
 } from "./validation";
 
@@ -174,6 +177,50 @@ describe("adding a task (TASK)", () => {
   it("rejects a date that is not a calendar date (TASK-2)", () => {
     expect(taskInput.safeParse({ ...base, dueOn: "10/05/2026" }).success).toBe(false);
     expect(taskInput.safeParse({ ...base, dueOn: "2026-02-30" }).success).toBe(false);
+  });
+});
+
+describe("changing a standard, unit or task (STD-3, UNIT-3, TASK-6)", () => {
+  const ID = "3f2e1d0c-9b8a-4f7e-8d6c-5b4a3f2e1d0c";
+  const TERM = "5c2d1b0a-9e8f-4a7b-8c6d-5e4f3a2b1c0d";
+
+  it("takes the same fields as adding, plus the id of what is changed", () => {
+    expect(standardEdit.parse({ classId: CLASS_ID, standardId: ID, title: " Justifica ", description: "" })).toEqual({
+      classId: CLASS_ID,
+      standardId: ID,
+      title: "Justifica",
+      description: null,
+    });
+    expect(unitEdit.parse({ classId: CLASS_ID, unitId: ID, title: "Repaso", termId: "" })).toEqual({
+      classId: CLASS_ID,
+      unitId: ID,
+      title: "Repaso",
+      termId: null,
+    });
+    expect(
+      taskEdit.parse({
+        classId: CLASS_ID,
+        taskId: ID,
+        title: "TP 2",
+        termId: TERM,
+        unitId: "",
+        dueOn: "",
+        description: "",
+        criteria: "",
+        standardIds: [],
+      }),
+    ).toMatchObject({ taskId: ID, title: "TP 2", unitId: null });
+  });
+
+  it("keeps the adding rules, and needs a real id", () => {
+    expect(standardEdit.safeParse({ classId: CLASS_ID, standardId: ID, title: " ", description: "" }).success).toBe(
+      false,
+    );
+    expect(unitEdit.safeParse({ classId: CLASS_ID, unitId: "x", title: "Repaso", termId: "" }).success).toBe(false);
+    expect(
+      taskEdit.safeParse({ classId: CLASS_ID, title: "TP", termId: TERM, unitId: "", dueOn: "", description: "", criteria: "", standardIds: [] })
+        .success,
+    ).toBe(false);
   });
 });
 

@@ -17,7 +17,12 @@
     "save": "Guardar",
     "saving": "Guardando…",
     "done": "Listo",
-    "notConfigured": "Conectá Supabase para empezar a cargar datos."
+    "notConfigured": "Conectá Supabase para empezar a cargar datos.",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleting": "Eliminando…",
+    "cannotUndo": "No se puede deshacer.",
+    "deleteFailed": "No se pudo eliminar. Recargá la página y probá de nuevo."
   },
   "shifts": {
     "morning": "Mañana",
@@ -109,6 +114,11 @@
       "add": "Agregar criterio",
       "dialogTitle": "Nuevo criterio de aprobación",
       "empty": "Todavía no hay criterios de aprobación.",
+      "edit": "Editar criterio",
+      "editTitle": "Editar criterio",
+      "delete": "Eliminar criterio",
+      "deleteTitle": "¿Eliminar el criterio «{title}»?",
+      "deleteBody": "{tasks, plural, =0 {Ninguna tarea lo evalúa.} one {Se quita de la tarea que lo evalúa; la tarea y sus notas quedan.} other {Se quita de las # tareas que lo evalúan; las tareas y sus notas quedan.}}",
       "fields": {
         "title": "Criterio",
         "description": "Descripción (opcional)"
@@ -119,6 +129,11 @@
       "add": "Agregar unidad",
       "dialogTitle": "Nueva unidad",
       "empty": "Todavía no hay unidades.",
+      "edit": "Editar unidad",
+      "editTitle": "Editar unidad",
+      "delete": "Eliminar unidad",
+      "deleteTitle": "¿Eliminar la unidad «{title}»?",
+      "deleteBody": "{tasks, plural, =0 {No tiene tareas.} one {Su tarea queda, con sus notas, sin unidad.} other {Sus # tareas quedan, con sus notas, sin unidad.}}",
       "fields": {
         "title": "Unidad",
         "term": "Cuatrimestre",
@@ -130,6 +145,8 @@
       "add": "Agregar tarea",
       "dialogTitle": "Nueva tarea",
       "empty": "Todavía no hay tareas.",
+      "edit": "Editar tarea",
+      "editTitle": "Editar tarea",
       "back": "Tareas",
       "scored": "{scored} de {total} calificados",
       "file": "Archivo",
@@ -149,11 +166,7 @@
       "button": "Eliminar tarea",
       "title": "¿Eliminar «{title}»?",
       "body": "{scored, plural, =0 {Todavía no tiene notas cargadas.} one {Se borra también la nota cargada.} other {Se borran también las # notas cargadas.}}",
-      "withFile": "Y el archivo adjunto.",
-      "cannotUndo": "No se puede deshacer.",
-      "confirm": "Eliminar",
-      "deleting": "Eliminando…",
-      "failed": "No se pudo eliminar. Recargá la página y probá de nuevo."
+      "withFile": "Y el archivo adjunto."
     },
     "attachment": {
       "title": "Archivo de la tarea",

@@ -17,7 +17,12 @@
     "save": "Save",
     "saving": "Saving…",
     "done": "Done",
-    "notConfigured": "Connect Supabase to start adding data."
+    "notConfigured": "Connect Supabase to start adding data.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleting": "Deleting…",
+    "cannotUndo": "This can't be undone.",
+    "deleteFailed": "Couldn't delete it. Reload the page and try again."
   },
   "shifts": {
     "morning": "Morning",
@@ -109,6 +114,11 @@
       "add": "Add standard",
       "dialogTitle": "New passing standard",
       "empty": "No passing standards yet.",
+      "edit": "Edit standard",
+      "editTitle": "Edit standard",
+      "delete": "Delete standard",
+      "deleteTitle": "Delete the standard “{title}”?",
+      "deleteBody": "{tasks, plural, =0 {No task assesses it.} one {It's removed from the task that assesses it; the task and its scores stay.} other {It's removed from the # tasks that assess it; the tasks and their scores stay.}}",
       "fields": {
         "title": "Standard",
         "description": "Description (optional)"
@@ -119,6 +129,11 @@
       "add": "Add unit",
       "dialogTitle": "New unit",
       "empty": "No units yet.",
+      "edit": "Edit unit",
+      "editTitle": "Edit unit",
+      "delete": "Delete unit",
+      "deleteTitle": "Delete the unit “{title}”?",
+      "deleteBody": "{tasks, plural, =0 {It has no tasks.} one {Its task stays, with its scores, without a unit.} other {Its # tasks stay, with their scores, without a unit.}}",
       "fields": {
         "title": "Unit",
         "term": "Term",
@@ -130,6 +145,8 @@
       "add": "Add task",
       "dialogTitle": "New task",
       "empty": "No tasks yet.",
+      "edit": "Edit task",
+      "editTitle": "Edit task",
       "back": "Tasks",
       "scored": "{scored} of {total} scored",
       "file": "File",
@@ -149,11 +166,7 @@
       "button": "Delete task",
       "title": "Delete “{title}”?",
       "body": "{scored, plural, =0 {It has no scores yet.} one {Its saved score is deleted too.} other {Its # saved scores are deleted too.}}",
-      "withFile": "So is the attached file.",
-      "cannotUndo": "This can't be undone.",
-      "confirm": "Delete",
-      "deleting": "Deleting…",
-      "failed": "Couldn't delete it. Reload the page and try again."
+      "withFile": "So is the attached file."
     },
     "attachment": {
       "title": "Task file",
