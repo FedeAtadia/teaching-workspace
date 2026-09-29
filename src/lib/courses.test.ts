@@ -1,5 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { compareCourses, compareStudents, formatCourse } from "./courses";
+import { compareCourses, compareStudents, formatCourse, progress } from "./courses";
+
+describe("how much of a class is scored (HOME-2)", () => {
+  it("is the saved scores over tasks × students, as a whole percentage", () => {
+    expect(progress(3, 2, 4)).toBe(38); // 3 of 8
+    expect(progress(8, 2, 4)).toBe(100);
+  });
+
+  it("is 0 with no tasks or no students, and never above 100", () => {
+    expect(progress(0, 0, 10)).toBe(0);
+    expect(progress(0, 3, 0)).toBe(0);
+    // A student who left keeps their scores; they must not push it past 100.
+    expect(progress(9, 2, 4)).toBe(100);
+  });
+});
 
 describe("courses (COURSE)", () => {
   it("writes a course as its year with a degree sign and its division (COURSE-2)", () => {

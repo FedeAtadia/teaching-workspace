@@ -32,7 +32,7 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
             key={tm.id}
             href={`/classes/${id}/grades?term=${tm.position}`}
             aria-current={tm.id === term?.id ? "page" : undefined}
-            className="rounded-md border px-3 py-1 text-sm text-muted-foreground aria-[current=page]:bg-foreground aria-[current=page]:text-background"
+            className="flex h-10 items-center rounded-full bg-muted px-4 text-sm font-bold text-muted-foreground hover:text-foreground aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
           >
             {tTerm(String(tm.position))}
           </Link>
@@ -42,11 +42,11 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
       {book.tasks.length === 0 || book.rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">{book.rows.length === 0 ? t("noStudents") : t("noTasks")}</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border">
+        <div className="overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
           <table className="text-sm">
             <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="sticky left-0 bg-muted px-3 py-2 text-left font-medium">{t("student")}</th>
+              <tr className="border-b bg-muted">
+                <th className="sticky left-0 z-10 bg-muted px-4 py-3 text-left font-bold">{t("student")}</th>
                 {book.tasks.map((task) => (
                   <th key={task.id} className="px-2 py-2 font-medium">
                     <Link
@@ -63,9 +63,15 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
             </thead>
             <tbody>
               {book.rows.map(({ student, cells, suggestion }) => (
-                <tr key={student.id} className="border-b last:border-0">
-                  <td className="sticky left-0 bg-background px-3 py-1.5 font-medium whitespace-nowrap">
-                    {student.lastName}, {student.firstName}
+                // NAV-2: the student's name link stretches over the row, to their history.
+                <tr key={student.id} className="relative border-b last:border-0 hover:bg-muted/60 has-[a:focus-visible]:bg-muted">
+                  <td className="sticky left-0 bg-card px-4 py-2 font-bold whitespace-nowrap">
+                    <Link
+                      href={`/students/${student.id}`}
+                      className="outline-none after:absolute after:inset-0 after:content-['']"
+                    >
+                      {student.lastName}, <span className="font-normal">{student.firstName}</span>
+                    </Link>
                   </td>
                   {cells.map((cell, i) => (
                     <td key={book.tasks[i].id} className="px-2 py-1.5 text-center tabular-nums">

@@ -32,7 +32,7 @@ export default async function StandardsPage({ params }: PageProps<"/classes/[id]
       ) : (
         <ol className="grid gap-3">
           {list.map((s, i) => (
-            <li key={s.id} className="rounded-lg border p-3">
+            <li key={s.id} className="rounded-2xl bg-card p-4 ring-1 ring-border">
               <p className="font-medium">
                 <span className="mr-2 text-muted-foreground tabular-nums">{i + 1}.</span>
                 {s.title}

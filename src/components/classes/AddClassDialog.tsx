@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import { addClass, type AddClassState } from "@/app/(app)/classes/actions";
@@ -21,16 +22,29 @@ import { COURSE_YEARS, SHIFTS } from "@/lib/courses";
 export function AddClassDialog({
   defaultSchoolYear,
   schools,
+  appearance = "button",
 }: {
   defaultSchoolYear: number;
   /** The teacher's schools, suggested as they type (SCHOOL-1). */
   schools: string[];
+  /** "card": a dashed card, for the end of a grid of class cards. */
+  appearance?: "button" | "card";
 }) {
   const t = useTranslations("classes");
   const [open, setOpen] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>{t("add")}</DialogTrigger>
+      {appearance === "card" ? (
+        <DialogTrigger className="flex min-h-48 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed text-base font-bold text-muted-foreground transition-colors hover:border-primary hover:text-foreground">
+          <Plus className="size-6" aria-hidden />
+          {t("add")}
+        </DialogTrigger>
+      ) : (
+        <DialogTrigger render={<Button />}>
+          <Plus aria-hidden />
+          {t("add")}
+        </DialogTrigger>
+      )}
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>{t("dialogTitle")}</DialogTitle>

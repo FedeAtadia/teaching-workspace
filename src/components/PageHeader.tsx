@@ -13,7 +13,7 @@ export function PageHeader({
   return (
     <>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">{title}</h1>
+        <h1 className="text-3xl font-extrabold">{title}</h1>
         {action}
       </div>
       {children}

@@ -83,6 +83,8 @@ export type TaskRow = {
   description: string | null;
   /** Students with a score or a mark on this task. */
   scored: number;
+  /** An attached file (FILE-1). */
+  hasFile: boolean;
 };
 
 /** TASK-3 */
@@ -101,6 +103,7 @@ export async function listTasks(db: Db, teacherId: string, cls: Pick<ClassDetail
         where ${scores.taskId} = ${tasks.id}
           and (${scores.value} is not null or ${scores.status} <> 'graded')
       )`,
+      hasFile: sql<boolean>`${tasks.attachmentPath} is not null`,
     })
     .from(tasks)
     .innerJoin(terms, eq(tasks.termId, terms.id))
@@ -109,7 +112,7 @@ export async function listTasks(db: Db, teacherId: string, cls: Pick<ClassDetail
     .orderBy(asc(terms.position), sql`${tasks.dueOn} asc nulls last`, asc(tasks.createdAt));
 }
 
-export type TaskDetail = Omit<TaskRow, "scored"> & {
+export type TaskDetail = Omit<TaskRow, "scored" | "hasFile"> & {
   criteria: string | null;
   attachmentPath: string | null;
   attachmentName: string | null;
