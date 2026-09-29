@@ -1,24 +1,16 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AddClassDialog } from "@/components/classes/AddClassDialog";
+import { ClassCard } from "@/components/classes/ClassCard";
 import { PageHeader } from "@/components/PageHeader";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { getDb } from "@/db";
-import { listClasses } from "@/db/queries/classes";
+import { listSchools } from "@/db/queries/classes";
+import { getHomeCards, type HomeCard } from "@/db/queries/home";
 import { requireTeacherId } from "@/lib/auth";
-import { formatCourse } from "@/lib/courses";
+import { classCardProps } from "@/lib/classCards";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 export default async function ClassesPage() {
   const t = await getTranslations("classes");
-  const tShift = await getTranslations("shifts");
   const tCommon = await getTranslations("common");
 
   if (!isSupabaseConfigured()) {
@@ -29,38 +21,41 @@ export default async function ClassesPage() {
     );
   }
 
-  const rows = await listClasses(getDb(), await requireTeacherId());
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const [home, schools, cardProps] = await Promise.all([
+    getHomeCards(db, teacherId),
+    listSchools(db, teacherId),
+    classCardProps(),
+  ]);
+
+  // One section per school, in name order; within it, COURSE-3 order.
+  const bySchool = new Map<string, HomeCard[]>();
+  for (const s of schools) bySchool.set(s.name, []);
+  for (const c of home.cards) bySchool.get(c.school)?.push(c);
+
   return (
-    <PageHeader title={t("title")} action={<AddClassDialog defaultSchoolYear={new Date().getFullYear()} />}>
-      {rows.length === 0 ? (
+    <PageHeader
+      title={t("title")}
+      action={<AddClassDialog defaultSchoolYear={new Date().getFullYear()} schools={schools.map((s) => s.name)} />}
+    >
+      {home.cards.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("empty")}</p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("columns.subject")}</TableHead>
-              <TableHead>{t("columns.course")}</TableHead>
-              <TableHead>{t("columns.shift")}</TableHead>
-              <TableHead>{t("columns.schoolYear")}</TableHead>
-              <TableHead className="text-right">{t("columns.students")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((c) => (
-              <TableRow key={c.id}>
-                <TableCell className="font-medium">
-                  <Link href={`/classes/${c.id}`} className="underline-offset-4 hover:underline">
-                    {c.name}
-                  </Link>
-                </TableCell>
-                <TableCell>{formatCourse(c.year, c.division)}</TableCell>
-                <TableCell>{tShift(c.shift)}</TableCell>
-                <TableCell>{c.schoolYear}</TableCell>
-                <TableCell className="text-right tabular-nums">{c.students}</TableCell>
-              </TableRow>
+        <div className="grid gap-10">
+          {[...bySchool.entries()]
+            .filter(([, cards]) => cards.length > 0)
+            .map(([school, cards]) => (
+              <section key={school}>
+                <h2 className="mb-3 text-lg font-bold">{school}</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {cards.map((c) => (
+                    <ClassCard key={c.id} {...cardProps(c, false)} />
+                  ))}
+                </div>
+              </section>
             ))}
-          </TableBody>
-        </Table>
+        </div>
       )}
     </PageHeader>
   );

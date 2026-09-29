@@ -29,6 +29,7 @@ async function setup() {
     year: 4,
     division: "A",
     shift: "morning",
+    school: "Escuela 5",
     schoolYear: 2026,
   });
   if (!created.ok) throw new Error("setup failed");
@@ -48,6 +49,7 @@ describe("opening a class", () => {
       division: "A",
       shift: "morning",
       schoolYear: "2026",
+      school: "Escuela 5",
     });
   });
 
@@ -122,6 +124,7 @@ describe("units (UNIT)", () => {
       year: 5,
       division: "B",
       shift: "afternoon",
+      school: "Escuela 5",
       schoolYear: 2025,
     });
     if (!other.ok) throw new Error("setup failed");

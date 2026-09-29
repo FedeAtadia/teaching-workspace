@@ -35,8 +35,10 @@ export default async function StudentsPage() {
   const teacherId = await requireTeacherId();
   const [courses, students] = await Promise.all([listCourses(db, teacherId), listStudents(db, teacherId)]);
 
-  const courseLabel = (c: { year: number; division: string; shift: Shift; schoolYear: string }) =>
-    `${formatCourse(c.year, c.division)} · ${tShift(c.shift)} · ${c.schoolYear}`;
+  // The school only adds noise for a teacher at one school; with two, it tells the courses apart.
+  const severalSchools = new Set(courses.map((c) => c.school)).size > 1;
+  const courseLabel = (c: { year: number; division: string; shift: Shift; schoolYear: string; school: string }) =>
+    `${formatCourse(c.year, c.division)} · ${tShift(c.shift)} · ${c.schoolYear}` + (severalSchools ? ` · ${c.school}` : "");
 
   const action =
     courses.length > 0 ? (
@@ -58,32 +60,34 @@ export default async function StudentsPage() {
       {students.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("empty")}</p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("columns.lastName")}</TableHead>
-              <TableHead>{t("columns.firstName")}</TableHead>
-              <TableHead>{t("columns.course")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {students.map((s) => (
-              <TableRow key={s.id}>
-                <TableCell className="font-medium">
-                  <Link href={`/students/${s.id}`} className="underline-offset-4 hover:underline">
-                    {s.lastName}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Link href={`/students/${s.id}`} className="underline-offset-4 hover:underline">
-                    {s.firstName}
-                  </Link>
-                </TableCell>
-                <TableCell>{s.courses.map(courseLabel).join(", ")}</TableCell>
+        <div className="overflow-hidden rounded-2xl bg-card ring-1 ring-border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="pl-5">{t("columns.lastName")}</TableHead>
+                <TableHead>{t("columns.firstName")}</TableHead>
+                <TableHead>{t("columns.course")}</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {students.map((s) => (
+                // NAV-2: the first cell's link stretches over the whole row.
+                <TableRow key={s.id} className="relative cursor-pointer has-[a:focus-visible]:bg-muted">
+                  <TableCell className="pl-5 font-bold">
+                    <Link
+                      href={`/students/${s.id}`}
+                      className="outline-none after:absolute after:inset-0 after:content-['']"
+                    >
+                      {s.lastName}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{s.firstName}</TableCell>
+                  <TableCell className="text-muted-foreground">{s.courses.map(courseLabel).join(", ")}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </PageHeader>
   );

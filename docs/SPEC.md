@@ -84,9 +84,10 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 
 - **CLASS-1** A class is one subject (its name, e.g. Matemática) taught to one
   course in one school year.
-- **CLASS-2** A class is added with five fields: subject, course year (1° to
-  6°), division, shift (mañana, tarde or vespertino) and school year (a year
-  between 2000 and 2100). The subject is trimmed and 1 to 80 characters long.
+- **CLASS-2** A class is added with six fields: school (SCHOOL-1), subject,
+  course year (1° to 6°), division, shift (mañana, tarde or vespertino) and
+  school year (a year between 2000 and 2100). The subject is trimmed and 1 to
+  80 characters long.
 - **CLASS-3** The division is trimmed and upper-cased, and is 1 to 10
   characters long: `" a"` is stored as `"A"`.
 - **CLASS-4** The first class of a school year creates that school year, with
@@ -99,12 +100,31 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 *Enforced by `src/lib/courses.ts`, `src/db/queries/classes.ts`. Covered by
 `src/lib/courses.test.ts`, `src/db/queries/classes.test.ts`.*
 
-- **COURSE-1** Classes with the same school year, course year, division and
-  shift share one course (a curso: "4° A, mañana, 2026").
+- **COURSE-1** Classes with the same school, school year, course year,
+  division and shift share one course (a curso: "4° A, mañana, 2026" at one
+  school).
 - **COURSE-2** A course is written as its year with a degree sign and its
   division: `4° A`.
-- **COURSE-3** Courses are listed newest school year first, then by course
-  year, division and shift (mañana, tarde, vespertino).
+- **COURSE-3** Courses are listed newest school year first, then by school
+  (alphabetically), course year, division and shift (mañana, tarde,
+  vespertino).
+
+## SCHOOL — Schools
+
+*Enforced by `src/lib/validation.ts`, `src/db/queries/classes.ts`,
+`drizzle/0006_backfill-schools.sql`. Covered by `src/lib/validation.test.ts`,
+`src/db/queries/classes.test.ts`, `src/db/queries/schools.test.ts`.*
+
+- **SCHOOL-1** Every course belongs to a school, named when its first class is
+  added: the name is required, trimmed, and 1 to 120 characters long. A school
+  the teacher already has is picked again by its name.
+- **SCHOOL-2** The same course year, division and shift at two schools are two
+  courses: their students never mix.
+- **SCHOOL-3** School names are matched without regard to case (`Escuela 5`
+  and `escuela 5` are one school). A school can be renamed; a name another of
+  the teacher's schools already has is refused.
+- **SCHOOL-4** Courses created before schools existed belong to a school called
+  "Mi escuela", one per teacher, which the teacher can rename.
 
 ## STUDENT — Students
 
@@ -234,13 +254,52 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   tasks not handed in for that cuatrimestre (SUGGEST-1, SUGGEST-2), shown as
   passing or not against the class's pass mark.
 
+## HOME — The home page
+
+*Enforced by `src/db/queries/home.ts`, `src/lib/courses.ts`. Covered by
+`src/db/queries/home.test.ts`, `src/lib/courses.test.ts`.*
+
+- **HOME-1** Home shows how many classes and students the teacher has and how
+  many scores are still to enter, then one card per class (COURSE-3 order)
+  with its subject, course, shift, school and number of active students; the
+  whole card opens the class.
+- **HOME-2** Each card shows how much of the class is scored: the scores and
+  marks saved for its active students over its tasks × active students, as a
+  whole percentage — 0 with no tasks or no students, never above 100.
+- **HOME-3** Each card names the class's next pending task: the earliest
+  dated one that some active student has no score or mark for (tasks without
+  a date after all dated ones), or says that everything is scored.
+
+## THEME — Light and dark
+
+*Enforced by `src/lib/theme.ts`, `src/app/layout.tsx`, `src/app/globals.css`.
+Covered by `src/lib/theme.test.ts`.*
+
+- **THEME-1** The app follows the device's light or dark setting until the
+  teacher picks Claro or Oscuro in Configuración; Sistema goes back to
+  following the device. Any other stored value counts as Sistema.
+- **THEME-2** The choice is stored and applied as the page is served, so a
+  page never flashes the other theme first.
+
+## NAV — Getting around
+
+*Enforced by `src/components/Sidebar.tsx`, `src/lib/theme.ts`. Covered by
+`src/lib/theme.test.ts`; the rest by hand (Known gaps).*
+
+- **NAV-1** The side menu can be collapsed to its icons and expanded again;
+  the choice is remembered and applied as the page is served. On a phone the
+  menu opens from a button instead.
+- **NAV-2** Anything that opens a page — a class card, a student's row, a task
+  — does so from anywhere on it, not only from its name, and is still a single
+  link for the keyboard and screen readers.
+
 ## OWNER — Each teacher's data
 
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
 
 - **OWNER-1** A teacher only ever sees, and only ever adds to, their own
-  school years, courses, classes, students, standards, units, tasks and
-  scores. Opening another teacher's class, task or student — or one that does
+  schools, school years, courses, classes, students, standards, units, tasks
+  and scores. Opening another teacher's class, task or student — or one that does
   not exist — shows "not found", and nothing can be added to it or saved on
   it.
 
@@ -254,6 +313,9 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   Supabase project to run against. The forms that call the queries above
   (the add-class and add-student dialogs) are checked by hand for the same
   reason: every page behind them needs a signed-in teacher.
+- **NAV-1**'s collapsing and phone menu and **NAV-2**'s whole-row links are
+  interface behaviour, checked by hand in the browser; there are no component
+  tests yet.
 - **FILE-2**'s folder rules and **FILE-3**'s upload, removal and one-minute
   link run in Supabase Storage, which the in-memory test database doesn't
   have. The rules are in `supabase/storage.sql` and were checked by hand:

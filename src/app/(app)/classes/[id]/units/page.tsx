@@ -41,7 +41,7 @@ export default async function UnitsPage({ params }: PageProps<"/classes/[id]/uni
       ) : (
         <ol className="grid gap-2">
           {list.map((u, i) => (
-            <li key={u.id} className="flex items-baseline justify-between gap-4 rounded-lg border p-3">
+            <li key={u.id} className="flex items-baseline justify-between gap-4 rounded-2xl bg-card p-4 ring-1 ring-border">
               <span className="font-medium">
                 <span className="mr-2 text-muted-foreground tabular-nums">{i + 1}.</span>
                 {u.title}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/BackLink";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getDb } from "@/db";
@@ -25,10 +26,8 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
 
   return (
     <>
-      <Link href="/students" className="text-sm text-muted-foreground hover:text-foreground">
-        ← {t("back")}
-      </Link>
-      <h1 className="mt-2 mb-6 text-2xl font-semibold">
+      <BackLink href="/students" label={t("back")} />
+      <h1 className="mt-3 mb-6 text-3xl font-extrabold">
         {student.lastName}, {student.firstName}
       </h1>
 
@@ -38,7 +37,8 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
         {courses.map((course) => (
           <section key={course.courseId}>
             <h2 className="mb-3 flex flex-wrap items-baseline gap-x-3 text-lg font-semibold">
-              {course.schoolYear} · {formatCourse(course.year, course.division)} · {tShift(course.shift)}
+              {course.schoolYear} · {formatCourse(course.year, course.division)} · {tShift(course.shift)} ·{" "}
+              {course.school}
               {course.status === "withdrawn" && (
                 <span className="text-sm font-normal text-muted-foreground">{t("left")}</span>
               )}
@@ -50,8 +50,8 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
               {course.classes.map((cls) => {
                 const rules = { ...DEFAULT_RULES, passMark: cls.passMark };
                 return (
-                  <article key={cls.id} className="rounded-lg border p-4">
-                    <h3 className="font-medium">
+                  <article key={cls.id} className="rounded-2xl bg-card p-5 ring-1 ring-border">
+                    <h3 className="text-lg font-extrabold">
                       <Link href={`/classes/${cls.id}`} className="underline-offset-4 hover:underline">
                         {cls.name}
                       </Link>
@@ -91,11 +91,15 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                           <table className="w-full text-sm">
                             <tbody>
                               {term.tasks.map((task) => (
-                                <tr key={task.id} className="border-t align-top">
-                                  <td className="py-1.5 pr-3">
+                                // NAV-2: the task's link stretches over its row.
+                                <tr
+                                  key={task.id}
+                                  className="relative border-t align-top hover:bg-muted/60 has-[a:focus-visible]:bg-muted"
+                                >
+                                  <td className="py-2 pr-3 pl-1 font-bold">
                                     <Link
                                       href={`/classes/${cls.id}/tasks/${task.id}`}
-                                      className="underline-offset-4 hover:underline"
+                                      className="outline-none after:absolute after:inset-0 after:content-['']"
                                     >
                                       {task.title}
                                     </Link>
