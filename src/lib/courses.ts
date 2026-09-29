@@ -16,6 +16,7 @@ const collator = new Intl.Collator("es", { sensitivity: "base", numeric: true })
 
 export type CourseSortKey = {
   schoolYear: string;
+  school: string;
   year: number;
   division: string;
   shift: Shift;
@@ -25,6 +26,7 @@ export type CourseSortKey = {
 export function compareCourses(a: CourseSortKey, b: CourseSortKey): number {
   return (
     collator.compare(b.schoolYear, a.schoolYear) ||
+    collator.compare(a.school, b.school) ||
     a.year - b.year ||
     collator.compare(a.division, b.division) ||
     SHIFTS.indexOf(a.shift) - SHIFTS.indexOf(b.shift)

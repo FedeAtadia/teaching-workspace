@@ -84,9 +84,10 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 
 - **CLASS-1** A class is one subject (its name, e.g. Matemática) taught to one
   course in one school year.
-- **CLASS-2** A class is added with five fields: subject, course year (1° to
-  6°), division, shift (mañana, tarde or vespertino) and school year (a year
-  between 2000 and 2100). The subject is trimmed and 1 to 80 characters long.
+- **CLASS-2** A class is added with six fields: school (SCHOOL-1), subject,
+  course year (1° to 6°), division, shift (mañana, tarde or vespertino) and
+  school year (a year between 2000 and 2100). The subject is trimmed and 1 to
+  80 characters long.
 - **CLASS-3** The division is trimmed and upper-cased, and is 1 to 10
   characters long: `" a"` is stored as `"A"`.
 - **CLASS-4** The first class of a school year creates that school year, with
@@ -99,12 +100,31 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 *Enforced by `src/lib/courses.ts`, `src/db/queries/classes.ts`. Covered by
 `src/lib/courses.test.ts`, `src/db/queries/classes.test.ts`.*
 
-- **COURSE-1** Classes with the same school year, course year, division and
-  shift share one course (a curso: "4° A, mañana, 2026").
+- **COURSE-1** Classes with the same school, school year, course year,
+  division and shift share one course (a curso: "4° A, mañana, 2026" at one
+  school).
 - **COURSE-2** A course is written as its year with a degree sign and its
   division: `4° A`.
-- **COURSE-3** Courses are listed newest school year first, then by course
-  year, division and shift (mañana, tarde, vespertino).
+- **COURSE-3** Courses are listed newest school year first, then by school
+  (alphabetically), course year, division and shift (mañana, tarde,
+  vespertino).
+
+## SCHOOL — Schools
+
+*Enforced by `src/lib/validation.ts`, `src/db/queries/classes.ts`,
+`drizzle/0006_backfill-schools.sql`. Covered by `src/lib/validation.test.ts`,
+`src/db/queries/classes.test.ts`, `src/db/queries/schools.test.ts`.*
+
+- **SCHOOL-1** Every course belongs to a school, named when its first class is
+  added: the name is required, trimmed, and 1 to 120 characters long. A school
+  the teacher already has is picked again by its name.
+- **SCHOOL-2** The same course year, division and shift at two schools are two
+  courses: their students never mix.
+- **SCHOOL-3** School names are matched without regard to case (`Escuela 5`
+  and `escuela 5` are one school). A school can be renamed; a name another of
+  the teacher's schools already has is refused.
+- **SCHOOL-4** Courses created before schools existed belong to a school called
+  "Mi escuela", one per teacher, which the teacher can rename.
 
 ## STUDENT — Students
 
@@ -239,8 +259,8 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
 
 - **OWNER-1** A teacher only ever sees, and only ever adds to, their own
-  school years, courses, classes, students, standards, units, tasks and
-  scores. Opening another teacher's class, task or student — or one that does
+  schools, school years, courses, classes, students, standards, units, tasks
+  and scores. Opening another teacher's class, task or student — or one that does
   not exist — shows "not found", and nothing can be added to it or saved on
   it.
 

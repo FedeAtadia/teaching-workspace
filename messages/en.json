@@ -45,6 +45,8 @@
     "dialogTitle": "New class",
     "empty": "You haven't added any classes yet.",
     "fields": {
+      "school": "School",
+      "schoolPlaceholder": "School No. 5",
       "name": "Subject",
       "namePlaceholder": "Mathematics",
       "year": "Year",
@@ -213,6 +215,17 @@
   },
   "settings": {
     "title": "Settings",
-    "language": "Language"
+    "language": "Language",
+    "schools": {
+      "title": "Schools",
+      "intro": "They're created when you add a class. You can rename them here.",
+      "empty": "No schools yet: one is created with your first class.",
+      "courses": "{count, plural, one {# course} other {# courses}}",
+      "rename": "Rename",
+      "renameTitle": "Rename “{name}”",
+      "name": "School name",
+      "duplicate": "You already have another school with that name.",
+      "notFound": "That school wasn't found. Reload the page."
+    }
   }
 }

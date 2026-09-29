@@ -7,8 +7,11 @@ import { SHIFTS } from "./courses";
 
 const name = z.string().trim().min(1).max(80);
 
-/** CLASS-2, CLASS-3 */
+const schoolName = z.string().trim().min(1).max(120);
+
+/** CLASS-2, CLASS-3, SCHOOL-1 */
 export const classInput = z.object({
+  school: schoolName,
   name,
   year: z.coerce.number().int().min(1).max(6),
   division: z
@@ -21,6 +24,13 @@ export const classInput = z.object({
   schoolYear: z.coerce.number().int().min(2000).max(2100),
 });
 export type ClassInput = z.infer<typeof classInput>;
+
+/** SCHOOL-3: renaming one of the teacher's schools. */
+export const schoolInput = z.object({
+  schoolId: z.uuid(),
+  name: schoolName,
+});
+export type SchoolInput = z.infer<typeof schoolInput>;
 
 /** STUDENT-1 */
 export const studentInput = z.object({

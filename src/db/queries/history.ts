@@ -4,7 +4,7 @@
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
-import { academicYears, classes, courseStudents, courses, scores, students, tasks, terms } from "@/db/schema";
+import { academicYears, classes, courseStudents, courses, schools, scores, students, tasks, terms } from "@/db/schema";
 import { compareCourses, type Shift } from "@/lib/courses";
 import { DEFAULT_RULES, suggestTermGrade, type Suggestion } from "@/lib/grading";
 import type { ScoreStatus } from "@/lib/scoresForm";
@@ -20,6 +20,7 @@ export type HistoryClass = { id: string; name: string; passMark: number; terms: 
 export type HistoryCourse = {
   courseId: string;
   schoolYear: string;
+  school: string;
   year: number;
   division: string;
   shift: Shift;
@@ -50,6 +51,7 @@ export async function getStudentHistory(
       .select({
         courseId: courses.id,
         schoolYear: academicYears.name,
+        school: schools.name,
         year: courses.year,
         division: courses.division,
         shift: courses.shift,
@@ -58,6 +60,7 @@ export async function getStudentHistory(
       .from(courseStudents)
       .innerJoin(courses, eq(courseStudents.courseId, courses.id))
       .innerJoin(academicYears, eq(courses.academicYearId, academicYears.id))
+      .innerJoin(schools, eq(courses.schoolId, schools.id))
       .where(and(eq(courseStudents.studentId, studentId), eq(courseStudents.teacherId, teacherId))),
     db
       .select({ taskId: scores.taskId, status: scores.status, value: scores.value, notes: scores.notes })

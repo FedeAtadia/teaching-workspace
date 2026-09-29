@@ -18,7 +18,7 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
       </Link>
       <h1 className="mt-2 text-2xl font-semibold">{cls.name}</h1>
       <p className="mb-4 text-sm text-muted-foreground">
-        {formatCourse(cls.year, cls.division)} · {tShift(cls.shift)} · {cls.schoolYear}
+        {formatCourse(cls.year, cls.division)} · {tShift(cls.shift)} · {cls.schoolYear} · {cls.school}
       </p>
       <ClassTabs
         tabs={[

@@ -49,6 +49,7 @@ async function setup(): Promise<Setup> {
     year: 4,
     division: "A",
     shift: "morning",
+    school: "Escuela 5",
     schoolYear: 2026,
   });
   if (!created.ok) throw new Error("setup failed");

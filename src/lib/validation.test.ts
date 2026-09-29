@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   classInput,
+  schoolInput,
   standardInput,
   studentInput,
   taskInput,
@@ -9,6 +10,7 @@ import {
 } from "./validation";
 
 const validClass = {
+  school: "Escuela N° 5",
   name: "Matemática",
   year: "4",
   division: "A",
@@ -17,14 +19,21 @@ const validClass = {
 };
 
 describe("adding a class (CLASS)", () => {
-  it("accepts the five fields as a form sends them (CLASS-2)", () => {
+  it("accepts the six fields as a form sends them (CLASS-2)", () => {
     expect(classInput.parse(validClass)).toEqual({
+      school: "Escuela N° 5",
       name: "Matemática",
       year: 4,
       division: "A",
       shift: "morning",
       schoolYear: 2026,
     });
+  });
+
+  it("needs a school, trimmed and at most 120 characters (SCHOOL-1)", () => {
+    expect(classInput.parse({ ...validClass, school: "  Técnica 2 " }).school).toBe("Técnica 2");
+    expect(classInput.safeParse({ ...validClass, school: " " }).success).toBe(false);
+    expect(classInput.safeParse({ ...validClass, school: "x".repeat(121) }).success).toBe(false);
   });
 
   it("trims the subject and rejects an empty one (CLASS-2)", () => {
@@ -165,6 +174,15 @@ describe("adding a task (TASK)", () => {
   it("rejects a date that is not a calendar date (TASK-2)", () => {
     expect(taskInput.safeParse({ ...base, dueOn: "10/05/2026" }).success).toBe(false);
     expect(taskInput.safeParse({ ...base, dueOn: "2026-02-30" }).success).toBe(false);
+  });
+});
+
+describe("renaming a school (SCHOOL-3)", () => {
+  it("needs a school id and a trimmed name of at most 120 characters", () => {
+    const schoolId = "0b7f3c2e-4a1d-4c8e-9f6a-2d5b8e1c3a7f";
+    expect(schoolInput.parse({ schoolId, name: " Escuela 5 " })).toEqual({ schoolId, name: "Escuela 5" });
+    expect(schoolInput.safeParse({ schoolId, name: "" }).success).toBe(false);
+    expect(schoolInput.safeParse({ schoolId: "x", name: "Escuela" }).success).toBe(false);
   });
 });
 

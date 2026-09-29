@@ -2,7 +2,7 @@
 
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db";
-import { academicYears, courseStudents, courses, students } from "@/db/schema";
+import { academicYears, courseStudents, courses, schools, students } from "@/db/schema";
 import { compareCourses, compareStudents, type Shift } from "@/lib/courses";
 import type { StudentInput } from "@/lib/validation";
 
@@ -32,7 +32,7 @@ export async function createStudent(
   });
 }
 
-export type StudentCourse = { year: number; division: string; shift: Shift; schoolYear: string };
+export type StudentCourse = { year: number; division: string; shift: Shift; schoolYear: string; school: string };
 export type StudentRow = {
   id: string;
   firstName: string;
@@ -51,6 +51,7 @@ export async function listStudents(db: Db, teacherId: string): Promise<StudentRo
       division: courses.division,
       shift: courses.shift,
       schoolYear: academicYears.name,
+      school: schools.name,
     })
     .from(students)
     .leftJoin(
@@ -59,14 +60,15 @@ export async function listStudents(db: Db, teacherId: string): Promise<StudentRo
     )
     .leftJoin(courses, eq(courseStudents.courseId, courses.id))
     .leftJoin(academicYears, eq(courses.academicYearId, academicYears.id))
+    .leftJoin(schools, eq(courses.schoolId, schools.id))
     .where(eq(students.teacherId, teacherId));
 
   // One row per student and course; fold them into one entry per student.
   const byId = new Map<string, StudentRow>();
   for (const r of rows) {
     const s = byId.get(r.id) ?? { id: r.id, firstName: r.firstName, lastName: r.lastName, courses: [] };
-    if (r.year !== null && r.division !== null && r.shift !== null && r.schoolYear !== null) {
-      s.courses.push({ year: r.year, division: r.division, shift: r.shift, schoolYear: r.schoolYear });
+    if (r.year !== null && r.division !== null && r.shift !== null && r.schoolYear !== null && r.school !== null) {
+      s.courses.push({ year: r.year, division: r.division, shift: r.shift, schoolYear: r.schoolYear, school: r.school });
     }
     byId.set(r.id, s);
   }

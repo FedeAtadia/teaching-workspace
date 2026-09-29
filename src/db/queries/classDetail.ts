@@ -9,6 +9,7 @@ import {
   classes,
   courseStudents,
   courses,
+  schools,
   standards,
   students,
   terms,
@@ -26,6 +27,7 @@ export type ClassDetail = {
   division: string;
   shift: Shift;
   schoolYear: string;
+  school: string;
   passMark: number | null;
 };
 
@@ -43,11 +45,13 @@ export async function getClass(db: Db, teacherId: string, classId: string): Prom
       division: courses.division,
       shift: courses.shift,
       schoolYear: academicYears.name,
+      school: schools.name,
       passMark: classes.passMark,
     })
     .from(classes)
     .innerJoin(courses, eq(classes.courseId, courses.id))
     .innerJoin(academicYears, eq(courses.academicYearId, academicYears.id))
+    .innerJoin(schools, eq(courses.schoolId, schools.id))
     .where(and(eq(classes.id, classId), eq(classes.teacherId, teacherId)));
   return row ?? null;
 }

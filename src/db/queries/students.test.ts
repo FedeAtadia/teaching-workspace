@@ -15,6 +15,7 @@ const cls = (name: string, over: Partial<ClassInput> = {}): ClassInput => ({
   year: 4,
   division: "A",
   shift: "morning",
+  school: "Escuela 5",
   schoolYear: 2026,
   ...over,
 });
@@ -62,7 +63,9 @@ describe("adding students (STUDENT)", () => {
       "Pérez, Ana",
       "Pérez, Luis",
     ]);
-    expect(list[0].courses).toEqual([{ year: 4, division: "A", shift: "morning", schoolYear: "2026" }]);
+    expect(list[0].courses).toEqual([
+      { year: 4, division: "A", shift: "morning", schoolYear: "2026", school: "Escuela 5" },
+    ]);
   });
 });
 
