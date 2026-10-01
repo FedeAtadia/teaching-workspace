@@ -67,6 +67,9 @@
     "title": "Cursos",
     "add": "Agregar curso",
     "dialogTitle": "Nuevo curso",
+    "edit": "Editar curso",
+    "editTitle": "Editar curso",
+    "editNote": "Si cambiás la escuela, el año, la división, el turno o el ciclo lectivo, también cambia para: {classes}.",
     "empty": "Todavía no agregaste ningún curso.",
     "fields": {
       "school": "Escuela",
@@ -88,7 +91,9 @@
       "students": "Estudiantes"
     },
     "errors": {
-      "duplicate": "Ese curso ya tiene esa materia."
+      "duplicate": "Ese curso ya tiene esa materia.",
+      "courseExists": "Ya tenés otro curso con esa escuela, año, división, turno y ciclo lectivo.",
+      "notFound": "No se encontró este curso. Recargá la página."
     }
   },
   "classPage": {
@@ -102,6 +107,18 @@
     },
     "errors": {
       "notFound": "No se encontró este curso. Volvé a la lista y probá de nuevo."
+    },
+    "deleteClass": {
+      "button": "Eliminar curso",
+      "title": "¿Eliminar «{name}» de {course}?",
+      "body": "Se borran con él: {items}.",
+      "tasks": "{count, plural, one {# tarea} other {# tareas}}",
+      "scores": "{count, plural, one {# nota cargada} other {# notas cargadas}}",
+      "units": "{count, plural, one {# unidad} other {# unidades}}",
+      "standards": "{count, plural, one {# criterio de aprobación} other {# criterios de aprobación}}",
+      "withFiles": "{count, plural, one {También su archivo adjunto.} other {También sus # archivos adjuntos.}}",
+      "empty": "Todavía no tiene tareas, unidades ni criterios.",
+      "studentsStay": "Los estudiantes siguen cargados en su curso."
     },
     "students": {
       "empty": "Este curso todavía no tiene estudiantes. Agregalos desde Estudiantes.",

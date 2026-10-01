@@ -94,6 +94,17 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   its two cuatrimestres (TERM-1).
 - **CLASS-5** A course cannot have the same subject twice; adding it again is
   rejected with a message, and nothing is saved.
+- **CLASS-6** A class's six fields can be changed, with the CLASS-2 and CLASS-3
+  rules. The subject changes only this class, and CLASS-5 still applies. The
+  school, course year, division, shift and school year are the course's: they
+  change for every class of the course, whose students stay in it. If the
+  teacher already has another course with those fields, nothing is saved. A
+  new school year is created as in CLASS-4, and the course's tasks, units and
+  cuatrimestre grades move to the cuatrimestre with the same number.
+- **CLASS-7** A class can be deleted, after a confirmation that says how many
+  tasks, scores, units and passing standards go with it. Those and the tasks'
+  attached files are deleted; the course, its students and its other classes
+  stay.
 
 ## COURSE — Courses
 

@@ -8,7 +8,8 @@ Planned work, in order. Nothing here is a requirement yet: a feature moves into
 - [x] Connect Supabase, run the first migration, sign in with Google.
 - [x] School years and their two cuatrimestres (created with a year's first class).
 - [x] Classes: create (CLASS, COURSE).
-- [ ] Classes: edit, archive. Pass mark per class.
+- [x] Classes: edit and delete (CLASS-6, CLASS-7).
+- [ ] Classes: archive. Pass mark per class.
 - [x] Students: create, in a course (STUDENT).
 - [ ] Students: edit, move between courses, import a roster from CSV
   (semicolon or comma).
