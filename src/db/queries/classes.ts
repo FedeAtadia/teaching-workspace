@@ -2,13 +2,31 @@
 // one teacher (OWNER-1). Takes the database as an argument so tests can pass
 // an in-memory one.
 
-import { and, eq, ne, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
+import { z } from "zod";
 import type { Db } from "@/db";
-import { academicYears, classes, courseStudents, courses, schools, terms } from "@/db/schema";
+import {
+  academicYears,
+  classes,
+  courseStudents,
+  courses,
+  schools,
+  scores,
+  standards,
+  tasks,
+  termGrades,
+  terms,
+  units,
+} from "@/db/schema";
 import { compareCourses, type Shift } from "@/lib/courses";
-import type { ClassInput, SchoolInput } from "@/lib/validation";
+import type { ClassEdit, ClassInput, SchoolInput } from "@/lib/validation";
 
 const collator = new Intl.Collator("es", { sensitivity: "base" });
+
+const isUuid = (v: string) => z.uuid().safeParse(v).success;
+
+const ownClass = (teacherId: string, classId: string) =>
+  and(eq(classes.id, classId), eq(classes.teacherId, teacherId));
 
 export type CreateClassResult = { ok: true; classId: string } | { ok: false; error: "duplicate" };
 
@@ -35,6 +53,150 @@ export async function createClass(
       .values({ teacherId, courseId, name: input.name })
       .returning({ id: classes.id });
     return { ok: true, classId: created.id } as const;
+  });
+}
+
+export type UpdateClassResult = { ok: true } | { ok: false; error: "notFound" | "duplicate" | "courseExists" };
+
+/**
+ * CLASS-6. The subject is this class's; the other five fields are its
+ * course's, so the course row itself changes and its classes and students
+ * follow. Everything is checked before anything is written.
+ */
+export async function updateClass(db: Db, teacherId: string, input: ClassEdit): Promise<UpdateClassResult> {
+  if (!isUuid(input.classId)) return { ok: false, error: "notFound" };
+  return db.transaction(async (tx) => {
+    const [current] = await tx
+      .select({ courseId: classes.courseId, academicYearId: courses.academicYearId })
+      .from(classes)
+      .innerJoin(courses, eq(classes.courseId, courses.id))
+      .where(ownClass(teacherId, input.classId));
+    if (!current) return { ok: false, error: "notFound" } as const;
+
+    const [sameSubject, otherCourse] = await Promise.all([
+      // CLASS-5, ignoring case, among the course's other classes.
+      tx
+        .select({ id: classes.id })
+        .from(classes)
+        .where(
+          and(
+            eq(classes.courseId, current.courseId),
+            ne(classes.id, input.classId),
+            sql`lower(${classes.name}) = lower(${input.name})`,
+          ),
+        ),
+      // Another course of the teacher's with the new fields. Matched by the
+      // school's and year's names, so nothing has to be created to check.
+      tx
+        .select({ id: courses.id })
+        .from(courses)
+        .innerJoin(schools, eq(courses.schoolId, schools.id))
+        .innerJoin(academicYears, eq(courses.academicYearId, academicYears.id))
+        .where(
+          and(
+            eq(courses.teacherId, teacherId),
+            ne(courses.id, current.courseId),
+            sql`lower(${schools.name}) = lower(${input.school})`,
+            eq(academicYears.name, String(input.schoolYear)),
+            eq(courses.year, input.year),
+            eq(courses.division, input.division),
+            eq(courses.shift, input.shift),
+          ),
+        ),
+    ]);
+    if (sameSubject.length > 0) return { ok: false, error: "duplicate" } as const;
+    if (otherCourse.length > 0) return { ok: false, error: "courseExists" } as const;
+
+    const schoolId = await findOrCreateSchool(tx, teacherId, input.school);
+    const yearId = await findOrCreateYear(tx, teacherId, String(input.schoolYear));
+    await tx
+      .update(courses)
+      .set({ schoolId, academicYearId: yearId, year: input.year, division: input.division, shift: input.shift })
+      .where(eq(courses.id, current.courseId));
+    await tx.update(classes).set({ name: input.name }).where(eq(classes.id, input.classId));
+
+    if (yearId !== current.academicYearId) {
+      // The course's work moves to the new year's cuatrimestre with the same number.
+      const courseClasses = tx.select({ id: classes.id }).from(classes).where(eq(classes.courseId, current.courseId));
+      const sameTerm = (termId: typeof tasks.termId | typeof units.termId | typeof termGrades.termId) =>
+        sql`(select nt.id from ${terms} nt join ${terms} ot on ot.position = nt.position
+             where ot.id = ${termId} and nt.academic_year_id = ${yearId})`;
+      await tx.update(tasks).set({ termId: sameTerm(tasks.termId) }).where(inArray(tasks.classId, courseClasses));
+      await tx
+        .update(units)
+        .set({ termId: sameTerm(units.termId) })
+        .where(and(inArray(units.classId, courseClasses), isNotNull(units.termId)));
+      await tx
+        .update(termGrades)
+        .set({ termId: sameTerm(termGrades.termId) })
+        .where(inArray(termGrades.classId, courseClasses));
+    }
+    return { ok: true } as const;
+  });
+}
+
+export type ClassCounts = {
+  tasks: number;
+  /** Scores and marks saved on its tasks. */
+  scores: number;
+  units: number;
+  standards: number;
+  /** Tasks with an attached file. */
+  files: number;
+  /** The subjects of the course's other classes, which a change to the course also changes. */
+  otherClasses: string[];
+};
+
+/** CLASS-6, CLASS-7: what an edit or a delete affects. Null when it isn't this teacher's class. */
+export async function getClassCounts(db: Db, teacherId: string, classId: string): Promise<ClassCounts | null> {
+  if (!isUuid(classId)) return null;
+  const [cls] = await db.select({ courseId: classes.courseId }).from(classes).where(ownClass(teacherId, classId));
+  if (!cls) return null;
+  const n = { n: sql<number>`count(*)::int` };
+  const [[taskCount], [fileCount], [scoreCount], [unitCount], [standardCount], others] = await Promise.all([
+    db.select(n).from(tasks).where(eq(tasks.classId, classId)),
+    db.select(n).from(tasks).where(and(eq(tasks.classId, classId), isNotNull(tasks.attachmentPath))),
+    db
+      .select(n)
+      .from(scores)
+      .innerJoin(tasks, eq(scores.taskId, tasks.id))
+      .where(and(eq(tasks.classId, classId), sql`(${scores.value} is not null or ${scores.status} <> 'graded')`)),
+    db.select(n).from(units).where(eq(units.classId, classId)),
+    db.select(n).from(standards).where(eq(standards.classId, classId)),
+    db
+      .select({ name: classes.name })
+      .from(classes)
+      .where(and(eq(classes.courseId, cls.courseId), ne(classes.id, classId))),
+  ]);
+  return {
+    tasks: taskCount.n,
+    scores: scoreCount.n,
+    units: unitCount.n,
+    standards: standardCount.n,
+    files: fileCount.n,
+    otherClasses: others.map((c) => c.name).sort(collator.compare),
+  };
+}
+
+/**
+ * CLASS-7. Its tasks, scores, units, standards and grades go with it (ON
+ * DELETE CASCADE); the course and its students stay. Returns the tasks'
+ * attached files, for the caller to delete from Storage.
+ */
+export async function deleteClass(
+  db: Db,
+  teacherId: string,
+  classId: string,
+): Promise<{ ok: true; attachmentPaths: string[] } | { ok: false; error: "notFound" }> {
+  if (!isUuid(classId)) return { ok: false, error: "notFound" };
+  return db.transaction(async (tx) => {
+    const files = await tx
+      .select({ path: tasks.attachmentPath })
+      .from(tasks)
+      .where(and(eq(tasks.classId, classId), eq(tasks.teacherId, teacherId), isNotNull(tasks.attachmentPath)));
+    const deleted = await tx.delete(classes).where(ownClass(teacherId, classId)).returning({ id: classes.id });
+    if (deleted.length === 0) return { ok: false, error: "notFound" } as const;
+    return { ok: true, attachmentPaths: files.map((f) => f.path!) } as const;
   });
 }
 

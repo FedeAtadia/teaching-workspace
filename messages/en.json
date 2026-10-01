@@ -67,6 +67,9 @@
     "title": "Classes",
     "add": "Add class",
     "dialogTitle": "New class",
+    "edit": "Edit class",
+    "editTitle": "Edit class",
+    "editNote": "Changing the school, year, division, shift or school year also changes it for: {classes}.",
     "empty": "You haven't added any classes yet.",
     "fields": {
       "school": "School",
@@ -88,7 +91,9 @@
       "students": "Students"
     },
     "errors": {
-      "duplicate": "That course already has this subject."
+      "duplicate": "That course already has this subject.",
+      "courseExists": "You already have another course with that school, year, division, shift and school year.",
+      "notFound": "This class wasn't found. Reload the page."
     }
   },
   "classPage": {
@@ -102,6 +107,18 @@
     },
     "errors": {
       "notFound": "This class wasn't found. Go back to the list and try again."
+    },
+    "deleteClass": {
+      "button": "Delete class",
+      "title": "Delete “{name}” from {course}?",
+      "body": "Deleted with it: {items}.",
+      "tasks": "{count, plural, one {# task} other {# tasks}}",
+      "scores": "{count, plural, one {# saved score} other {# saved scores}}",
+      "units": "{count, plural, one {# unit} other {# units}}",
+      "standards": "{count, plural, one {# passing standard} other {# passing standards}}",
+      "withFiles": "{count, plural, one {So is its attached file.} other {So are its # attached files.}}",
+      "empty": "It has no tasks, units or standards yet.",
+      "studentsStay": "The students stay in their course."
     },
     "students": {
       "empty": "This course has no students yet. Add them from Students.",

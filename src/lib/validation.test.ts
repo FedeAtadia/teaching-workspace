@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  classEdit,
   classInput,
   schoolInput,
   standardEdit,
@@ -67,6 +68,15 @@ describe("adding a class (CLASS)", () => {
     expect(classInput.parse({ ...validClass, division: " a " }).division).toBe("A");
     expect(classInput.safeParse({ ...validClass, division: "" }).success).toBe(false);
     expect(classInput.safeParse({ ...validClass, division: "12345678901" }).success).toBe(false);
+  });
+});
+
+describe("changing a class (CLASS-6)", () => {
+  it("takes the six fields with the adding rules, plus the class id", () => {
+    const classId = "0b7f3c2e-4a1d-4c8e-9f6a-2d5b8e1c3a7f";
+    expect(classEdit.parse({ ...validClass, classId, division: " b" })).toMatchObject({ classId, division: "B" });
+    expect(classEdit.safeParse({ ...validClass, classId: "x" }).success).toBe(false);
+    expect(classEdit.safeParse({ ...validClass, classId, shift: "night" }).success).toBe(false);
   });
 });
 

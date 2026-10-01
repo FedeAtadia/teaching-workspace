@@ -25,6 +25,10 @@ export const classInput = z.object({
 });
 export type ClassInput = z.infer<typeof classInput>;
 
+/** CLASS-6 */
+export const classEdit = classInput.extend({ classId: z.uuid() });
+export type ClassEdit = z.infer<typeof classEdit>;
+
 /** SCHOOL-3: renaming one of the teacher's schools. */
 export const schoolInput = z.object({
   schoolId: z.uuid(),

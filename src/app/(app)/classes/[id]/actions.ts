@@ -13,6 +13,7 @@ import {
   updateUnit,
 } from "@/db/queries/classDetail";
 import { redirect } from "next/navigation";
+import { deleteClass } from "@/db/queries/classes";
 import { createTask, deleteTask, saveScores, setTaskAttachment, updateTask } from "@/db/queries/tasks";
 import { ATTACHMENT_BUCKET } from "@/lib/attachments";
 import { requireTeacherId } from "@/lib/auth";
@@ -132,10 +133,11 @@ export async function editTask(_prev: FormState, formData: FormData): Promise<Fo
 
 export type ActionResult = { ok: true } | { ok: false; error: "notFound" };
 
-/** Deletes a file from Storage as the signed-in teacher (their folder only). */
-async function deleteStoredFile(path: string) {
+/** Deletes files from Storage as the signed-in teacher (their folder only), in one request. */
+async function deleteStoredFiles(...paths: string[]) {
+  if (paths.length === 0) return;
   const supabase = await createClient();
-  await supabase.storage.from(ATTACHMENT_BUCKET).remove([path]);
+  await supabase.storage.from(ATTACHMENT_BUCKET).remove(paths);
 }
 
 /**
@@ -155,7 +157,7 @@ export async function recordTaskFile(input: {
   if (!cls) return { ok: false, error: "notFound" };
   const result = await setTaskAttachment(db, teacherId, cls, input.taskId, { path: input.path, name: input.name });
   if (!result.ok) return result;
-  if (result.previousPath && result.previousPath !== input.path) await deleteStoredFile(result.previousPath);
+  if (result.previousPath && result.previousPath !== input.path) await deleteStoredFiles(result.previousPath);
   revalidatePath(`/classes/${cls.id}/tasks/${input.taskId}`);
   return { ok: true };
 }
@@ -168,9 +170,18 @@ export async function removeTaskFile(input: { classId: string; taskId: string })
   if (!cls) return { ok: false, error: "notFound" };
   const result = await setTaskAttachment(db, teacherId, cls, input.taskId, null);
   if (!result.ok) return result;
-  if (result.previousPath) await deleteStoredFile(result.previousPath);
+  if (result.previousPath) await deleteStoredFiles(result.previousPath);
   revalidatePath(`/classes/${cls.id}/tasks/${input.taskId}`);
   return { ok: true };
+}
+
+/** CLASS-7: deletes the class, its work and its files, then goes back to the list. */
+export async function removeClass(input: { classId: string }): Promise<ActionResult> {
+  const result = await deleteClass(getDb(), await requireTeacherId(), input.classId);
+  if (!result.ok) return result;
+  await deleteStoredFiles(...result.attachmentPaths);
+  revalidatePath("/", "layout");
+  redirect("/classes");
 }
 
 /** TASK-5: deletes the task, its scores and its file, then goes back to Tasks. */
@@ -181,7 +192,7 @@ export async function deleteTaskAction(input: { classId: string; taskId: string 
   if (!cls) return { ok: false, error: "notFound" };
   const result = await deleteTask(db, teacherId, cls, input.taskId);
   if (!result.ok) return result;
-  if (result.attachmentPath) await deleteStoredFile(result.attachmentPath);
+  if (result.attachmentPath) await deleteStoredFiles(result.attachmentPath);
   revalidatePath(`/classes/${cls.id}/tasks`);
   revalidatePath(`/classes/${cls.id}/grades`);
   redirect(`/classes/${cls.id}/tasks`);
