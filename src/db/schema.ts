@@ -202,6 +202,10 @@ export const standards = pgTable("standards", {
   title: text("title").notNull(),
   description: text("description"),
   position: integer("position").notNull().default(0),
+  // FILE-4: the attached file in Storage (bucket task-files), and the name it
+  // had when uploaded, shown to the teacher.
+  attachmentPath: text("attachment_path"),
+  attachmentName: text("attachment_name"),
 }).enableRLS();
 
 // ─── Assessment ─────────────────────────────────────────────────────────────

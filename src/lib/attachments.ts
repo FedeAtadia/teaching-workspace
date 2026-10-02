@@ -1,4 +1,5 @@
-// Task attachments: which files are allowed and where they are stored.
+// Task and passing-standard attachments: which files are allowed and where
+// they are stored.
 // Pure, so the browser (before uploading) and the server (before recording)
 // apply the same rules. Storage enforces them too (supabase/storage.sql).
 
@@ -18,12 +19,16 @@ export function checkAttachment(file: { type: string; size: number }): Attachmen
   return "ok";
 }
 
+/** FILE-4: a passing standard's folder, inside the teacher's. A task's is just its id (FILE-2). */
+export const standardFolder = (standardId: string) => `standards/${standardId}`;
+
 /**
- * FILE-2: `<teacher id>/<task id>/<safe name>`. Accents are dropped and
- * anything but letters, digits, `_` and `-` becomes a dash, so the name
- * can't leave the folder and works as a Storage key; the extension stays.
+ * FILE-2, FILE-4: `<teacher id>/<folder>/<safe name>`, the folder being the
+ * task's id or `standardFolder(id)`. Accents are dropped and anything but
+ * letters, digits, `_` and `-` becomes a dash, so the name can't leave the
+ * folder and works as a Storage key; the extension stays.
  */
-export function attachmentPath(teacherId: string, taskId: string, fileName: string): string {
+export function attachmentPath(teacherId: string, folder: string, fileName: string): string {
   const plain = fileName.normalize("NFD").replace(/[̀-ͯ]/g, "");
   const match = plain.match(/\.([A-Za-z0-9]{1,5})$/);
   const ext = match ? `.${match[1]}` : "";
@@ -31,12 +36,12 @@ export function attachmentPath(teacherId: string, taskId: string, fileName: stri
     .replace(/[^A-Za-z0-9_-]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
-  return `${teacherId}/${taskId}/${base || "archivo"}${ext}`;
+  return `${teacherId}/${folder}/${base || "archivo"}${ext}`;
 }
 
-/** FILE-2: a path the app will record for this task — its own folder, one plain file name. */
-export function isTaskFilePath(path: string, teacherId: string, taskId: string): boolean {
-  const prefix = `${teacherId}/${taskId}/`;
+/** FILE-2, FILE-4: a path the app will record — that folder, one plain file name. */
+export function isFileIn(path: string, teacherId: string, folder: string): boolean {
+  const prefix = `${teacherId}/${folder}/`;
   if (!path.startsWith(prefix)) return false;
   const name = path.slice(prefix.length);
   return /^[A-Za-z0-9._-]+$/.test(name) && !name.includes("..");

@@ -263,11 +263,12 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 - **BOOK-3** Grades are written with the language's decimal separator:
   `7,5` in es-AR, `7.5` in English.
 
-## FILE — Task attachments
+## FILE — Attachments
 
 *Enforced by `src/lib/attachments.ts`, `src/db/queries/tasks.ts`,
-`supabase/storage.sql`. Covered by `src/lib/attachments.test.ts`,
-`src/db/queries/tasks.test.ts`.*
+`src/db/queries/classDetail.ts`, `supabase/storage.sql`. Covered by
+`src/lib/attachments.test.ts`, `src/db/queries/tasks.test.ts`,
+`src/db/queries/classDetail.test.ts`.*
 
 - **FILE-1** A task can have one attached file — the task itself, say — that
   is a PDF, PNG or JPEG of at most 20 MB. Anything else is refused before it
@@ -280,6 +281,11 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 - **FILE-3** Attaching a new file replaces the previous one, and removing it
   deletes the file and the link. Opening it gives a link that works for one
   minute, and only for the teacher the task belongs to.
+- **FILE-4** A passing standard can have one attached file too — a rubric,
+  say — with the same rules (FILE-1, FILE-3). It is stored in
+  `<teacher id>/standards/<standard id>/<file name>`, named as in FILE-2, and
+  the app only ever records a path in that standard's folder. Deleting the
+  standard (STD-4) or its class (CLASS-7) deletes its file.
 
 ## HISTORY — A student's school history
 
@@ -317,6 +323,24 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   the course, so all its classes share it.
 - **YEAR-3** A class's Cierre tab lists the course's active students
   (ROSTER-1) with their final grade, result, exams and year outcome.
+
+## NEXT — Bringing students into next year
+
+*Enforced by `src/db/queries/nextYear.ts`. Covered by
+`src/db/queries/nextYear.test.ts`.*
+
+- **NEXT-1** A class's Estudiantes tab offers to bring in students from the
+  previous school year (the year before its own) at the same school: those
+  *promoted* (YEAR-2) from any course of the year below, and those who
+  *repeat* any course of the same year. Students already in the course, who
+  left their old course, who graduated or whose outcome is undecided are not
+  offered. The offer only shows when there is someone to bring in.
+- **NEXT-2** The students are listed by their old course (COURSE-3 order),
+  all ticked; the teacher unticks whoever isn't coming. Saving adds the
+  ticked ones to the course as active students. Their old course is
+  untouched, so their history shows both years (HISTORY-1).
+- **NEXT-3** Only students offered by NEXT-1 are added, whatever the form
+  sends (OWNER-1).
 
 ## EXAM — Owed classes (previas)
 

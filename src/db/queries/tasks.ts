@@ -6,7 +6,7 @@ import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
 import { courseStudents, scores, standards, taskStandards, tasks, termGrades, terms, units } from "@/db/schema";
-import { isTaskFilePath } from "@/lib/attachments";
+import { isFileIn } from "@/lib/attachments";
 import { suggestTermGrade, type Suggestion } from "@/lib/grading";
 import type { ScoreRow, ScoreStatus } from "@/lib/scoresForm";
 import type { TaskEdit, TaskInput } from "@/lib/validation";
@@ -218,7 +218,7 @@ export async function setTaskAttachment(
   file: { path: string; name: string } | null,
 ): Promise<{ ok: true; previousPath: string | null } | NotFound> {
   if (!isUuid(taskId)) return notFound;
-  if (file && !isTaskFilePath(file.path, teacherId, taskId)) return notFound;
+  if (file && !isFileIn(file.path, teacherId, taskId)) return notFound;
   const where = and(eq(tasks.id, taskId), eq(tasks.classId, cls.id), eq(tasks.teacherId, teacherId));
   const [current] = await db.select({ path: tasks.attachmentPath }).from(tasks).where(where);
   if (!current) return notFound;

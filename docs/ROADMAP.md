@@ -27,7 +27,8 @@ Planned work, in order. Nothing here is a requirement yet: a feature moves into
   (TERM-5..8).
 - [x] End of the school year: each class's result, exams for owed classes
   (previas), promoted / repeats / graduated (YEAR, EXAM).
-- [ ] Bringing promoted and repeating students into next year's courses.
+- [x] Bringing promoted and repeating students into next year's courses (NEXT).
+- [x] A file on each passing standard, like tasks (FILE-4).
 - [x] UI kit: shadcn/ui.
 
 ## Phase 2 — Exports

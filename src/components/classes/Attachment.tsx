@@ -3,26 +3,35 @@
 import { FileText, Paperclip } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRef, useState, useTransition } from "react";
-import { recordTaskFile, removeTaskFile } from "@/app/(app)/classes/[id]/actions";
+import {
+  recordStandardFile,
+  recordTaskFile,
+  removeStandardFile,
+  removeTaskFile,
+} from "@/app/(app)/classes/[id]/actions";
 import { Button } from "@/components/ui/button";
 import {
   ATTACHMENT_BUCKET,
   ATTACHMENT_TYPES,
   attachmentPath,
   checkAttachment,
+  standardFolder,
 } from "@/lib/attachments";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = {
   classId: string;
-  taskId: string;
+  /** What the file belongs to: a task (FILE-1..3) or a passing standard (FILE-4). */
+  target: { kind: "task" | "standard"; id: string };
   /** The signed-in teacher: the file goes in their folder (FILE-2). */
   teacherId: string;
   current: { name: string } | null;
+  /** Inside a list item: no box or heading. */
+  compact?: boolean;
 };
 
-/** FILE-1..3: attach, open, replace or remove the task's file. */
-export function TaskAttachment({ classId, taskId, teacherId, current }: Props) {
+/** FILE-1..4: attach, open, replace or remove a task's or a standard's file. */
+export function Attachment({ classId, target, teacherId, current, compact = false }: Props) {
   const t = useTranslations("classPage.attachment");
   const input = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +46,8 @@ export function TaskAttachment({ classId, taskId, teacherId, current }: Props) {
 
     // Straight to Storage from the browser: a Server Action would cap it at 1 MB.
     setUploading(true);
-    const path = attachmentPath(teacherId, taskId, file.name);
+    const folder = target.kind === "task" ? target.id : standardFolder(target.id);
+    const path = attachmentPath(teacherId, folder, file.name);
     const { error: uploadError } = await createClient()
       .storage.from(ATTACHMENT_BUCKET)
       .upload(path, file, { upsert: true, contentType: file.type });
@@ -45,7 +55,10 @@ export function TaskAttachment({ classId, taskId, teacherId, current }: Props) {
     if (uploadError) return setError(t("errors.uploadFailed"));
 
     startTransition(async () => {
-      const result = await recordTaskFile({ classId, taskId, path, name: file.name });
+      const result =
+        target.kind === "task"
+          ? await recordTaskFile({ classId, taskId: target.id, path, name: file.name })
+          : await recordStandardFile({ classId, standardId: target.id, path, name: file.name });
       if (!result.ok) setError(t("errors.notFound"));
     });
   }
@@ -53,17 +66,27 @@ export function TaskAttachment({ classId, taskId, teacherId, current }: Props) {
   function remove() {
     setError(null);
     startTransition(async () => {
-      const result = await removeTaskFile({ classId, taskId });
+      const result =
+        target.kind === "task"
+          ? await removeTaskFile({ classId, taskId: target.id })
+          : await removeStandardFile({ classId, standardId: target.id });
       if (!result.ok) setError(t("errors.notFound"));
     });
   }
 
+  const href =
+    target.kind === "task"
+      ? `/classes/${classId}/tasks/${target.id}/file`
+      : `/classes/${classId}/standards/${target.id}/file`;
+
   return (
-    <section className="mt-4 rounded-lg border p-3">
-      <h3 className="mb-2 flex items-center gap-2 text-sm font-medium">
-        <Paperclip className="size-4" aria-hidden />
-        {t("title")}
-      </h3>
+    <section className={compact ? "" : "mt-4 rounded-lg border p-3"}>
+      {!compact && (
+        <h3 className="mb-2 flex items-center gap-2 text-sm font-medium">
+          <Paperclip className="size-4" aria-hidden />
+          {t("title")}
+        </h3>
+      )}
 
       <input
         ref={input}
@@ -81,7 +104,7 @@ export function TaskAttachment({ classId, taskId, teacherId, current }: Props) {
         {current ? (
           <>
             <a
-              href={`/classes/${classId}/tasks/${taskId}/file`}
+              href={href}
               target="_blank"
               rel="noreferrer"
               className="inline-flex max-w-full items-center gap-1.5 text-sm underline-offset-4 hover:underline"
