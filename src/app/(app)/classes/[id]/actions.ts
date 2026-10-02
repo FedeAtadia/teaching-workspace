@@ -15,12 +15,14 @@ import {
 import { redirect } from "next/navigation";
 import { deleteClass } from "@/db/queries/classes";
 import { createTask, deleteTask, saveScores, setTaskAttachment, updateTask } from "@/db/queries/tasks";
+import { getTermGradeSheet, saveTermGrades } from "@/db/queries/termGrades";
 import { ATTACHMENT_BUCKET } from "@/lib/attachments";
 import { requireTeacherId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { FormState } from "@/lib/formState";
 import { DEFAULT_RULES } from "@/lib/grading";
 import { parseScoresForm, type ScoreEntryError } from "@/lib/scoresForm";
+import { parseTermGradesForm, type TermGradeEntryError } from "@/lib/termGradesForm";
 import {
   standardEdit,
   standardInput,
@@ -230,5 +232,42 @@ export async function saveTaskScores(_prev: ScoresState, formData: FormData): Pr
   revalidatePath(`/classes/${cls.id}/tasks/${values.taskId}`);
   revalidatePath(`/classes/${cls.id}/tasks`);
   revalidatePath(`/classes/${cls.id}/grades`);
+  return { status: "saved", savedAt: Date.now() };
+}
+
+export type TermGradesState = FormState<"notFound"> & {
+  /** Per student id, what is wrong with their entry. */
+  gradeErrors?: Record<string, TermGradeEntryError>;
+  savedAt?: number;
+};
+
+/** TERM-5, TERM-6: every student's grade for one cuatrimestre, in one save. */
+export async function saveTermGradesAction(_prev: TermGradesState, formData: FormData): Promise<TermGradesState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const cls = await getClass(db, teacherId, values.classId ?? "");
+  const sheet = cls && (await getTermGradeSheet(db, teacherId, cls, values.termId ?? ""));
+  if (!cls || !sheet) return { status: "error", formError: "notFound", values };
+
+  const rules = { ...DEFAULT_RULES, passMark: cls.passMark ?? DEFAULT_RULES.passMark };
+  // TERM-6: the 2° grades are checked against the 1° ones as saved.
+  const firstTerm = new Map(sheet.rows.flatMap((r) => (r.firstTerm === null ? [] : [[r.student.id, r.firstTerm]])));
+  const parsed = parseTermGradesForm(
+    (name) => {
+      const v = formData.get(name);
+      return typeof v === "string" ? v : null;
+    },
+    sheet.rows.map((r) => r.student.id),
+    rules,
+    firstTerm,
+  );
+  if (!parsed.ok) return { status: "error", gradeErrors: parsed.errors, values };
+
+  const result = await saveTermGrades(db, teacherId, cls, values.termId ?? "", parsed);
+  if (!result.ok) return { status: "error", formError: "notFound", values };
+
+  revalidatePath(`/classes/${cls.id}`, "layout");
+  revalidatePath("/students/[id]", "page");
   return { status: "saved", savedAt: Date.now() };
 }

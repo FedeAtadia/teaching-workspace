@@ -34,7 +34,9 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 
 ## TERM — Cuatrimestres
 
-*Enforced by `src/lib/grading.ts`. Covered by `src/lib/grading.test.ts`.*
+*Enforced by `src/lib/grading.ts`, `src/lib/termGradesForm.ts`,
+`src/db/queries/termGrades.ts`. Covered by `src/lib/grading.test.ts`,
+`src/lib/termGradesForm.test.ts`, `src/db/queries/termGrades.test.ts`.*
 
 - **TERM-1** A school year has two terms (cuatrimestres). The second term's grade
   is the one that counts for the year.
@@ -46,6 +48,23 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 - **TERM-4** A second-term grade is reported as within, above or below that
   range. Outside it, the teacher gives a reason, which is stored with the grade.
   The app never refuses the grade itself: the teacher has the last word.
+- **TERM-5** A class's cuatrimestre grades are entered one cuatrimestre at a
+  time, on a page listing the course's students (ROSTER-1). Each row shows the
+  suggested grade from that cuatrimestre's tasks (SUGGEST-1, SUGGEST-2) and
+  takes a grade typed as in INPUT-1..3 and optional notes (up to 1000
+  characters). One save stores every row or, if any row is wrong, none. An
+  empty grade removes the saved one; notes without a grade are rejected.
+- **TERM-6** In the 2° cuatrimestre, a student with a 1° grade shows the
+  expected range (TERM-2, TERM-3). A grade outside it is saved only with a
+  reason (up to 500 characters), stored with it (TERM-4); inside the range no
+  reason is kept.
+- **TERM-7** The 2° cuatrimestre grade is the class's final grade (TERM-1).
+  The gradebook shows each student's grade for the cuatrimestre next to the
+  suggested average (BOOK-2), and the student's history shows each
+  cuatrimestre's grade and the final grade, as passing or not.
+- **TERM-8** Only students active in the course are saved, whatever the form
+  sends. Another teacher's class, or a cuatrimestre of another school year,
+  is "not found" and nothing is saved (OWNER-1).
 
 ## SUGGEST — Suggested term grade
 
@@ -331,8 +350,6 @@ Covered by `src/lib/theme.test.ts`.*
 
 ## Known gaps
 
-- **TERM-4**'s "the teacher gives a reason" is a UI requirement; only the range
-  check is tested until the term-grade screen exists.
 - Sign-in (Google through Supabase) has no automated test yet; it needs a
   Supabase project to run against. The forms that call the queries above
   (the add-class and add-student dialogs) are checked by hand for the same

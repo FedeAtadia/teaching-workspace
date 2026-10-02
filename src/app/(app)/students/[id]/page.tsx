@@ -51,11 +51,20 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                 const rules = { ...DEFAULT_RULES, passMark: cls.passMark };
                 return (
                   <article key={cls.id} className="rounded-2xl bg-card p-5 ring-1 ring-border">
-                    <h3 className="text-lg font-extrabold">
-                      <Link href={`/classes/${cls.id}`} className="underline-offset-4 hover:underline">
-                        {cls.name}
-                      </Link>
-                    </h3>
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <h3 className="text-lg font-extrabold">
+                        <Link href={`/classes/${cls.id}`} className="underline-offset-4 hover:underline">
+                          {cls.name}
+                        </Link>
+                      </h3>
+                      {/* TERM-1, TERM-7: the 2° cuatrimestre grade. */}
+                      {cls.finalGrade !== null && (
+                        <p className="text-sm">
+                          {t("finalGrade")}:{" "}
+                          <Grade value={cls.finalGrade} passing={isPassing(cls.finalGrade, rules)} locale={locale} big />
+                        </p>
+                      )}
+                    </div>
                     {cls.terms.length === 0 && (
                       <p className="mt-1 text-sm text-muted-foreground">{t("noTasks")}</p>
                     )}
@@ -84,6 +93,13 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                               <span className="ml-1 text-muted-foreground">
                                 ({term.suggestion.missing} {tGrades("missingShort")})
                               </span>
+                            )}
+                            {term.grade !== null && (
+                              <>
+                                {" · "}
+                                {t("grade")}:{" "}
+                                <Grade value={term.grade} passing={isPassing(term.grade, rules)} locale={locale} />
+                              </>
                             )}
                           </p>
                         </div>
@@ -131,6 +147,24 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
         ))}
       </div>
     </>
+  );
+}
+
+function Grade({
+  value,
+  passing,
+  locale,
+  big = false,
+}: {
+  value: number;
+  passing: boolean;
+  locale: string;
+  big?: boolean;
+}) {
+  return (
+    <span className={[big ? "text-lg font-extrabold" : "font-bold", passing ? "" : "text-destructive"].join(" ")}>
+      {formatGrade(value, locale)}
+    </span>
   );
 }
 

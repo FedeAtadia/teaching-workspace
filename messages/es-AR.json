@@ -103,7 +103,8 @@
       "standards": "Criterios de aprobación",
       "units": "Unidades",
       "tasks": "Tareas",
-      "grades": "Calificaciones"
+      "grades": "Calificaciones",
+      "termGrades": "Notas de cuatrimestre"
     },
     "errors": {
       "notFound": "No se encontró este curso. Volvé a la lista y probá de nuevo."
@@ -223,6 +224,7 @@
     "grades": {
       "student": "Estudiante",
       "average": "Promedio",
+      "termGrade": "Nota",
       "missing": "No entregó",
       "missingShort": "NE",
       "excused": "Justificado",
@@ -230,6 +232,32 @@
       "noTasks": "Este cuatrimestre todavía no tiene tareas.",
       "noStudents": "Este curso todavía no tiene estudiantes.",
       "legend": "En rojo, debajo de {passMark}. NE: no entregó. J: justificado. El promedio no cuenta las tareas no entregadas; se muestran aparte."
+    },
+    "termGrades": {
+      "introFirst": "La nota de cada estudiante para el cuatrimestre. La sugerida es el promedio de sus tareas.",
+      "introSecond": "La nota del 2° cuatrimestre es la nota final de la materia. Se espera dentro de un rango alrededor de la del 1°; fuera de él, escribí el motivo.",
+      "student": "Estudiante",
+      "suggested": "Sugerida",
+      "firstTerm": "1° cuatrimestre",
+      "range": "esperada {min} a {max}",
+      "grade": "Nota",
+      "notes": "Observaciones",
+      "passing": "Aprobado",
+      "failing": "Desaprobado",
+      "above": "Más alta que lo esperado: ¿por qué?",
+      "below": "Más baja que lo esperado: ¿por qué?",
+      "reasonPlaceholder": "Motivo",
+      "saved": "Guardado.",
+      "fixErrors": "No se guardó nada: corregí las filas marcadas.",
+      "notFound": "No se encontró este cuatrimestre. Recargá la página.",
+      "noStudents": "Este curso todavía no tiene estudiantes.",
+      "errors": {
+        "invalidGrade": "Tiene que ser una nota del 1 al 10 (por ejemplo 7,5).",
+        "needsGrade": "Poné una nota o borrá las observaciones.",
+        "notesTooLong": "Las observaciones son demasiado largas.",
+        "reasonRequired": "Está fuera del rango esperado: escribí el motivo.",
+        "reasonTooLong": "El motivo es demasiado largo."
+      }
     }
   },
   "studentPage": {
@@ -238,7 +266,9 @@
     "noCourses": "Todavía no está en ningún curso.",
     "noClasses": "Este curso todavía no tiene materias.",
     "noTasks": "Todavía no hay tareas.",
-    "average": "Promedio"
+    "average": "Promedio",
+    "grade": "Nota",
+    "finalGrade": "Nota final"
   },
   "students": {
     "title": "Estudiantes",
