@@ -13,6 +13,7 @@ import {
   listStandards,
   listTerms,
   listUnits,
+  setStandardAttachment,
 } from "./classDetail";
 import { createStudent } from "./students";
 import { createTask, getTask, saveScores, setTaskAttachment } from "./tasks";
@@ -110,6 +111,12 @@ async function fullClass(teacher: string, over: Partial<ClassInput> = {}) {
   await createUnit(db, teacher, { classId: detail.id, title: "Funciones", termId: term2.id });
   await createStandard(db, teacher, { classId: detail.id, title: "Resuelve", description: null });
   const [standard] = await listStandards(db, teacher, detail.id);
+  await setStandardAttachment(
+    db,
+    teacher,
+    { classId: detail.id, standardId: standard.id },
+    { path: `${teacher}/standards/${standard.id}/rubrica.pdf`, name: "rubrica.pdf" },
+  );
   const task = await createTask(db, teacher, {
     classId: detail.id,
     title: "TP 1",
@@ -132,7 +139,7 @@ async function fullClass(teacher: string, over: Partial<ClassInput> = {}) {
   await db
     .insert(termGrades)
     .values({ teacherId: teacher, classId: detail.id, studentId: student.id, termId: term2.id, value: 8 });
-  return { classId: detail.id, courseId: detail.courseId, taskId: task.taskId };
+  return { classId: detail.id, courseId: detail.courseId, taskId: task.taskId, standardId: standard.id };
 }
 
 const edit = (classId: string, over: Partial<ClassInput> = {}) => ({ ...cls(over), classId });
@@ -219,19 +226,20 @@ describe("deleting a class (CLASS-7)", () => {
       scores: 1,
       units: 1,
       standards: 1,
-      files: 1,
+      files: 2,
       otherClasses: ["Física"],
     });
   });
 
   it("deletes its work and hands back its files, keeping the course, its students and other classes", async () => {
     const teacher = newTeacher();
-    const { classId, courseId, taskId } = await fullClass(teacher);
+    const { classId, courseId, taskId, standardId } = await fullClass(teacher);
     await createClass(db, teacher, cls({ name: "Física" }));
 
+    // FILE-4: the standards' files go too.
     expect(await deleteClass(db, teacher, classId)).toEqual({
       ok: true,
-      attachmentPaths: [`${teacher}/${taskId}/tp.pdf`],
+      attachmentPaths: [`${teacher}/${taskId}/tp.pdf`, `${teacher}/standards/${standardId}/rubrica.pdf`],
     });
     expect((await listClasses(db, teacher)).map((c) => [c.name, c.courseId, c.students])).toEqual([
       ["Física", courseId, 1],

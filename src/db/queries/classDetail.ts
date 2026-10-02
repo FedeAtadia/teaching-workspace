@@ -17,6 +17,7 @@ import {
   terms,
   units,
 } from "@/db/schema";
+import { isFileIn, standardFolder } from "@/lib/attachments";
 import { compareStudents, type Shift } from "@/lib/courses";
 import type { StandardEdit, StandardInput, UnitEdit, UnitInput } from "@/lib/validation";
 
@@ -91,8 +92,9 @@ export type StandardRow = {
   description: string | null;
   /** Tasks that assess it, for the delete confirmation (STD-4). */
   tasks: number;
+  /** FILE-4: the attached file's name as uploaded, if any. */
+  attachmentName: string | null;
 };
-
 
 /** STD-2 */
 export async function listStandards(db: Db, teacherId: string, classId: string): Promise<StandardRow[]> {
@@ -103,6 +105,7 @@ export async function listStandards(db: Db, teacherId: string, classId: string):
       title: standards.title,
       description: standards.description,
       tasks: sql<number>`(select count(*)::int from ${taskStandards} where ${taskStandards.standardId} = ${standards.id})`,
+      attachmentName: standards.attachmentName,
     })
     .from(standards)
     .where(
@@ -148,18 +151,57 @@ export async function updateStandard(db: Db, teacherId: string, input: StandardE
   return updated.length > 0 ? { ok: true } : notFound;
 }
 
-/** STD-4. Its links to tasks go with it (ON DELETE CASCADE); the tasks stay. */
+/**
+ * STD-4. Its links to tasks go with it (ON DELETE CASCADE); the tasks stay.
+ * Returns its file's path (FILE-4), for the caller to delete from Storage.
+ */
 export async function deleteStandard(
   db: Db,
   teacherId: string,
   input: { classId: string; standardId: string },
-): Promise<AddResult> {
+): Promise<{ ok: true; attachmentPath: string | null } | typeof notFound> {
   if (!isUuid(input.classId) || !isUuid(input.standardId)) return notFound;
-  const deleted = await db
+  const [deleted] = await db
     .delete(standards)
     .where(ownStandard(teacherId, input.classId, input.standardId))
-    .returning({ id: standards.id });
-  return deleted.length > 0 ? { ok: true } : notFound;
+    .returning({ attachmentPath: standards.attachmentPath });
+  return deleted ? { ok: true, attachmentPath: deleted.attachmentPath } : notFound;
+}
+
+/**
+ * FILE-3, FILE-4: record the standard's attached file, or clear it with null.
+ * Returns the path it had before, for the caller to delete from Storage.
+ */
+export async function setStandardAttachment(
+  db: Db,
+  teacherId: string,
+  target: { classId: string; standardId: string },
+  file: { path: string; name: string } | null,
+): Promise<{ ok: true; previousPath: string | null } | typeof notFound> {
+  if (!isUuid(target.classId) || !isUuid(target.standardId)) return notFound;
+  if (file && !isFileIn(file.path, teacherId, standardFolder(target.standardId))) return notFound;
+  const where = ownStandard(teacherId, target.classId, target.standardId);
+  const [current] = await db.select({ path: standards.attachmentPath }).from(standards).where(where);
+  if (!current) return notFound;
+  await db
+    .update(standards)
+    .set({ attachmentPath: file?.path ?? null, attachmentName: file?.name.slice(0, 200) ?? null })
+    .where(where);
+  return { ok: true, previousPath: current.path };
+}
+
+/** FILE-4: the standard's file path, to open it; null if none or not this teacher's. */
+export async function getStandardFile(
+  db: Db,
+  teacherId: string,
+  target: { classId: string; standardId: string },
+): Promise<string | null> {
+  if (!isUuid(target.classId) || !isUuid(target.standardId)) return null;
+  const [row] = await db
+    .select({ path: standards.attachmentPath })
+    .from(standards)
+    .where(ownStandard(teacherId, target.classId, target.standardId));
+  return row?.path ?? null;
 }
 
 export type TermRow = { id: string; position: number };

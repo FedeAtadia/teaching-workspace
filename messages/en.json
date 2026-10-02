@@ -140,6 +140,7 @@
       "delete": "Delete standard",
       "deleteTitle": "Delete the standard “{title}”?",
       "deleteBody": "{tasks, plural, =0 {No task assesses it.} one {It's removed from the task that assesses it; the task and its scores stay.} other {It's removed from the # tasks that assess it; the tasks and their scores stay.}}",
+      "deleteWithFile": "So is its attached file.",
       "fields": {
         "title": "Standard",
         "description": "Description (optional)"
@@ -324,6 +325,17 @@
     "errors": {
       "notOwed": "This class is no longer owed. Reload the page.",
       "notFound": "Not found. Reload the page."
+    }
+  },
+  "nextYear": {
+    "button": "{count, plural, one {Bring in # student from last year} other {Bring in # students from last year}}",
+    "title": "Students from {year}",
+    "intro": "Those promoted from the year below and those repeating this year, at the same school. Untick anyone not joining this course.",
+    "submit": "Add to the course",
+    "notFound": "This class wasn't found. Reload the page.",
+    "reasons": {
+      "promoted": "promoted",
+      "repeats": "repeating"
     }
   },
   "students": {

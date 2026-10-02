@@ -141,7 +141,7 @@ export type ClassCounts = {
   scores: number;
   units: number;
   standards: number;
-  /** Tasks with an attached file. */
+  /** Attached files, on its tasks and standards (FILE-4). */
   files: number;
   /** The subjects of the course's other classes, which a change to the course also changes. */
   otherClasses: string[];
@@ -153,35 +153,39 @@ export async function getClassCounts(db: Db, teacherId: string, classId: string)
   const [cls] = await db.select({ courseId: classes.courseId }).from(classes).where(ownClass(teacherId, classId));
   if (!cls) return null;
   const n = { n: sql<number>`count(*)::int` };
-  const [[taskCount], [fileCount], [scoreCount], [unitCount], [standardCount], others] = await Promise.all([
-    db.select(n).from(tasks).where(eq(tasks.classId, classId)),
-    db.select(n).from(tasks).where(and(eq(tasks.classId, classId), isNotNull(tasks.attachmentPath))),
-    db
-      .select(n)
-      .from(scores)
-      .innerJoin(tasks, eq(scores.taskId, tasks.id))
-      .where(and(eq(tasks.classId, classId), sql`(${scores.value} is not null or ${scores.status} <> 'graded')`)),
-    db.select(n).from(units).where(eq(units.classId, classId)),
-    db.select(n).from(standards).where(eq(standards.classId, classId)),
-    db
-      .select({ name: classes.name })
-      .from(classes)
-      .where(and(eq(classes.courseId, cls.courseId), ne(classes.id, classId))),
-  ]);
+  const files = (table: typeof tasks | typeof standards) =>
+    db.select(n).from(table).where(and(eq(table.classId, classId), isNotNull(table.attachmentPath)));
+  const [[taskCount], [taskFiles], [standardFiles], [scoreCount], [unitCount], [standardCount], others] =
+    await Promise.all([
+      db.select(n).from(tasks).where(eq(tasks.classId, classId)),
+      files(tasks),
+      files(standards),
+      db
+        .select(n)
+        .from(scores)
+        .innerJoin(tasks, eq(scores.taskId, tasks.id))
+        .where(and(eq(tasks.classId, classId), sql`(${scores.value} is not null or ${scores.status} <> 'graded')`)),
+      db.select(n).from(units).where(eq(units.classId, classId)),
+      db.select(n).from(standards).where(eq(standards.classId, classId)),
+      db
+        .select({ name: classes.name })
+        .from(classes)
+        .where(and(eq(classes.courseId, cls.courseId), ne(classes.id, classId))),
+    ]);
   return {
     tasks: taskCount.n,
     scores: scoreCount.n,
     units: unitCount.n,
     standards: standardCount.n,
-    files: fileCount.n,
+    files: taskFiles.n + standardFiles.n,
     otherClasses: others.map((c) => c.name).sort(collator.compare),
   };
 }
 
 /**
  * CLASS-7. Its tasks, scores, units, standards and grades go with it (ON
- * DELETE CASCADE); the course and its students stay. Returns the tasks'
- * attached files, for the caller to delete from Storage.
+ * DELETE CASCADE); the course and its students stay. Returns the tasks' and
+ * standards' attached files (FILE-4), for the caller to delete from Storage.
  */
 export async function deleteClass(
   db: Db,
@@ -190,13 +194,15 @@ export async function deleteClass(
 ): Promise<{ ok: true; attachmentPaths: string[] } | { ok: false; error: "notFound" }> {
   if (!isUuid(classId)) return { ok: false, error: "notFound" };
   return db.transaction(async (tx) => {
-    const files = await tx
-      .select({ path: tasks.attachmentPath })
-      .from(tasks)
-      .where(and(eq(tasks.classId, classId), eq(tasks.teacherId, teacherId), isNotNull(tasks.attachmentPath)));
+    const files = (table: typeof tasks | typeof standards) =>
+      tx
+        .select({ path: table.attachmentPath })
+        .from(table)
+        .where(and(eq(table.classId, classId), eq(table.teacherId, teacherId), isNotNull(table.attachmentPath)));
+    const [taskFiles, standardFiles] = await Promise.all([files(tasks), files(standards)]);
     const deleted = await tx.delete(classes).where(ownClass(teacherId, classId)).returning({ id: classes.id });
     if (deleted.length === 0) return { ok: false, error: "notFound" } as const;
-    return { ok: true, attachmentPaths: files.map((f) => f.path!) } as const;
+    return { ok: true, attachmentPaths: [...taskFiles, ...standardFiles].map((f) => f.path!) } as const;
   });
 }
 

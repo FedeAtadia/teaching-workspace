@@ -140,6 +140,7 @@
       "delete": "Eliminar criterio",
       "deleteTitle": "¿Eliminar el criterio «{title}»?",
       "deleteBody": "{tasks, plural, =0 {Ninguna tarea lo evalúa.} one {Se quita de la tarea que lo evalúa; la tarea y sus notas quedan.} other {Se quita de las # tareas que lo evalúan; las tareas y sus notas quedan.}}",
+      "deleteWithFile": "También su archivo adjunto.",
       "fields": {
         "title": "Criterio",
         "description": "Descripción (opcional)"
@@ -324,6 +325,17 @@
     "errors": {
       "notOwed": "Esta materia ya no está adeudada. Recargá la página.",
       "notFound": "No se encontró. Recargá la página."
+    }
+  },
+  "nextYear": {
+    "button": "{count, plural, one {Traer # estudiante del año pasado} other {Traer # estudiantes del año pasado}}",
+    "title": "Estudiantes del ciclo {year}",
+    "intro": "Los que promocionaron del año anterior y los que repiten este año, en la misma escuela. Destildá a quien no viene a este curso.",
+    "submit": "Agregar al curso",
+    "notFound": "No se encontró este curso. Recargá la página.",
+    "reasons": {
+      "promoted": "promocionaron",
+      "repeats": "repiten"
     }
   },
   "students": {
