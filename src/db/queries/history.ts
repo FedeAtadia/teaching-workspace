@@ -4,7 +4,18 @@
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
-import { academicYears, classes, courseStudents, courses, schools, scores, students, tasks, terms } from "@/db/schema";
+import {
+  academicYears,
+  classes,
+  courseStudents,
+  courses,
+  schools,
+  scores,
+  students,
+  tasks,
+  termGrades,
+  terms,
+} from "@/db/schema";
 import { compareCourses, type Shift } from "@/lib/courses";
 import { DEFAULT_RULES, suggestTermGrade, type Suggestion } from "@/lib/grading";
 import type { ScoreStatus } from "@/lib/scoresForm";
@@ -15,8 +26,21 @@ export type HistoryTask = {
   dueOn: string | null;
   score: { status: ScoreStatus; value: number | null; notes: string | null } | null;
 };
-export type HistoryTerm = { position: number; tasks: HistoryTask[]; suggestion: Suggestion };
-export type HistoryClass = { id: string; name: string; passMark: number; terms: HistoryTerm[] };
+export type HistoryTerm = {
+  position: number;
+  tasks: HistoryTask[];
+  suggestion: Suggestion;
+  /** TERM-7: the grade set for this cuatrimestre, if any. */
+  grade: number | null;
+};
+export type HistoryClass = {
+  id: string;
+  name: string;
+  passMark: number;
+  terms: HistoryTerm[];
+  /** TERM-1, TERM-7: the 2° cuatrimestre grade. */
+  finalGrade: number | null;
+};
 export type HistoryCourse = {
   courseId: string;
   schoolYear: string;
@@ -41,8 +65,8 @@ export async function getStudentHistory(
 ): Promise<StudentHistory | null> {
   if (!z.uuid().safeParse(studentId).success) return null;
 
-  // Wave 1: the student, their courses, and all their scores.
-  const [[student], memberships, saved] = await Promise.all([
+  // Wave 1: the student, their courses, all their scores and cuatrimestre grades.
+  const [[student], memberships, saved, grades] = await Promise.all([
     db
       .select({ id: students.id, firstName: students.firstName, lastName: students.lastName })
       .from(students)
@@ -66,6 +90,11 @@ export async function getStudentHistory(
       .select({ taskId: scores.taskId, status: scores.status, value: scores.value, notes: scores.notes })
       .from(scores)
       .where(and(eq(scores.studentId, studentId), eq(scores.teacherId, teacherId))),
+    db
+      .select({ classId: termGrades.classId, position: terms.position, value: termGrades.value })
+      .from(termGrades)
+      .innerJoin(terms, eq(termGrades.termId, terms.id))
+      .where(and(eq(termGrades.studentId, studentId), eq(termGrades.teacherId, teacherId))),
   ]);
   if (!student) return null;
   if (memberships.length === 0) return { student, courses: [] };
@@ -107,6 +136,10 @@ export async function getStudentHistory(
       };
       terms.set(t.termPosition, [...(terms.get(t.termPosition) ?? []), task]);
     }
+    // A cuatrimestre with a grade shows even if it has no tasks.
+    const classGrades = grades.filter((g) => g.classId === c.id);
+    for (const g of classGrades) if (!terms.has(g.position)) terms.set(g.position, []);
+    const gradeAt = (position: number) => classGrades.find((g) => g.position === position)?.value ?? null;
     return {
       id: c.id,
       name: c.name,
@@ -117,7 +150,9 @@ export async function getStudentHistory(
           position,
           tasks: list,
           suggestion: suggestTermGrade(list.flatMap((t) => (t.score ? [t.score] : []))),
+          grade: gradeAt(position),
         })),
+      finalGrade: gradeAt(2),
     };
   };
 

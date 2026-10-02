@@ -5,7 +5,7 @@
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
-import { courseStudents, scores, standards, taskStandards, tasks, terms, units } from "@/db/schema";
+import { courseStudents, scores, standards, taskStandards, tasks, termGrades, terms, units } from "@/db/schema";
 import { isTaskFilePath } from "@/lib/attachments";
 import { suggestTermGrade, type Suggestion } from "@/lib/grading";
 import type { ScoreRow, ScoreStatus } from "@/lib/scoresForm";
@@ -313,10 +313,16 @@ export async function saveScores(
 }
 
 export type GradebookCell = { status: ScoreStatus; value: number | null } | null;
-export type GradebookRow = { student: RosterStudent; cells: GradebookCell[]; suggestion: Suggestion };
+export type GradebookRow = {
+  student: RosterStudent;
+  cells: GradebookCell[];
+  suggestion: Suggestion;
+  /** TERM-7: the grade set for this cuatrimestre, if any. */
+  termGrade: number | null;
+};
 export type Gradebook = { tasks: TaskRow[]; rows: GradebookRow[] };
 
-/** BOOK-1, BOOK-2: one cuatrimestre of a class. */
+/** BOOK-1, BOOK-2, TERM-7: one cuatrimestre of a class. */
 export async function getGradebook(
   db: Db,
   teacherId: string,
@@ -324,7 +330,7 @@ export async function getGradebook(
   termId: string,
 ): Promise<Gradebook> {
   if (!isUuid(termId)) return { tasks: [], rows: [] };
-  const [allTasks, roster, saved] = await Promise.all([
+  const [allTasks, roster, saved, grades] = await Promise.all([
     listTasks(db, teacherId, cls),
     listClassStudents(db, teacherId, cls),
     db
@@ -332,6 +338,12 @@ export async function getGradebook(
       .from(scores)
       .innerJoin(tasks, eq(scores.taskId, tasks.id))
       .where(and(eq(tasks.classId, cls.id), eq(tasks.termId, termId), eq(scores.teacherId, teacherId))),
+    db
+      .select({ studentId: termGrades.studentId, value: termGrades.value })
+      .from(termGrades)
+      .where(
+        and(eq(termGrades.classId, cls.id), eq(termGrades.termId, termId), eq(termGrades.teacherId, teacherId)),
+      ),
   ]);
   const termTasks = allTasks.filter((t) => t.termId === termId);
   const byKey = new Map(saved.map((s) => [`${s.studentId}:${s.taskId}`, s]));
@@ -342,7 +354,8 @@ export async function getGradebook(
       return s ? { status: s.status, value: s.value } : null;
     });
     const suggestion = suggestTermGrade(cells.filter((c): c is NonNullable<GradebookCell> => c !== null));
-    return { student, cells, suggestion };
+    const termGrade = grades.find((g) => g.studentId === student.id)?.value ?? null;
+    return { student, cells, suggestion, termGrade };
   });
   return { tasks: termTasks, rows };
 }

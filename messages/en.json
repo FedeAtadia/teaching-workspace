@@ -103,7 +103,8 @@
       "standards": "Passing standards",
       "units": "Units",
       "tasks": "Tasks",
-      "grades": "Grades"
+      "grades": "Grades",
+      "termGrades": "Term grades"
     },
     "errors": {
       "notFound": "This class wasn't found. Go back to the list and try again."
@@ -223,6 +224,7 @@
     "grades": {
       "student": "Student",
       "average": "Average",
+      "termGrade": "Grade",
       "missing": "Not handed in",
       "missingShort": "NH",
       "excused": "Excused",
@@ -230,6 +232,32 @@
       "noTasks": "This term has no tasks yet.",
       "noStudents": "This course has no students yet.",
       "legend": "In red: below {passMark}. NH: not handed in. E: excused. The average leaves out tasks not handed in; they're shown next to it."
+    },
+    "termGrades": {
+      "introFirst": "Each student's grade for the term. The suggested one is the average of their tasks.",
+      "introSecond": "The 2nd term grade is the class's final grade. It's expected within a range around the 1st term's; outside it, give the reason.",
+      "student": "Student",
+      "suggested": "Suggested",
+      "firstTerm": "1st term",
+      "range": "expected {min} to {max}",
+      "grade": "Grade",
+      "notes": "Notes",
+      "passing": "Pass",
+      "failing": "Fail",
+      "above": "Higher than expected: why?",
+      "below": "Lower than expected: why?",
+      "reasonPlaceholder": "Reason",
+      "saved": "Saved.",
+      "fixErrors": "Nothing was saved: fix the marked rows.",
+      "notFound": "This term wasn't found. Reload the page.",
+      "noStudents": "This course has no students yet.",
+      "errors": {
+        "invalidGrade": "Must be a grade from 1 to 10 (e.g. 7.5).",
+        "needsGrade": "Enter a grade or clear the notes.",
+        "notesTooLong": "The notes are too long.",
+        "reasonRequired": "It's outside the expected range: give the reason.",
+        "reasonTooLong": "The reason is too long."
+      }
     }
   },
   "studentPage": {
@@ -238,7 +266,9 @@
     "noCourses": "Not in any course yet.",
     "noClasses": "This course has no classes yet.",
     "noTasks": "No tasks yet.",
-    "average": "Average"
+    "average": "Average",
+    "grade": "Grade",
+    "finalGrade": "Final grade"
   },
   "students": {
     "title": "Students",
