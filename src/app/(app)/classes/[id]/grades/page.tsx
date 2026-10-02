@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
+import { GroupFilter } from "@/components/classes/GroupFilter";
 import { listTerms } from "@/db/queries/classDetail";
+import { listGroups } from "@/db/queries/groups";
 import { getGradebook, listTasks } from "@/db/queries/tasks";
 import { formatGrade } from "@/lib/format";
 import { DEFAULT_RULES, isPassing } from "@/lib/grading";
@@ -9,9 +11,16 @@ import { loadClass } from "../data";
 /** BOOK-1..3, TERM-7: one cuatrimestre at a time, chosen with ?term=1 or ?term=2. */
 export default async function GradesPage({ params, searchParams }: PageProps<"/classes/[id]/grades">) {
   const { id } = await params;
-  const { term: termParam } = await searchParams;
+  const { term: termParam, group } = await searchParams;
   const { db, teacherId, cls } = await loadClass(id);
-  const [terms, tasks] = await Promise.all([listTerms(db, teacherId, cls), listTasks(db, teacherId, cls)]);
+  const [terms, tasks, groups] = await Promise.all([
+    listTerms(db, teacherId, cls),
+    listTasks(db, teacherId, cls),
+    listGroups(db, teacherId, id),
+  ]);
+  // GROUP-6: one group, or all.
+  const groupId = typeof group === "string" && groups.some((g) => g.id === group) ? group : undefined;
+  const withGroup = groupId ? `&group=${groupId}` : "";
 
   // Default to the latest cuatrimestre that has tasks: the one being taught.
   const latestWithTasks = Math.max(1, ...tasks.map((t) => t.termPosition));
@@ -22,7 +31,8 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
   const tTerm = await getTranslations("terms");
   const locale = await getLocale();
   const rules = { ...DEFAULT_RULES, passMark: cls.passMark ?? DEFAULT_RULES.passMark };
-  const book = term ? await getGradebook(db, teacherId, cls, term.id) : { tasks: [], rows: [] };
+  const book = term ? await getGradebook(db, teacherId, cls, term.id, groupId) : { tasks: [], rows: [] };
+  const tGroups = await getTranslations("groups");
 
   return (
     <>
@@ -30,7 +40,7 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
         {terms.map((tm) => (
           <Link
             key={tm.id}
-            href={`/classes/${id}/grades?term=${tm.position}`}
+            href={`/classes/${id}/grades?term=${tm.position}${withGroup}`}
             aria-current={tm.id === term?.id ? "page" : undefined}
             className="flex h-10 items-center rounded-full bg-muted px-4 text-sm font-bold text-muted-foreground hover:text-foreground aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
           >
@@ -38,6 +48,12 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
           </Link>
         ))}
       </nav>
+      <GroupFilter
+        groups={groups}
+        current={groupId}
+        allLabel={tGroups("all")}
+        href={(g) => `/classes/${id}/grades?term=${term?.position ?? 1}${g ? `&group=${g}` : ""}`}
+      />
 
       {book.tasks.length === 0 || book.rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">{book.rows.length === 0 ? t("noStudents") : t("noTasks")}</p>
@@ -80,7 +96,12 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                   </td>
                   {cells.map((cell, i) => (
                     <td key={book.tasks[i].id} className="px-2 py-1.5 text-center tabular-nums">
-                      {cell === null ? (
+                      {cell === "notAssessed" ? (
+                        // GROUP-5: not this student's group's task.
+                        <abbr title={t("notAssessed")} className="text-muted-foreground/60 no-underline">
+                          {t("notAssessedShort")}
+                        </abbr>
+                      ) : cell === null ? (
                         ""
                       ) : cell.status === "missing" ? (
                         <abbr title={t("missing")} className="text-destructive no-underline">

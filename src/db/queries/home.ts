@@ -7,10 +7,13 @@ import type { Db } from "@/db";
 import { classes, courseStudents, scores, tasks } from "@/db/schema";
 import { progress } from "@/lib/courses";
 import { listClasses, type ClassRow } from "./classes";
+import { assessedSql } from "./groups";
 import { listOwed } from "./yearEnd";
 
 export type HomeCard = ClassRow & {
   tasks: number;
+  /** GROUP-5: over all tasks, the active students assessed on each. */
+  expected: number;
   /** Scores and marks saved for active students (HOME-2). */
   scored: number;
   progress: number;
@@ -28,12 +31,24 @@ export async function getHomeCards(db: Db, teacherId: string): Promise<Home> {
   const [classRows, taskRows, scoredRows, [{ students }], owedClasses] = await Promise.all([
     listClasses(db, teacherId),
     db
-      .select({ id: tasks.id, classId: tasks.classId, title: tasks.title, dueOn: tasks.dueOn })
+      .select({
+        id: tasks.id,
+        classId: tasks.classId,
+        title: tasks.title,
+        dueOn: tasks.dueOn,
+        // GROUP-5: the class's active students assessed on it.
+        assessed: sql<number>`(
+          select count(*)::int from course_students cs
+          where cs.course_id = ${classes.courseId} and cs.status = 'active'
+            and ${assessedSql(tasks.id, sql`cs.student_id`)}
+        )`,
+      })
       .from(tasks)
+      .innerJoin(classes, eq(tasks.classId, classes.id))
       .where(eq(tasks.teacherId, teacherId))
       // HOME-3: dated tasks in date order, undated ones after them.
       .orderBy(sql`${tasks.dueOn} asc nulls last`, asc(tasks.createdAt)),
-    // Per task, how many of the class's ACTIVE students have a score or a mark.
+    // Per task, how many of the class's ACTIVE, ASSESSED students have a score or a mark.
     db
       .select({ taskId: scores.taskId, n: sql<number>`count(*)::int` })
       .from(scores)
@@ -48,7 +63,11 @@ export async function getHomeCards(db: Db, teacherId: string): Promise<Home> {
         ),
       )
       .where(
-        and(eq(scores.teacherId, teacherId), sql`(${scores.value} is not null or ${scores.status} <> 'graded')`),
+        and(
+          eq(scores.teacherId, teacherId),
+          sql`(${scores.value} is not null or ${scores.status} <> 'graded')`,
+          assessedSql(scores.taskId, scores.studentId),
+        ),
       )
       .groupBy(scores.taskId),
     // A student in two courses counts once.
@@ -65,13 +84,16 @@ export async function getHomeCards(db: Db, teacherId: string): Promise<Home> {
   const cards = classRows.map((c): HomeCard => {
     const own = taskRows.filter((t) => t.classId === c.id);
     const scored = own.reduce((n, t) => n + (scoredByTask.get(t.id) ?? 0), 0);
-    pending += Math.max(0, own.length * c.students - scored);
-    const nextTask = c.students > 0 ? own.find((t) => (scoredByTask.get(t.id) ?? 0) < c.students) : undefined;
+    const expected = own.reduce((n, t) => n + t.assessed, 0);
+    pending += Math.max(0, expected - scored);
+    const nextTask = own.find((t) => (scoredByTask.get(t.id) ?? 0) < t.assessed);
     return {
       ...c,
       tasks: own.length,
+      expected,
       scored,
-      progress: progress(scored, own.length, c.students),
+      // HOME-2 over assessed students: `expected` already counts tasks × students.
+      progress: progress(scored, 1, expected),
       next: nextTask ? { title: nextTask.title, dueOn: nextTask.dueOn } : null,
     };
   });

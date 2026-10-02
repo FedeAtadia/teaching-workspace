@@ -398,7 +398,7 @@ describe("the gradebook (BOOK)", () => {
 
     const book = await getGradebook(db, s.teacher, s.cls, s.term1);
     expect(book.tasks.map((t) => t.title)).toEqual(["TP 1", "TP 2"]);
-    expect(book.rows.map((r) => [r.student.lastName, r.cells.map((c) => c?.value ?? c?.status ?? null), r.suggestion])).toEqual([
+    expect(book.rows.map((r) => [r.student.lastName, r.cells.map((c) => (c === "notAssessed" ? c : (c?.value ?? c?.status ?? null))), r.suggestion])).toEqual([
       ["Álvarez", [9, "missing"], { average: 9, graded: 1, missing: 1 }],
       ["Pérez", [6, 9], { average: 7.5, graded: 2, missing: 0 }],
     ]);

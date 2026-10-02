@@ -320,6 +320,62 @@ export const termGrades = pgTable(
   (t) => [unique().on(t.classId, t.studentId, t.termId)],
 ).enableRLS();
 
+// ─── Groups within a class ──────────────────────────────────────────────────
+
+/** GROUP-1: a part of the course that attends the class on its own days. */
+export const classGroups = pgTable(
+  "class_groups",
+  {
+    id: id(),
+    teacherId: teacherId(),
+    classId: uuid("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    days: text("days"), // "Lunes 8 a 10"
+    position: integer("position").notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("class_groups_class_name_ci").on(t.classId, sql`lower(${t.name})`)],
+).enableRLS();
+
+/** GROUP-2: at most one group per student in a class. */
+export const classGroupStudents = pgTable(
+  "class_group_students",
+  {
+    teacherId: teacherId(),
+    classId: uuid("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => students.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => classGroups.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.classId, t.studentId] })],
+).enableRLS();
+
+/**
+ * GROUP-3: a task only for some groups, each with its own date. A task with
+ * no rows here is for everyone.
+ */
+export const taskGroups = pgTable(
+  "task_groups",
+  {
+    teacherId: teacherId(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => tasks.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => classGroups.id, { onDelete: "cascade" }),
+    dueOn: date("due_on"),
+  },
+  (t) => [primaryKey({ columns: [t.taskId, t.groupId] })],
+).enableRLS();
+
 export const examStatus = pgEnum("exam_status", ["graded", "absent"]);
 
 /**

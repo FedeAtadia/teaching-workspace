@@ -93,6 +93,15 @@ export const taskInput = z.object({
   description: optionalText(280),
   criteria: optionalText(1000),
   standardIds: z.array(z.uuid()),
+  /** GROUP-3: none (or left out) means the task is for everyone. */
+  groups: z
+    .array(
+      z.object({
+        groupId: z.uuid(),
+        dueOn: z.union([z.literal(""), z.iso.date()]).transform((v) => v || null),
+      }),
+    )
+    .optional(),
 });
 export type TaskInput = z.infer<typeof taskInput>;
 
@@ -131,6 +140,25 @@ export const outcomeInput = z.object({
   outcome: z.union([z.literal(""), z.enum(YEAR_OUTCOMES)]).transform((v) => v || null),
 });
 export type OutcomeInput = z.infer<typeof outcomeInput>;
+
+/** GROUP-1 */
+export const groupInput = z.object({
+  classId: z.uuid(),
+  name: z.string().trim().min(1).max(60),
+  days: optionalText(120),
+});
+export type GroupInput = z.infer<typeof groupInput>;
+
+export const groupEdit = groupInput.extend({ groupId: z.uuid() });
+export type GroupEdit = z.infer<typeof groupEdit>;
+
+/** GROUP-2: the form's "no group" option sends "". */
+export const studentGroupInput = z.object({
+  classId: z.uuid(),
+  studentId: z.uuid(),
+  groupId: optionalUuid,
+});
+export type StudentGroupInput = z.infer<typeof studentGroupInput>;
 
 /** A message key per field, looked up under `errors.` in messages/. */
 export type FieldError = "required" | "tooLong" | "invalid";

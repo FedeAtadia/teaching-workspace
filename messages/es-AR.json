@@ -181,7 +181,9 @@
         "date": "Fecha",
         "description": "Descripción breve",
         "criteria": "Criterio específico",
-        "standards": "Criterios de aprobación que evalúa"
+        "standards": "Criterios de aprobación que evalúa",
+        "groups": "Para qué grupos",
+        "groupsHint": "Sin tildar ninguno, es para todos con la fecha de arriba. Tildá los grupos que la hacen, cada uno con su fecha."
       }
     },
     "deleteTask": {
@@ -235,7 +237,9 @@
       "excusedShort": "J",
       "noTasks": "Este cuatrimestre todavía no tiene tareas.",
       "noStudents": "Este curso todavía no tiene estudiantes.",
-      "legend": "En rojo, debajo de {passMark}. NE: no entregó. J: justificado. El promedio no cuenta las tareas no entregadas; se muestran aparte."
+      "legend": "En rojo, debajo de {passMark}. NE: no entregó. J: justificado. ·: la tarea no es para su grupo. El promedio no cuenta las tareas no entregadas; se muestran aparte.",
+      "notAssessed": "No corresponde a su grupo",
+      "notAssessedShort": "·"
     },
     "termGrades": {
       "introFirst": "La nota de cada estudiante para el cuatrimestre. La sugerida es el promedio de sus tareas.",
@@ -262,6 +266,32 @@
         "reasonRequired": "Está fuera del rango esperado: escribí el motivo.",
         "reasonTooLong": "El motivo es demasiado largo."
       }
+    }
+  },
+  "groups": {
+    "title": "Grupos",
+    "intro": "¿El curso se divide en grupos que vienen distintos días? Agregalos acá y elegí el grupo de cada estudiante.",
+    "add": "Agregar grupo",
+    "addTitle": "Nuevo grupo",
+    "edit": "Editar grupo",
+    "editTitle": "Editar grupo",
+    "delete": "Eliminar grupo",
+    "deleteTitle": "¿Eliminar el grupo «{name}»?",
+    "deleteBody": "{count, plural, =0 {No tiene estudiantes.} one {Su estudiante queda sin grupo.} other {Sus # estudiantes quedan sin grupo.}}",
+    "deleteTasks": "{count, plural, one {La tarea que era solo para este grupo pasa a ser para todos.} other {Las # tareas que eran solo para este grupo pasan a ser para todos.}}",
+    "students": "{count, plural, =0 {sin estudiantes} one {# estudiante} other {# estudiantes}}",
+    "all": "Todos",
+    "none": "Sin grupo",
+    "groupOf": "Grupo de {name}",
+    "failed": "No se pudo guardar.",
+    "fields": {
+      "name": "Nombre",
+      "days": "Días (opcional)",
+      "daysPlaceholder": "Lunes 8 a 10"
+    },
+    "errors": {
+      "duplicate": "Ya hay un grupo con ese nombre en este curso.",
+      "notFound": "No se encontró. Recargá la página."
     }
   },
   "studentPage": {

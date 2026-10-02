@@ -229,6 +229,38 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   changed from its page, with the same rules. The standards it assesses are
   replaced by the ones ticked. Its scores and attached file stay.
 
+## GROUP — Groups within a class
+
+*Enforced by `src/lib/groups.ts`, `src/lib/validation.ts`,
+`src/db/queries/groups.ts`, `src/db/queries/tasks.ts`. Covered by
+`src/lib/groups.test.ts`, `src/lib/validation.test.ts`,
+`src/db/queries/groups.test.ts`.*
+
+- **GROUP-1** A class can be split into groups — say, the days each part of
+  the course attends. Each group has a name (trimmed, 1 to 60 characters,
+  unique in the class ignoring case) and optional days (up to 120
+  characters). Groups can be renamed and deleted. Deleting one leaves its
+  students without a group and takes its dates off tasks; a task that was
+  only for that group becomes a task for everyone, and the confirmation says
+  how many.
+- **GROUP-2** Each active student of the course is in at most one group of
+  the class; the teacher can move them or leave them out.
+- **GROUP-3** A task is for everyone, or only for the groups it lists, each
+  with its own date. A student is *assessed* on a task when it is for
+  everyone or for their group; a student with no group is assessed only on
+  tasks for everyone. A group task is dated by its earliest group date
+  (TASK-3).
+- **GROUP-4** Scoring a task lists only the students assessed on it, and
+  saving ignores anyone else (SCORE-1).
+- **GROUP-5** In the gradebook, a task a student isn't assessed on shows as
+  not applying and doesn't count in their average (BOOK-1, BOOK-2). Task
+  cards count only assessed students; so do Home's progress and next
+  pending task (HOME-2, HOME-3); the history lists only the tasks the student
+  is assessed on (HISTORY-3).
+- **GROUP-6** The Estudiantes tab, the scoring page and the gradebook can show
+  one group at a time, or all; the choice is kept in the address. Saving
+  scores with one group shown only changes that group's students.
+
 ## SCORE — Scoring a task
 
 *Enforced by `src/lib/scoresForm.ts`, `src/db/queries/tasks.ts`. Covered by
@@ -405,9 +437,10 @@ Covered by `src/lib/theme.test.ts`.*
 
 - **OWNER-1** A teacher only ever sees, adds to, changes or deletes their own
   schools, school years, courses, classes, students, standards, units, tasks,
-  scores, cuatrimestre grades, year outcomes and exams. Opening another teacher's class, task or student — or one that does
-  not exist — shows "not found", and nothing can be added to it, saved on it,
-  changed or deleted.
+  scores, cuatrimestre grades, year outcomes, exams and groups. Opening
+  another teacher's class, task or student — or one that does not exist —
+  shows "not found", and nothing can be added to it, saved on it, changed or
+  deleted.
 
 ---
 

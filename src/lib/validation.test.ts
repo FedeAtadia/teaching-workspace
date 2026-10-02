@@ -3,10 +3,13 @@ import {
   classEdit,
   classInput,
   examInput,
+  groupEdit,
+  groupInput,
   outcomeInput,
   schoolInput,
   standardEdit,
   standardInput,
+  studentGroupInput,
   studentInput,
   taskEdit,
   taskInput,
@@ -277,6 +280,57 @@ describe("setting a year outcome (YEAR-2)", () => {
     expect(outcomeInput.parse({ classId: CLASS_ID, studentId, outcome: "repeats" })).toMatchObject({ outcome: "repeats" });
     expect(outcomeInput.parse({ classId: CLASS_ID, studentId, outcome: "" })).toMatchObject({ outcome: null });
     expect(outcomeInput.safeParse({ classId: CLASS_ID, studentId, outcome: "expelled" }).success).toBe(false);
+  });
+});
+
+describe("groups (GROUP-1..3)", () => {
+  const GROUP = "7a6b5c4d-3e2f-4a1b-8c9d-0e1f2a3b4c5d";
+  const STUDENT = "5c2d1b0a-9e8f-4a7b-8c6d-5e4f3a2b1c0d";
+
+  it("takes a trimmed name of 1 to 60 characters and optional days (GROUP-1)", () => {
+    expect(groupInput.parse({ classId: CLASS_ID, name: " Lunes ", days: "" })).toEqual({
+      classId: CLASS_ID,
+      name: "Lunes",
+      days: null,
+    });
+    expect(groupEdit.parse({ classId: CLASS_ID, groupId: GROUP, name: "Martes", days: " 8 a 10 " })).toMatchObject({
+      groupId: GROUP,
+      days: "8 a 10",
+    });
+    expect(groupInput.safeParse({ classId: CLASS_ID, name: " ", days: "" }).success).toBe(false);
+    expect(groupInput.safeParse({ classId: CLASS_ID, name: "x".repeat(61), days: "" }).success).toBe(false);
+    expect(groupInput.safeParse({ classId: CLASS_ID, name: "A", days: "x".repeat(121) }).success).toBe(false);
+  });
+
+  it("puts a student in a group, or in none (GROUP-2)", () => {
+    expect(studentGroupInput.parse({ classId: CLASS_ID, studentId: STUDENT, groupId: GROUP })).toMatchObject({
+      groupId: GROUP,
+    });
+    expect(studentGroupInput.parse({ classId: CLASS_ID, studentId: STUDENT, groupId: "" })).toMatchObject({
+      groupId: null,
+    });
+  });
+
+  it("takes a task's groups with a date each, or none for everyone (GROUP-3)", () => {
+    const task = {
+      classId: CLASS_ID,
+      title: "TP",
+      termId: GROUP,
+      unitId: "",
+      dueOn: "",
+      description: "",
+      criteria: "",
+      standardIds: [],
+    };
+    expect(taskInput.parse(task).groups ?? []).toEqual([]);
+    expect(
+      taskInput.parse({ ...task, groups: [{ groupId: GROUP, dueOn: "2026-05-10" }, { groupId: STUDENT, dueOn: "" }] })
+        .groups,
+    ).toEqual([
+      { groupId: GROUP, dueOn: "2026-05-10" },
+      { groupId: STUDENT, dueOn: null },
+    ]);
+    expect(taskInput.safeParse({ ...task, groups: [{ groupId: GROUP, dueOn: "10/05" }] }).success).toBe(false);
   });
 });
 
