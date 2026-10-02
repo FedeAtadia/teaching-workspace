@@ -37,6 +37,18 @@ export type FieldSpec =
       options: { value: string; label: string }[];
       /** The values ticked when the form opens. */
       defaultValue?: string[];
+    }
+  /**
+   * GROUP-3: one box per group, each with its own date. Sends `<name>` per
+   * ticked group and `groupDue.<id>` for its date; none ticked means everyone.
+   */
+  | {
+      kind: "groupDates";
+      name: string;
+      label: string;
+      hint: string;
+      options: { value: string; label: string }[];
+      defaultValue?: { groupId: string; dueOn: string | null }[];
     };
 
 /**
@@ -60,8 +72,9 @@ export function FormDialog({
   /**
    * "add": the main button. "addSmall": a small outlined one with a plus, for
    * inside a row. "edit": an outlined button with a pencil. "editIcon": just the pencil.
+   * "badge": a small pill showing the label. "text": a small plain-text button.
    */
-  trigger?: "add" | "addSmall" | "edit" | "editIcon";
+  trigger?: "add" | "addSmall" | "edit" | "editIcon" | "badge" | "text";
   title: string;
   /** A wider dialog, for forms with many fields. */
   wide?: boolean;
@@ -79,6 +92,16 @@ export function FormDialog({
       {trigger === "addSmall" && (
         <DialogTrigger render={<Button variant="outline" size="sm" />}>
           <Plus aria-hidden />
+          {triggerLabel}
+        </DialogTrigger>
+      )}
+      {trigger === "badge" && (
+        <DialogTrigger className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-bold text-chalk hover:bg-primary/25">
+          {triggerLabel}
+        </DialogTrigger>
+      )}
+      {trigger === "text" && (
+        <DialogTrigger render={<Button variant="ghost" size="xs" className="text-muted-foreground" />}>
           {triggerLabel}
         </DialogTrigger>
       )}
@@ -208,6 +231,37 @@ function DialogForm({
                     {o.label}
                   </label>
                 ))}
+              </div>
+            )}
+            {f.kind === "groupDates" && (
+              <div id={id} className="grid gap-2">
+                <p className="text-xs text-muted-foreground">{f.hint}</p>
+                {f.options.map((o) => {
+                  const saved = f.defaultValue?.find((g) => g.groupId === o.value);
+                  // Refilled after an error: the action sends the ticked ids joined by commas.
+                  const ticked = v[f.name] !== undefined ? v[f.name].split(",").includes(o.value) : !!saved;
+                  return (
+                    <div key={o.value} className="flex flex-wrap items-center gap-3">
+                      <label className="flex min-w-32 items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          name={f.name}
+                          value={o.value}
+                          defaultChecked={ticked}
+                          className="size-4 accent-primary"
+                        />
+                        {o.label}
+                      </label>
+                      <Input
+                        type="date"
+                        name={`groupDue.${o.value}`}
+                        defaultValue={v[`groupDue.${o.value}`] ?? saved?.dueOn ?? ""}
+                        aria-label={o.label}
+                        className="w-44"
+                      />
+                    </div>
+                  );
+                })}
               </div>
             )}
             {f.kind === "select" && (

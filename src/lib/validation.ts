@@ -54,11 +54,15 @@ const optionalText = (max: number) =>
     .max(max)
     .transform((s) => s || null);
 
-/** STD-1 */
+/** STD-1; ADAPT-2: with `studentId`, that student's own standard. */
 export const standardInput = z.object({
   classId: z.uuid(),
   title: z.string().trim().min(1).max(200),
   description: optionalText(1000),
+  studentId: z
+    .union([z.literal(""), z.uuid()])
+    .optional()
+    .transform((v) => v || null),
 });
 export type StandardInput = z.infer<typeof standardInput>;
 
@@ -93,6 +97,18 @@ export const taskInput = z.object({
   description: optionalText(280),
   criteria: optionalText(1000),
   standardIds: z.array(z.uuid()),
+  /** ADAPT-3: left out when the class has no adapted students; the saved ones stay. */
+  adaptedDescription: optionalText(280).optional(),
+  adaptedCriteria: optionalText(1000).optional(),
+  /** GROUP-3: none (or left out) means the task is for everyone. */
+  groups: z
+    .array(
+      z.object({
+        groupId: z.uuid(),
+        dueOn: z.union([z.literal(""), z.iso.date()]).transform((v) => v || null),
+      }),
+    )
+    .optional(),
 });
 export type TaskInput = z.infer<typeof taskInput>;
 
@@ -131,6 +147,33 @@ export const outcomeInput = z.object({
   outcome: z.union([z.literal(""), z.enum(YEAR_OUTCOMES)]).transform((v) => v || null),
 });
 export type OutcomeInput = z.infer<typeof outcomeInput>;
+
+/** ADAPT-1: what is adapted; saved empty, the adaptation is removed. */
+export const adaptationInput = z.object({
+  classId: z.uuid(),
+  studentId: z.uuid(),
+  notes: z.string().trim().max(2000),
+});
+export type AdaptationInput = z.infer<typeof adaptationInput>;
+
+/** GROUP-1 */
+export const groupInput = z.object({
+  classId: z.uuid(),
+  name: z.string().trim().min(1).max(60),
+  days: optionalText(120),
+});
+export type GroupInput = z.infer<typeof groupInput>;
+
+export const groupEdit = groupInput.extend({ groupId: z.uuid() });
+export type GroupEdit = z.infer<typeof groupEdit>;
+
+/** GROUP-2: the form's "no group" option sends "". */
+export const studentGroupInput = z.object({
+  classId: z.uuid(),
+  studentId: z.uuid(),
+  groupId: optionalUuid,
+});
+export type StudentGroupInput = z.infer<typeof studentGroupInput>;
 
 /** A message key per field, looked up under `errors.` in messages/. */
 export type FieldError = "required" | "tooLong" | "invalid";

@@ -29,6 +29,10 @@ Planned work, in order. Nothing here is a requirement yet: a feature moves into
   (previas), promoted / repeats / graduated (YEAR, EXAM).
 - [x] Bringing promoted and repeating students into next year's courses (NEXT).
 - [x] A file on each passing standard, like tasks (FILE-4).
+- [x] Groups within a class: who attends which day, tasks with a date per
+  group or only for some groups, one group at a time (GROUP).
+- [x] Adaptations: a note per student, adapted tasks, their own passing
+  standards, adapted scores (ADAPT).
 - [x] UI kit: shadcn/ui.
 
 ## Phase 2 — Exports

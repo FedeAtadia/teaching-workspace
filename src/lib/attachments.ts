@@ -22,6 +22,9 @@ export function checkAttachment(file: { type: string; size: number }): Attachmen
 /** FILE-4: a passing standard's folder, inside the teacher's. A task's is just its id (FILE-2). */
 export const standardFolder = (standardId: string) => `standards/${standardId}`;
 
+/** ADAPT-3: a task's adapted file, apart from its own (FILE-2). */
+export const adaptedTaskFolder = (taskId: string) => `${taskId}/adapted`;
+
 /**
  * FILE-2, FILE-4: `<teacher id>/<folder>/<safe name>`, the folder being the
  * task's id or `standardFolder(id)`. Accents are dropped and anything but

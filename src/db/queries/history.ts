@@ -6,6 +6,8 @@ import { z } from "zod";
 import type { Db } from "@/db";
 import {
   academicYears,
+  classGroupStudents,
+  studentAdaptations,
   classes,
   courseStudents,
   courses,
@@ -19,15 +21,18 @@ import {
 } from "@/db/schema";
 import { compareCourses, type Shift } from "@/lib/courses";
 import { DEFAULT_RULES, suggestTermGrade, type Suggestion } from "@/lib/grading";
+import { isAssessed } from "@/lib/groups";
 import type { ScoreStatus } from "@/lib/scoresForm";
 import { classResult, type ClassResult, type YearOutcome } from "@/lib/yearEnd";
+import { getTaskGroups } from "./groups";
 import { toExamRow, type ExamRow } from "./yearEnd";
 
 export type HistoryTask = {
   id: string;
   title: string;
   dueOn: string | null;
-  score: { status: ScoreStatus; value: number | null; notes: string | null } | null;
+  /** `adapted`: given on adapted content (ADAPT-4). */
+  score: { status: ScoreStatus; value: number | null; notes: string | null; adapted: boolean } | null;
 };
 export type HistoryTerm = {
   position: number;
@@ -47,6 +52,8 @@ export type HistoryClass = {
   result: ClassResult;
   /** HISTORY-4, EXAM-1: in date order. */
   exams: ExamRow[];
+  /** ADAPT-1: what is adapted for this student in the class, if anything. */
+  adaptation: string | null;
 };
 export type HistoryCourse = {
   courseId: string;
@@ -75,7 +82,7 @@ export async function getStudentHistory(
   if (!z.uuid().safeParse(studentId).success) return null;
 
   // Wave 1: the student, their courses, all their scores, cuatrimestre grades and exams.
-  const [[student], memberships, saved, grades, examRows] = await Promise.all([
+  const [[student], memberships, saved, grades, examRows, adaptations] = await Promise.all([
     db
       .select({ id: students.id, firstName: students.firstName, lastName: students.lastName })
       .from(students)
@@ -97,7 +104,13 @@ export async function getStudentHistory(
       .innerJoin(schools, eq(courses.schoolId, schools.id))
       .where(and(eq(courseStudents.studentId, studentId), eq(courseStudents.teacherId, teacherId))),
     db
-      .select({ taskId: scores.taskId, status: scores.status, value: scores.value, notes: scores.notes })
+      .select({
+        taskId: scores.taskId,
+        status: scores.status,
+        value: scores.value,
+        notes: scores.notes,
+        adapted: scores.adapted,
+      })
       .from(scores)
       .where(and(eq(scores.studentId, studentId), eq(scores.teacherId, teacherId))),
     db
@@ -117,13 +130,17 @@ export async function getStudentHistory(
       .from(exams)
       .where(and(eq(exams.studentId, studentId), eq(exams.teacherId, teacherId)))
       .orderBy(asc(exams.takenOn), asc(exams.createdAt)),
+    db
+      .select({ classId: studentAdaptations.classId, notes: studentAdaptations.notes })
+      .from(studentAdaptations)
+      .where(and(eq(studentAdaptations.studentId, studentId), eq(studentAdaptations.teacherId, teacherId))),
   ]);
   if (!student) return null;
   if (memberships.length === 0) return { student, courses: [] };
 
-  // Wave 2: the classes of those courses, and their tasks.
+  // Wave 2: the classes of those courses, their tasks, and the student's groups in them.
   const courseIds = memberships.map((m) => m.courseId);
-  const [classRows, taskRows] = await Promise.all([
+  const [classRows, taskRows, groupRows] = await Promise.all([
     db
       .select({ id: classes.id, courseId: classes.courseId, name: classes.name, passMark: classes.passMark })
       .from(classes)
@@ -142,19 +159,30 @@ export async function getStudentHistory(
       .where(and(inArray(classes.courseId, courseIds), eq(tasks.teacherId, teacherId)))
       // TASK-3
       .orderBy(asc(terms.position), sql`${tasks.dueOn} asc nulls last`, asc(tasks.createdAt)),
+    db
+      .select({ classId: classGroupStudents.classId, groupId: classGroupStudents.groupId })
+      .from(classGroupStudents)
+      .where(and(eq(classGroupStudents.studentId, studentId), eq(classGroupStudents.teacherId, teacherId))),
   ]);
+
+  // Wave 3: which groups those tasks are for (GROUP-3).
+  const taskGroupMap = await getTaskGroups(db, teacherId, taskRows.map((t) => t.id));
+  const groupIn = new Map(groupRows.map((m) => [m.classId, m.groupId]));
+  const assessed = (t: (typeof taskRows)[number]) =>
+    isAssessed((taskGroupMap.get(t.id) ?? []).map((g) => g.groupId), groupIn.get(t.classId));
 
   const scoreByTask = new Map(saved.map((s) => [s.taskId, s]));
 
   const buildClass = (c: (typeof classRows)[number]): HistoryClass => {
     const terms = new Map<number, HistoryTask[]>();
-    for (const t of taskRows.filter((t) => t.classId === c.id)) {
+    // GROUP-5: only the tasks this student is assessed on.
+    for (const t of taskRows.filter((t) => t.classId === c.id && assessed(t))) {
       const s = scoreByTask.get(t.id);
       const task: HistoryTask = {
         id: t.id,
         title: t.title,
         dueOn: t.dueOn,
-        score: s ? { status: s.status, value: s.value, notes: s.notes } : null,
+        score: s ? { status: s.status, value: s.value, notes: s.notes, adapted: s.adapted } : null,
       };
       terms.set(t.termPosition, [...(terms.get(t.termPosition) ?? []), task]);
     }
@@ -179,6 +207,7 @@ export async function getStudentHistory(
       finalGrade: gradeAt(2),
       result: classResult(gradeAt(2), classExams, passMark),
       exams: classExams,
+      adaptation: adaptations.find((a) => a.classId === c.id)?.notes ?? null,
     };
   };
 

@@ -17,6 +17,10 @@ export type ScoreFormRow = {
   notes: string;
   /** SCORE-5: null when there is no saved score. */
   passing: boolean | null;
+  /** ADAPT-1: what is adapted for this student, or null. */
+  adaptation: string | null;
+  /** ADAPT-4: whether the score starts marked as adapted. */
+  adapted: boolean;
 };
 
 type State = ScoresState & { version: number };
@@ -31,6 +35,7 @@ export function ScoresForm({ classId, taskId, rows }: { classId: string; taskId:
   );
   // After an error the fields refill with what was typed; otherwise with what is saved.
   const typed = state.status === "error" ? state.values : undefined;
+  const anyAdapted = rows.some((r) => r.adaptation !== null);
 
   return (
     <form key={state.version} action={formAction} className="grid gap-4">
@@ -44,6 +49,7 @@ export function ScoresForm({ classId, taskId, rows }: { classId: string; taskId:
               <th className="py-2 pr-3 font-medium">{t("student")}</th>
               <th className="py-2 pr-3 font-medium">{t("score")}</th>
               <th className="py-2 pr-3 font-medium">{t("status")}</th>
+              {anyAdapted && <th className="py-2 pr-3 font-medium">{t("adapted")}</th>}
               <th className="py-2 font-medium">{t("notes")}</th>
             </tr>
           </thead>
@@ -53,6 +59,7 @@ export function ScoresForm({ classId, taskId, rows }: { classId: string; taskId:
                 key={row.studentId}
                 row={row}
                 typed={typed}
+                showAdapted={anyAdapted}
                 error={state.scoreErrors?.[row.studentId]}
               />
             ))}
@@ -87,12 +94,15 @@ export function ScoresForm({ classId, taskId, rows }: { classId: string; taskId:
 function ScoreRowFields({
   row,
   typed,
+  showAdapted,
   error,
 }: {
   row: ScoreFormRow;
   typed: Record<string, string> | undefined;
+  showAdapted: boolean;
   error: string | undefined;
 }) {
+  const tAdapt = useTranslations("adaptations");
   const t = useTranslations("classPage.scoring");
   const id = row.studentId;
   const initialStatus = (typed?.[`status.${id}`] as ScoreStatus | undefined) ?? row.status;
@@ -103,6 +113,14 @@ function ScoreRowFields({
     <tr className="border-b align-top last:border-0">
       <td className="py-2 pr-3 font-medium whitespace-nowrap">
         <label htmlFor={`score-${id}`}>{row.name}</label>
+        {row.adaptation && (
+          <span
+            title={row.adaptation}
+            className="ml-1.5 inline-block rounded-full bg-primary/15 px-2 py-0.5 align-middle text-[0.7rem] font-bold text-chalk"
+          >
+            {tAdapt("badge")}
+          </span>
+        )}
       </td>
       <td className="py-2 pr-3">
         <div className="flex items-center gap-2">
@@ -139,6 +157,20 @@ function ScoreRowFields({
           <NativeSelectOption value="excused">{t("statuses.excused")}</NativeSelectOption>
         </NativeSelect>
       </td>
+      {showAdapted && (
+        <td className="py-2 pr-3 text-center">
+          {row.adaptation && (
+            <input
+              type="checkbox"
+              name={`adapted.${id}`}
+              // After an error, ticked only if it was sent ticked.
+              defaultChecked={typed ? typed[`adapted.${id}`] !== undefined : row.adapted}
+              aria-label={t("adaptedFor", { name: row.name })}
+              className="size-4 accent-primary"
+            />
+          )}
+        </td>
+      )}
       <td className="py-2">
         <Input
           name={`notes.${id}`}

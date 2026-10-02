@@ -10,6 +10,8 @@ export type ScoreRow = {
   status: ScoreStatus;
   value: number | null;
   notes: string | null;
+  /** ADAPT-4: given on adapted content. Saved as false when left out. */
+  adapted?: boolean;
 };
 
 export type ScoreEntryError = "invalidScore" | "notesTooLong";
@@ -21,8 +23,18 @@ export type ParsedScores =
 const MAX_NOTES = 1000;
 
 /**
- * `get` reads one form field: `score.<studentId>`, `status.<studentId>` or
- * `notes.<studentId>`. Only the given students are read.
+ * GROUP-6: the students whose row was on the page. Each row always sends its
+ * status, even when its score box is disabled, so a student shown only to
+ * another group's filter isn't read as "left empty" and cleared.
+ */
+export function rowsInForm(has: (name: string) => boolean, studentIds: string[]): string[] {
+  return studentIds.filter((id) => has(`status.${id}`));
+}
+
+/**
+ * `get` reads one form field: `score.<studentId>`, `status.<studentId>`,
+ * `notes.<studentId>` or `adapted.<studentId>` (a ticked box, ADAPT-4).
+ * Only the given students are read.
  */
 export function parseScoresForm(
   get: (name: string) => string | null,
@@ -38,6 +50,7 @@ export function parseScoresForm(
     const rawStatus = get(`status.${studentId}`);
     const status: ScoreStatus = rawStatus === "missing" || rawStatus === "excused" ? rawStatus : "graded";
     const notes = (get(`notes.${studentId}`) ?? "").trim();
+    const adapted = get(`adapted.${studentId}`) !== null;
 
     if (notes.length > MAX_NOTES) {
       errors[studentId] = "notesTooLong";
@@ -45,18 +58,18 @@ export function parseScoresForm(
     }
     // SCORE-2: no score for these, even if one was typed before the switch.
     if (status !== "graded") {
-      save.push({ studentId, status, value: null, notes: notes || null });
+      save.push({ studentId, status, value: null, notes: notes || null, adapted });
       continue;
     }
     // SCORE-3
     if (typed === "") {
-      if (notes) save.push({ studentId, status, value: null, notes });
+      if (notes) save.push({ studentId, status, value: null, notes, adapted });
       else clear.push(studentId);
       continue;
     }
     const value = parseGrade(typed, rules);
     if (value === null) errors[studentId] = "invalidScore";
-    else save.push({ studentId, status, value, notes: notes || null });
+    else save.push({ studentId, status, value, notes: notes || null, adapted });
   }
 
   return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, save, clear };

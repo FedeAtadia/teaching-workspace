@@ -15,8 +15,17 @@ import {
 } from "@/db/queries/classDetail";
 import { redirect } from "next/navigation";
 import { deleteClass } from "@/db/queries/classes";
+import { createGroup, deleteGroup, setStudentGroup, updateGroup } from "@/db/queries/groups";
 import { bringStudents } from "@/db/queries/nextYear";
-import { createTask, deleteTask, saveScores, setTaskAttachment, updateTask } from "@/db/queries/tasks";
+import {
+  createTask,
+  deleteTask,
+  saveScores,
+  setTaskAdaptedAttachment,
+  setTaskAttachment,
+  updateTask,
+} from "@/db/queries/tasks";
+import { setAdaptation } from "@/db/queries/adaptations";
 import { getTermGradeSheet, saveTermGrades } from "@/db/queries/termGrades";
 import { deleteExam, recordExam, setOutcome } from "@/db/queries/yearEnd";
 import { ATTACHMENT_BUCKET } from "@/lib/attachments";
@@ -24,13 +33,17 @@ import { requireTeacherId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { FormState } from "@/lib/formState";
 import { DEFAULT_RULES } from "@/lib/grading";
-import { parseScoresForm, type ScoreEntryError } from "@/lib/scoresForm";
+import { parseScoresForm, rowsInForm, type ScoreEntryError } from "@/lib/scoresForm";
 import { parseTermGradesForm, type TermGradeEntryError } from "@/lib/termGradesForm";
 import {
+  adaptationInput,
   examInput,
+  groupEdit,
+  groupInput,
   outcomeInput,
   standardEdit,
   standardInput,
+  studentGroupInput,
   taskEdit,
   taskInput,
   toFieldErrors,
@@ -141,11 +154,26 @@ export async function removeUnit(input: { classId: string; unitId: string }): Pr
   return result;
 }
 
-export async function addTask(_prev: FormState, formData: FormData): Promise<FormState> {
+/**
+ * The task form as sent: checkbox lists read with getAll, and each ticked
+ * group's date from `groupDue.<id>` (GROUP-3). `values` goes back on an
+ * error, with checkbox ids joined so the form can re-tick them.
+ */
+function readTaskForm(formData: FormData) {
   const standardIds = formData.getAll("standardIds").map(String);
-  // Checkbox ids go back joined, so the form can re-tick them after an error.
-  const values = { ...(Object.fromEntries(formData) as Record<string, string>), standardIds: standardIds.join(",") };
-  const parsed = taskInput.safeParse({ ...values, standardIds });
+  const groupIds = formData.getAll("groupIds").map(String);
+  const values = {
+    ...(Object.fromEntries(formData) as Record<string, string>),
+    standardIds: standardIds.join(","),
+    groupIds: groupIds.join(","),
+  };
+  const groups = groupIds.map((groupId) => ({ groupId, dueOn: String(formData.get(`groupDue.${groupId}`) ?? "") }));
+  return { values, input: { ...values, standardIds, groups } };
+}
+
+export async function addTask(_prev: FormState, formData: FormData): Promise<FormState> {
+  const { values, input } = readTaskForm(formData);
+  const parsed = taskInput.safeParse(input);
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
 
   const result = await createTask(getDb(), await requireTeacherId(), parsed.data);
@@ -157,9 +185,8 @@ export async function addTask(_prev: FormState, formData: FormData): Promise<For
 
 /** TASK-6 */
 export async function editTask(_prev: FormState, formData: FormData): Promise<FormState> {
-  const standardIds = formData.getAll("standardIds").map(String);
-  const values = { ...(Object.fromEntries(formData) as Record<string, string>), standardIds: standardIds.join(",") };
-  const parsed = taskEdit.safeParse({ ...values, standardIds });
+  const { values, input } = readTaskForm(formData);
+  const parsed = taskEdit.safeParse(input);
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
 
   const result = await updateTask(getDb(), await requireTeacherId(), parsed.data);
@@ -213,6 +240,37 @@ export async function removeTaskFile(input: { classId: string; taskId: string })
   return { ok: true };
 }
 
+/** ADAPT-3: as recordTaskFile, for the task's adapted file. */
+export async function recordAdaptedTaskFile(input: {
+  classId: string;
+  taskId: string;
+  path: string;
+  name: string;
+}): Promise<ActionResult> {
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const cls = await getClass(db, teacherId, input.classId);
+  if (!cls) return { ok: false, error: "notFound" };
+  const result = await setTaskAdaptedAttachment(db, teacherId, cls, input.taskId, { path: input.path, name: input.name });
+  if (!result.ok) return result;
+  if (result.previousPath && result.previousPath !== input.path) await deleteStoredFiles(result.previousPath);
+  revalidatePath(`/classes/${cls.id}/tasks/${input.taskId}`);
+  return { ok: true };
+}
+
+/** ADAPT-3: removes the task's adapted file and the link to it. */
+export async function removeAdaptedTaskFile(input: { classId: string; taskId: string }): Promise<ActionResult> {
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const cls = await getClass(db, teacherId, input.classId);
+  if (!cls) return { ok: false, error: "notFound" };
+  const result = await setTaskAdaptedAttachment(db, teacherId, cls, input.taskId, null);
+  if (!result.ok) return result;
+  if (result.previousPath) await deleteStoredFiles(result.previousPath);
+  revalidatePath(`/classes/${cls.id}/tasks/${input.taskId}`);
+  return { ok: true };
+}
+
 /** CLASS-7: deletes the class, its work and its files, then goes back to the list. */
 export async function removeClass(input: { classId: string }): Promise<ActionResult> {
   const result = await deleteClass(getDb(), await requireTeacherId(), input.classId);
@@ -230,7 +288,8 @@ export async function deleteTaskAction(input: { classId: string; taskId: string 
   if (!cls) return { ok: false, error: "notFound" };
   const result = await deleteTask(db, teacherId, cls, input.taskId);
   if (!result.ok) return result;
-  if (result.attachmentPath) await deleteStoredFiles(result.attachmentPath);
+  // FILE-1, ADAPT-3: its file and its adapted file.
+  await deleteStoredFiles(...[result.attachmentPath, result.adaptedAttachmentPath].filter((f) => f !== null));
   revalidatePath(`/classes/${cls.id}/tasks`);
   revalidatePath(`/classes/${cls.id}/grades`);
   redirect(`/classes/${cls.id}/tasks`);
@@ -257,7 +316,8 @@ export async function saveTaskScores(_prev: ScoresState, formData: FormData): Pr
       const v = formData.get(name);
       return typeof v === "string" ? v : null;
     },
-    roster.map((s) => s.id),
+    // GROUP-6: only the rows on the page; a filtered page leaves other students alone.
+    rowsInForm((name) => formData.has(name), roster.map((s) => s.id)),
     rules,
   );
   if (!parsed.ok) return { status: "error", scoreErrors: parsed.errors, values };
@@ -363,4 +423,78 @@ export async function bringStudentsAction(_prev: BringState, formData: FormData)
   revalidatePath("/students");
   revalidatePath("/dashboard");
   return { status: "saved", added: result.added };
+}
+
+/** GROUP-1 */
+export async function addGroup(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = groupInput.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+
+  const result = await createGroup(getDb(), await requireTeacherId(), parsed.data);
+  if (!result.ok) return { status: "error", formError: result.error, values };
+
+  refreshClass(parsed.data.classId);
+  return { status: "saved" };
+}
+
+/** GROUP-1 */
+export async function editGroup(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = groupEdit.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+
+  const result = await updateGroup(getDb(), await requireTeacherId(), parsed.data);
+  if (!result.ok) return { status: "error", formError: result.error, values };
+
+  refreshClass(parsed.data.classId);
+  return { status: "saved" };
+}
+
+/** GROUP-1 */
+export async function removeGroup(input: { classId: string; groupId: string }): Promise<ActionResult> {
+  const result = await deleteGroup(getDb(), await requireTeacherId(), input);
+  if (result.ok) {
+    refreshClass(input.classId);
+    revalidatePath("/dashboard");
+  }
+  return result;
+}
+
+/** GROUP-2: saved as soon as the teacher picks it. */
+export async function setStudentGroupAction(input: {
+  classId: string;
+  studentId: string;
+  groupId: string;
+}): Promise<{ ok: boolean }> {
+  const parsed = studentGroupInput.safeParse(input);
+  if (!parsed.success) return { ok: false };
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const cls = await getClass(db, teacherId, parsed.data.classId);
+  if (!cls) return { ok: false };
+  const result = await setStudentGroup(db, teacherId, cls, parsed.data);
+  if (result.ok) {
+    refreshClass(cls.id);
+    revalidatePath("/dashboard");
+  }
+  return { ok: result.ok };
+}
+
+/** ADAPT-1: what is adapted for a student; saved empty, the adaptation is removed. */
+export async function saveAdaptation(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = adaptationInput.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const cls = await getClass(db, teacherId, parsed.data.classId);
+  if (!cls) return { status: "error", formError: "notFound", values };
+
+  const result = await setAdaptation(db, teacherId, cls, parsed.data);
+  if (!result.ok) return { status: "error", formError: result.error, values };
+
+  refreshClass(cls.id);
+  revalidatePath("/students/[id]", "page");
+  return { status: "saved" };
 }

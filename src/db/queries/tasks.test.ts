@@ -179,8 +179,8 @@ describe("scoring a task (SCORE)", () => {
     const saved = await listTaskScores(db, s.teacher, id);
     expect(saved).toEqual(
       expect.arrayContaining([
-        { studentId: Pérez, status: "graded", value: 8, notes: "Corrigió" },
-        { studentId: Álvarez, status: "missing", value: null, notes: null },
+        { studentId: Pérez, status: "graded", value: 8, notes: "Corrigió", adapted: false },
+        { studentId: Álvarez, status: "missing", value: null, notes: null, adapted: false },
       ]),
     );
     const rows = await db.select().from(scores).where(and(eq(scores.taskId, id), eq(scores.studentId, Pérez)));
@@ -314,6 +314,7 @@ describe("deleting a task (TASK-5)", () => {
     expect(await deleteTask(db, s.teacher, s.cls, doomed)).toEqual({
       ok: true,
       attachmentPath: `${s.teacher}/${doomed}/tp.pdf`,
+      adaptedAttachmentPath: null,
     });
     expect((await listTasks(db, s.teacher, s.cls)).map((t) => t.title)).toEqual(["Queda"]);
     expect(await listTaskScores(db, s.teacher, doomed)).toEqual([]);
@@ -398,7 +399,7 @@ describe("the gradebook (BOOK)", () => {
 
     const book = await getGradebook(db, s.teacher, s.cls, s.term1);
     expect(book.tasks.map((t) => t.title)).toEqual(["TP 1", "TP 2"]);
-    expect(book.rows.map((r) => [r.student.lastName, r.cells.map((c) => c?.value ?? c?.status ?? null), r.suggestion])).toEqual([
+    expect(book.rows.map((r) => [r.student.lastName, r.cells.map((c) => (c === "notAssessed" ? c : (c?.value ?? c?.status ?? null))), r.suggestion])).toEqual([
       ["Álvarez", [9, "missing"], { average: 9, graded: 1, missing: 1 }],
       ["Pérez", [6, 9], { average: 7.5, graded: 2, missing: 0 }],
     ]);

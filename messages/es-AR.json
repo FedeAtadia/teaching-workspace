@@ -144,7 +144,11 @@
       "fields": {
         "title": "Criterio",
         "description": "Descripción (opcional)"
-      }
+      },
+      "ownTitle": "Criterios de {name}",
+      "ownBadge": "Adaptación",
+      "ownDialogTitle": "Nuevo criterio de {name}",
+      "ownEmpty": "Todavía no tiene criterios propios."
     },
     "units": {
       "intro": "Los temas que se dan a lo largo del año.",
@@ -181,7 +185,15 @@
         "date": "Fecha",
         "description": "Descripción breve",
         "criteria": "Criterio específico",
-        "standards": "Criterios de aprobación que evalúa"
+        "standards": "Criterios de aprobación que evalúa",
+        "groups": "Para qué grupos",
+        "groupsHint": "Sin tildar ninguno, es para todos con la fecha de arriba. Tildá los grupos que la hacen, cada uno con su fecha.",
+        "adaptedDescription": "Descripción adaptada (opcional)",
+        "adaptedCriteria": "Criterio específico adaptado (opcional)"
+      },
+      "adapted": {
+        "title": "Versión adaptada",
+        "empty": "Para estudiantes con adaptación. Agregá la consigna o el criterio adaptado con «Editar tarea», y el archivo acá."
       }
     },
     "deleteTask": {
@@ -223,7 +235,9 @@
       "errors": {
         "invalidScore": "Tiene que ser una nota del 1 al 10 (por ejemplo 7,5).",
         "notesTooLong": "Las observaciones son demasiado largas."
-      }
+      },
+      "adapted": "Adaptada",
+      "adaptedFor": "Nota adaptada de {name}"
     },
     "grades": {
       "student": "Estudiante",
@@ -235,7 +249,11 @@
       "excusedShort": "J",
       "noTasks": "Este cuatrimestre todavía no tiene tareas.",
       "noStudents": "Este curso todavía no tiene estudiantes.",
-      "legend": "En rojo, debajo de {passMark}. NE: no entregó. J: justificado. El promedio no cuenta las tareas no entregadas; se muestran aparte."
+      "legend": "En rojo, debajo de {passMark}. NE: no entregó. J: justificado. ·: la tarea no es para su grupo. El promedio no cuenta las tareas no entregadas; se muestran aparte.",
+      "notAssessed": "No corresponde a su grupo",
+      "notAssessedShort": "·",
+      "adapted": "Nota sobre contenido adaptado",
+      "adaptedShort": "A"
     },
     "termGrades": {
       "introFirst": "La nota de cada estudiante para el cuatrimestre. La sugerida es el promedio de sus tareas.",
@@ -263,6 +281,39 @@
         "reasonTooLong": "El motivo es demasiado largo."
       }
     }
+  },
+  "groups": {
+    "title": "Grupos",
+    "intro": "¿El curso se divide en grupos que vienen distintos días? Agregalos acá y elegí el grupo de cada estudiante.",
+    "add": "Agregar grupo",
+    "addTitle": "Nuevo grupo",
+    "edit": "Editar grupo",
+    "editTitle": "Editar grupo",
+    "delete": "Eliminar grupo",
+    "deleteTitle": "¿Eliminar el grupo «{name}»?",
+    "deleteBody": "{count, plural, =0 {No tiene estudiantes.} one {Su estudiante queda sin grupo.} other {Sus # estudiantes quedan sin grupo.}}",
+    "deleteTasks": "{count, plural, one {La tarea que era solo para este grupo pasa a ser para todos.} other {Las # tareas que eran solo para este grupo pasan a ser para todos.}}",
+    "students": "{count, plural, =0 {sin estudiantes} one {# estudiante} other {# estudiantes}}",
+    "all": "Todos",
+    "none": "Sin grupo",
+    "groupOf": "Grupo de {name}",
+    "failed": "No se pudo guardar.",
+    "fields": {
+      "name": "Nombre",
+      "days": "Días (opcional)",
+      "daysPlaceholder": "Lunes 8 a 10"
+    },
+    "errors": {
+      "duplicate": "Ya hay un grupo con ese nombre en este curso.",
+      "notFound": "No se encontró. Recargá la página."
+    }
+  },
+  "adaptations": {
+    "badge": "Adaptación",
+    "add": "+ Adaptación",
+    "title": "Adaptación de {name}",
+    "field": "Qué se adapta (sin diagnóstico). Dejalo vacío para quitar la adaptación.",
+    "notFound": "No se encontró. Recargá la página."
   },
   "studentPage": {
     "back": "Estudiantes",

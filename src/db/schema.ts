@@ -199,6 +199,8 @@ export const standards = pgTable("standards", {
     .notNull()
     .references(() => classes.id, { onDelete: "cascade" }),
   unitId: uuid("unit_id").references(() => units.id, { onDelete: "cascade" }),
+  // ADAPT-2: set for one student's own standard; null for the class's.
+  studentId: uuid("student_id").references(() => students.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
   position: integer("position").notNull().default(0),
@@ -227,6 +229,11 @@ export const tasks = pgTable("tasks", {
   // name it had when uploaded, shown to the teacher.
   attachmentPath: text("attachment_path"),
   attachmentName: text("attachment_name"),
+  // ADAPT-3: the adapted version, for students with an adaptation.
+  adaptedDescription: text("adapted_description"),
+  adaptedCriteria: text("adapted_criteria"),
+  adaptedAttachmentPath: text("adapted_attachment_path"),
+  adaptedAttachmentName: text("adapted_attachment_name"),
   assignedOn: date("assigned_on"),
   dueOn: date("due_on"),
   createdAt: createdAt(),
@@ -264,6 +271,8 @@ export const scores = pgTable(
     status: scoreStatus("status").notNull().default("graded"),
     value: grade("value"), // null unless status = graded
     notes: text("notes"),
+    // ADAPT-4: given on adapted content.
+    adapted: boolean("adapted").notNull().default(false),
     gradedAt: timestamp("graded_at", { withTimezone: true }).defaultNow(),
   },
   (t) => [unique().on(t.taskId, t.studentId)],
@@ -318,6 +327,82 @@ export const termGrades = pgTable(
     setAt: timestamp("set_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique().on(t.classId, t.studentId, t.termId)],
+).enableRLS();
+
+// ─── Groups within a class ──────────────────────────────────────────────────
+
+/**
+ * ADAPT-1: what is adapted for one student in one class. Only what is
+ * adapted, never a diagnosis.
+ */
+export const studentAdaptations = pgTable(
+  "student_adaptations",
+  {
+    teacherId: teacherId(),
+    classId: uuid("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => students.id, { onDelete: "cascade" }),
+    notes: text("notes").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.classId, t.studentId] })],
+).enableRLS();
+
+/** GROUP-1: a part of the course that attends the class on its own days. */
+export const classGroups = pgTable(
+  "class_groups",
+  {
+    id: id(),
+    teacherId: teacherId(),
+    classId: uuid("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    days: text("days"), // "Lunes 8 a 10"
+    position: integer("position").notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("class_groups_class_name_ci").on(t.classId, sql`lower(${t.name})`)],
+).enableRLS();
+
+/** GROUP-2: at most one group per student in a class. */
+export const classGroupStudents = pgTable(
+  "class_group_students",
+  {
+    teacherId: teacherId(),
+    classId: uuid("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => students.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => classGroups.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.classId, t.studentId] })],
+).enableRLS();
+
+/**
+ * GROUP-3: a task only for some groups, each with its own date. A task with
+ * no rows here is for everyone.
+ */
+export const taskGroups = pgTable(
+  "task_groups",
+  {
+    teacherId: teacherId(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => tasks.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => classGroups.id, { onDelete: "cascade" }),
+    dueOn: date("due_on"),
+  },
+  (t) => [primaryKey({ columns: [t.taskId, t.groupId] })],
 ).enableRLS();
 
 export const examStatus = pgEnum("exam_status", ["graded", "absent"]);
