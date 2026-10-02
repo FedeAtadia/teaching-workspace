@@ -103,7 +103,9 @@ describe("courses from before schools (SCHOOL-4)", () => {
       .insert(students)
       .values({ teacherId: a, firstName: "Ana", lastName: "Pérez" })
       .returning({ id: students.id });
-    await old.insert(courseStudents).values({ teacherId: a, courseId: ids.a1, studentId: student.id });
+    // Raw SQL too: the schema in code has later columns (outcome) the old table doesn't.
+    await old.execute(sql`
+      insert into course_students (teacher_id, course_id, student_id) values (${a}, ${ids.a1}, ${student.id})`);
 
     await migrateRest(old);
 

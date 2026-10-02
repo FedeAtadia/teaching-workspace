@@ -67,7 +67,7 @@ describe("home cards (HOME)", () => {
     });
 
     const home = await getHomeCards(db, teacher);
-    expect(home.stats).toEqual({ classes: 2, students: 2, pending: 3 });
+    expect(home.stats).toEqual({ classes: 2, students: 2, pending: 3, owed: 0 });
     expect(home.cards.map((c) => [c.name, c.school, c.students])).toEqual([
       ["Matemática", "Escuela 5", 2],
       ["Física", "Técnica 2", 0],
@@ -103,6 +103,6 @@ describe("home cards (HOME)", () => {
   it("shows nothing of another teacher's (OWNER-1)", async () => {
     const teacher = newTeacher();
     await addClass(teacher, cls());
-    expect(await getHomeCards(db, newTeacher())).toEqual({ stats: { classes: 0, students: 0, pending: 0 }, cards: [] });
+    expect(await getHomeCards(db, newTeacher())).toEqual({ stats: { classes: 0, students: 0, pending: 0, owed: 0 }, cards: [] });
   });
 });

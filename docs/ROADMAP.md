@@ -25,9 +25,9 @@ Planned work, in order. Nothing here is a requirement yet: a feature moves into
 - [x] Term grades: suggested average, allowed range from the first cuatrimestre
   (TERM-2), reason required outside it (TERM-4); the 2° is the final grade
   (TERM-5..8).
-- [ ] End of the school year: each class's result, exams for owed classes
-  (previas), promoted / repeats / graduated, and bringing students into next
-  year's courses.
+- [x] End of the school year: each class's result, exams for owed classes
+  (previas), promoted / repeats / graduated (YEAR, EXAM).
+- [ ] Bringing promoted and repeating students into next year's courses.
 - [x] UI kit: shadcn/ui.
 
 ## Phase 2 — Exports

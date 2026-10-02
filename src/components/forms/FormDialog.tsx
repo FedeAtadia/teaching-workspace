@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import { Field } from "@/components/forms/Field";
@@ -57,8 +57,11 @@ export function FormDialog({
 }: {
   /** The button's text; for "editIcon" its accessible name and tooltip. */
   triggerLabel: string;
-  /** "add": the main button. "edit": an outlined button with a pencil. "editIcon": just the pencil. */
-  trigger?: "add" | "edit" | "editIcon";
+  /**
+   * "add": the main button. "addSmall": a small outlined one with a plus, for
+   * inside a row. "edit": an outlined button with a pencil. "editIcon": just the pencil.
+   */
+  trigger?: "add" | "addSmall" | "edit" | "editIcon";
   title: string;
   /** A wider dialog, for forms with many fields. */
   wide?: boolean;
@@ -73,6 +76,12 @@ export function FormDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger === "add" && <DialogTrigger render={<Button />}>{triggerLabel}</DialogTrigger>}
+      {trigger === "addSmall" && (
+        <DialogTrigger render={<Button variant="outline" size="sm" />}>
+          <Plus aria-hidden />
+          {triggerLabel}
+        </DialogTrigger>
+      )}
       {trigger === "edit" && (
         <DialogTrigger render={<Button variant="outline" size="sm" />}>
           <Pencil aria-hidden />

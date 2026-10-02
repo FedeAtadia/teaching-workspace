@@ -1,11 +1,13 @@
-// The home page's figures and class cards (HOME-1..3). Scoped to one teacher
-// (OWNER-1). Four queries, all at once: one round trip's wait.
+// The home page's figures and class cards (HOME-1..3, EXAM-4). Scoped to one
+// teacher (OWNER-1). Five queries, all at once: about one round trip's wait
+// (the owed classes take two).
 
 import { and, asc, eq, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import { classes, courseStudents, scores, tasks } from "@/db/schema";
 import { progress } from "@/lib/courses";
 import { listClasses, type ClassRow } from "./classes";
+import { listOwed } from "./yearEnd";
 
 export type HomeCard = ClassRow & {
   tasks: number;
@@ -17,12 +19,13 @@ export type HomeCard = ClassRow & {
 };
 
 export type Home = {
-  stats: { classes: number; students: number; pending: number };
+  /** `owed`: classes students still owe (EXAM-4). */
+  stats: { classes: number; students: number; pending: number; owed: number };
   cards: HomeCard[];
 };
 
 export async function getHomeCards(db: Db, teacherId: string): Promise<Home> {
-  const [classRows, taskRows, scoredRows, [{ students }]] = await Promise.all([
+  const [classRows, taskRows, scoredRows, [{ students }], owedClasses] = await Promise.all([
     listClasses(db, teacherId),
     db
       .select({ id: tasks.id, classId: tasks.classId, title: tasks.title, dueOn: tasks.dueOn })
@@ -53,7 +56,9 @@ export async function getHomeCards(db: Db, teacherId: string): Promise<Home> {
       .select({ students: sql<number>`count(distinct ${courseStudents.studentId})::int` })
       .from(courseStudents)
       .where(and(eq(courseStudents.teacherId, teacherId), eq(courseStudents.status, "active"))),
+    listOwed(db, teacherId),
   ]);
+  const owed = owedClasses.reduce((n, c) => n + c.students.length, 0);
 
   const scoredByTask = new Map(scoredRows.map((r) => [r.taskId, r.n]));
   let pending = 0;
@@ -71,5 +76,5 @@ export async function getHomeCards(db: Db, teacherId: string): Promise<Home> {
     };
   });
 
-  return { stats: { classes: classRows.length, students, pending }, cards };
+  return { stats: { classes: classRows.length, students, pending, owed }, cards };
 }

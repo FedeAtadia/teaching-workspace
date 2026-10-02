@@ -147,6 +147,9 @@ export const students = pgTable("students", {
 
 export const enrollmentStatus = pgEnum("enrollment_status", ["active", "withdrawn"]);
 
+/** YEAR-2: how the school year ended for a student in a course. */
+export const yearOutcome = pgEnum("year_outcome", ["promoted", "repeats", "graduated"]);
+
 /** Who is in each course (STUDENT-2). */
 export const courseStudents = pgTable(
   "course_students",
@@ -160,6 +163,8 @@ export const courseStudents = pgTable(
       .references(() => students.id, { onDelete: "cascade" }),
     status: enrollmentStatus("status").notNull().default("active"),
     joinedOn: date("joined_on").default(sql`current_date`),
+    // YEAR-2: null until the teacher decides.
+    outcome: yearOutcome("outcome"),
   },
   (t) => [primaryKey({ columns: [t.courseId, t.studentId] })],
 ).enableRLS();
@@ -310,3 +315,25 @@ export const termGrades = pgTable(
   },
   (t) => [unique().on(t.classId, t.studentId, t.termId)],
 ).enableRLS();
+
+export const examStatus = pgEnum("exam_status", ["graded", "absent"]);
+
+/**
+ * EXAM-1: an exam for a class the student owes (a "previa"), at a mesa de
+ * examen. The class is passed once one is at or above the pass mark (YEAR-1).
+ */
+export const exams = pgTable("exams", {
+  id: id(),
+  teacherId: teacherId(),
+  classId: uuid("class_id")
+    .notNull()
+    .references(() => classes.id, { onDelete: "cascade" }),
+  studentId: uuid("student_id")
+    .notNull()
+    .references(() => students.id, { onDelete: "cascade" }),
+  takenOn: date("taken_on").notNull(),
+  status: examStatus("status").notNull().default("graded"),
+  value: grade("value"), // null when absent
+  notes: text("notes"),
+  createdAt: createdAt(),
+}).enableRLS();

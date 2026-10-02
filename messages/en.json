@@ -7,6 +7,7 @@
     "dashboard": "Home",
     "classes": "Classes",
     "students": "Students",
+    "exams": "Owed classes",
     "settings": "Settings",
     "menu": "Main menu",
     "collapse": "Collapse menu",
@@ -52,7 +53,8 @@
     "stats": {
       "classes": "{count, plural, one {class} other {classes}}",
       "students": "{count, plural, one {student} other {students}}",
-      "pending": "{count, plural, one {score to enter} other {scores to enter}}"
+      "pending": "{count, plural, one {score to enter} other {scores to enter}}",
+      "owed": "{count, plural, one {owed class} other {owed classes}}"
     },
     "card": {
       "students": "{count, plural, =0 {No students yet} one {# student} other {# students}}",
@@ -104,7 +106,8 @@
       "units": "Units",
       "tasks": "Tasks",
       "grades": "Grades",
-      "termGrades": "Term grades"
+      "termGrades": "Term grades",
+      "closing": "Year end"
     },
     "errors": {
       "notFound": "This class wasn't found. Go back to the list and try again."
@@ -268,7 +271,60 @@
     "noTasks": "No tasks yet.",
     "average": "Average",
     "grade": "Grade",
-    "finalGrade": "Final grade"
+    "finalGrade": "Final grade",
+    "outcomes": {
+      "promoted": "Promoted",
+      "repeats": "Repeats",
+      "graduated": "Graduated"
+    },
+    "exams": "Exams",
+    "absent": "absent"
+  },
+  "closing": {
+    "intro": "Each student's result in the class, and whether they move up or repeat the year. The final grade is the 2nd term's.",
+    "introLast": "Each student's result in the class, and their graduation. The final grade is the 2nd term's; a failed class is owed until passed by exam.",
+    "toFinalGrades": "Enter final grades",
+    "finalGrade": "Final grade",
+    "outcomeFor": "Year end for {name}",
+    "undecided": "Undecided",
+    "outcomes": {
+      "promoted": "Promoted",
+      "repeats": "Repeats",
+      "graduated": "Graduates"
+    },
+    "saving": "Saving…",
+    "saved": "Saved",
+    "failed": "Couldn't save it. Try again.",
+    "noStudents": "This course has no students yet.",
+    "results": {
+      "pending": "No final grade",
+      "passed": "Passed",
+      "passedByExam": "Passed by exam on {date} ({grade})",
+      "owed": "Owes the class"
+    }
+  },
+  "exams": {
+    "title": "Owed classes",
+    "intro": "The classes your students still owe, from every school year. Record each exam: once passed, it leaves the list.",
+    "empty": "No one owes a class.",
+    "finalGrade": "Final grade",
+    "record": "Record exam",
+    "recordTitle": "Exam for {name}",
+    "absent": "Absent",
+    "delete": "Delete exam",
+    "deleteTitle": "Delete {name}'s exam of {date}?",
+    "deleteBody": "The class's result is worked out again from the other exams.",
+    "fields": {
+      "takenOn": "Date",
+      "status": "Result",
+      "graded": "Graded",
+      "grade": "Grade (unless absent)",
+      "notes": "Notes"
+    },
+    "errors": {
+      "notOwed": "This class is no longer owed. Reload the page.",
+      "notFound": "Not found. Reload the page."
+    }
   },
   "students": {
     "title": "Students",

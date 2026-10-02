@@ -16,6 +16,7 @@ import { redirect } from "next/navigation";
 import { deleteClass } from "@/db/queries/classes";
 import { createTask, deleteTask, saveScores, setTaskAttachment, updateTask } from "@/db/queries/tasks";
 import { getTermGradeSheet, saveTermGrades } from "@/db/queries/termGrades";
+import { deleteExam, recordExam, setOutcome } from "@/db/queries/yearEnd";
 import { ATTACHMENT_BUCKET } from "@/lib/attachments";
 import { requireTeacherId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -24,6 +25,8 @@ import { DEFAULT_RULES } from "@/lib/grading";
 import { parseScoresForm, type ScoreEntryError } from "@/lib/scoresForm";
 import { parseTermGradesForm, type TermGradeEntryError } from "@/lib/termGradesForm";
 import {
+  examInput,
+  outcomeInput,
   standardEdit,
   standardInput,
   taskEdit,
@@ -270,4 +273,45 @@ export async function saveTermGradesAction(_prev: TermGradesState, formData: For
   revalidatePath(`/classes/${cls.id}`, "layout");
   revalidatePath("/students/[id]", "page");
   return { status: "saved", savedAt: Date.now() };
+}
+
+/** After a result or an outcome changes: the class, the Previas page, Home and student histories. */
+function refreshYearEnd(classId: string) {
+  revalidatePath(`/classes/${classId}`, "layout");
+  revalidatePath("/exams");
+  revalidatePath("/dashboard");
+  revalidatePath("/students/[id]", "page");
+}
+
+/** YEAR-2: saved as soon as the teacher picks it. */
+export async function setOutcomeAction(input: {
+  classId: string;
+  studentId: string;
+  outcome: string;
+}): Promise<{ ok: boolean }> {
+  const parsed = outcomeInput.safeParse(input);
+  if (!parsed.success) return { ok: false };
+  const result = await setOutcome(getDb(), await requireTeacherId(), parsed.data);
+  if (result.ok) refreshYearEnd(parsed.data.classId);
+  return { ok: result.ok };
+}
+
+/** EXAM-1 */
+export async function recordExamAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = examInput.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+
+  const result = await recordExam(getDb(), await requireTeacherId(), parsed.data);
+  if (!result.ok) return { status: "error", formError: result.error, values };
+
+  refreshYearEnd(parsed.data.classId);
+  return { status: "saved" };
+}
+
+/** EXAM-2 */
+export async function removeExam(input: { classId: string; examId: string }): Promise<ActionResult> {
+  const result = await deleteExam(getDb(), await requireTeacherId(), input);
+  if (result.ok) refreshYearEnd(input.classId);
+  return result;
 }

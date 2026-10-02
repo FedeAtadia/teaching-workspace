@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AddClassDialog } from "@/components/classes/AddClassDialog";
 import { ClassCard } from "@/components/classes/ClassCard";
@@ -8,7 +9,7 @@ import { requireTeacherId } from "@/lib/auth";
 import { classCardProps } from "@/lib/classCards";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-/** HOME-1..3 */
+/** HOME-1..3, EXAM-4 */
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
   const tCommon = await getTranslations("common");
@@ -38,10 +39,11 @@ export default async function DashboardPage() {
         <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <dl className="grid grid-cols-3 gap-3 sm:gap-4">
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <Stat value={home.stats.classes} label={t("stats.classes", { count: home.stats.classes })} />
         <Stat value={home.stats.students} label={t("stats.students", { count: home.stats.students })} />
         <Stat value={home.stats.pending} label={t("stats.pending", { count: home.stats.pending })} chalk />
+        <Stat value={home.stats.owed} label={t("stats.owed", { count: home.stats.owed })} href="/exams" />
       </dl>
 
       <section>
@@ -62,10 +64,29 @@ export default async function DashboardPage() {
   );
 }
 
-function Stat({ value, label, chalk = false }: { value: number; label: string; chalk?: boolean }) {
+function Stat({
+  value,
+  label,
+  chalk = false,
+  href,
+}: {
+  value: number;
+  label: string;
+  chalk?: boolean;
+  /** The whole tile opens this page (NAV-2). */
+  href?: string;
+}) {
   return (
-    <div className="flex flex-col-reverse rounded-2xl bg-card px-4 py-3 ring-1 ring-border sm:px-5 sm:py-4">
-      <dt className="text-xs text-muted-foreground sm:text-sm">{label}</dt>
+    <div className="relative flex flex-col-reverse rounded-2xl bg-card px-4 py-3 ring-1 ring-border transition has-[a:hover]:ring-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring sm:px-5 sm:py-4">
+      <dt className="text-xs text-muted-foreground sm:text-sm">
+        {href ? (
+          <Link href={href} className="outline-none after:absolute after:inset-0 after:content-['']">
+            {label}
+          </Link>
+        ) : (
+          label
+        )}
+      </dt>
       <dd className={chalk ? "text-2xl font-extrabold text-chalk sm:text-3xl" : "text-2xl font-extrabold sm:text-3xl"}>
         {value}
       </dd>
