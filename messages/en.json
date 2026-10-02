@@ -181,7 +181,9 @@
         "date": "Date",
         "description": "Brief description",
         "criteria": "Specific standard",
-        "standards": "Passing standards it assesses"
+        "standards": "Passing standards it assesses",
+        "groups": "Which groups",
+        "groupsHint": "With none ticked, it's for everyone on the date above. Tick the groups doing it, each with its own date."
       }
     },
     "deleteTask": {
@@ -235,7 +237,9 @@
       "excusedShort": "E",
       "noTasks": "This term has no tasks yet.",
       "noStudents": "This course has no students yet.",
-      "legend": "In red: below {passMark}. NH: not handed in. E: excused. The average leaves out tasks not handed in; they're shown next to it."
+      "legend": "In red: below {passMark}. NH: not handed in. E: excused. ·: the task isn't for their group. The average leaves out tasks not handed in; they're shown next to it.",
+      "notAssessed": "Not for their group",
+      "notAssessedShort": "·"
     },
     "termGrades": {
       "introFirst": "Each student's grade for the term. The suggested one is the average of their tasks.",
@@ -262,6 +266,32 @@
         "reasonRequired": "It's outside the expected range: give the reason.",
         "reasonTooLong": "The reason is too long."
       }
+    }
+  },
+  "groups": {
+    "title": "Groups",
+    "intro": "Does the course split into groups that come on different days? Add them here and choose each student's group.",
+    "add": "Add group",
+    "addTitle": "New group",
+    "edit": "Edit group",
+    "editTitle": "Edit group",
+    "delete": "Delete group",
+    "deleteTitle": "Delete the group “{name}”?",
+    "deleteBody": "{count, plural, =0 {It has no students.} one {Its student is left without a group.} other {Its # students are left without a group.}}",
+    "deleteTasks": "{count, plural, one {The task only for this group becomes a task for everyone.} other {The # tasks only for this group become tasks for everyone.}}",
+    "students": "{count, plural, =0 {no students} one {# student} other {# students}}",
+    "all": "All",
+    "none": "No group",
+    "groupOf": "{name}'s group",
+    "failed": "Couldn't save it.",
+    "fields": {
+      "name": "Name",
+      "days": "Days (optional)",
+      "daysPlaceholder": "Monday 8 to 10"
+    },
+    "errors": {
+      "duplicate": "This class already has a group with that name.",
+      "notFound": "Not found. Reload the page."
     }
   },
   "studentPage": {

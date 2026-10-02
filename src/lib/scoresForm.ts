@@ -21,6 +21,15 @@ export type ParsedScores =
 const MAX_NOTES = 1000;
 
 /**
+ * GROUP-6: the students whose row was on the page. Each row always sends its
+ * status, even when its score box is disabled, so a student shown only to
+ * another group's filter isn't read as "left empty" and cleared.
+ */
+export function rowsInForm(has: (name: string) => boolean, studentIds: string[]): string[] {
+  return studentIds.filter((id) => has(`status.${id}`));
+}
+
+/**
  * `get` reads one form field: `score.<studentId>`, `status.<studentId>` or
  * `notes.<studentId>`. Only the given students are read.
  */

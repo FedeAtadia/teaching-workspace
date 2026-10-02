@@ -3,7 +3,8 @@ import Link from "next/link";
 import { progress } from "@/lib/courses";
 import { getLocale, getTranslations } from "next-intl/server";
 import { FormDialog } from "@/components/forms/FormDialog";
-import { listClassStudents, listStandards, listTerms, listUnits } from "@/db/queries/classDetail";
+import { listStandards, listTerms, listUnits } from "@/db/queries/classDetail";
+import { listGroups } from "@/db/queries/groups";
 import { listTasks, type TaskRow } from "@/db/queries/tasks";
 import { formatDate } from "@/lib/format";
 import { addTask } from "../actions";
@@ -18,12 +19,12 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
   const tErr = await getTranslations("classPage.errors");
   const locale = await getLocale();
 
-  const [tasks, terms, units, standards, roster] = await Promise.all([
+  const [tasks, terms, units, standards, groups] = await Promise.all([
     listTasks(db, teacherId, cls),
     listTerms(db, teacherId, cls),
     listUnits(db, teacherId, id),
     listStandards(db, teacherId, id),
-    listClassStudents(db, teacherId, cls),
+    listGroups(db, teacherId, id),
   ]);
 
   const byTerm = new Map<number, TaskRow[]>();
@@ -40,7 +41,7 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
           action={addTask}
           hidden={{ classId: id }}
           formErrors={{ notFound: tErr("notFound") }}
-          fields={await taskFields({ terms, units, standards })}
+          fields={await taskFields({ terms, units, standards, groups })}
         />
       </div>
 
@@ -53,7 +54,8 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
               <h2 className="mb-3 text-lg font-bold text-muted-foreground">{tTerm(String(position))}</h2>
               <ul className="grid gap-4 md:grid-cols-2">
                 {list.map((task) => {
-                  const pct = progress(task.scored, 1, roster.length);
+                  // GROUP-5: out of the students assessed on it.
+                  const pct = progress(task.scored, 1, task.assessed);
                   return (
                     <li key={task.id}>
                       <Link
@@ -69,11 +71,30 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
                             </span>
                           )}
                         </div>
-                        {(task.dueOn || task.unitTitle) && (
-                          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                            <CalendarDays className="size-4 shrink-0" aria-hidden />
-                            {[task.dueOn && formatDate(task.dueOn, locale), task.unitTitle].filter(Boolean).join(" · ")}
+                        {task.groups.length > 0 ? (
+                          // GROUP-3: each group's own date.
+                          <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
+                            <CalendarDays className="mt-0.5 size-4 shrink-0" aria-hidden />
+                            <span>
+                              {[
+                                ...task.groups.map((g) =>
+                                  g.dueOn ? `${g.name} ${formatDate(g.dueOn, locale)}` : g.name,
+                                ),
+                                task.unitTitle,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </span>
                           </p>
+                        ) : (
+                          (task.dueOn || task.unitTitle) && (
+                            <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                              <CalendarDays className="size-4 shrink-0" aria-hidden />
+                              {[task.dueOn && formatDate(task.dueOn, locale), task.unitTitle]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </p>
+                          )
                         )}
                         {task.description && <p className="text-sm">{task.description}</p>}
                         <div className="mt-auto flex items-center gap-3 pt-1">
@@ -81,7 +102,7 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
                             <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
                           </div>
                           <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">
-                            {t("scored", { scored: task.scored, total: roster.length })}
+                            {t("scored", { scored: task.scored, total: task.assessed })}
                           </span>
                         </div>
                       </Link>

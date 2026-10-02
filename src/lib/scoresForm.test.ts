@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_RULES } from "./grading";
-import { parseScoresForm } from "./scoresForm";
+import { parseScoresForm, rowsInForm } from "./scoresForm";
 
 const A = "11111111-1111-4111-8111-111111111111";
 const B = "22222222-2222-4222-8222-222222222222";
@@ -89,5 +89,12 @@ describe("reading the scoring form (SCORE)", () => {
   it("treats an unknown status as a plain score (SCORE-1)", () => {
     const result = parseScoresForm(form({ [`score.${A}`]: "6", [`status.${A}`]: "whatever" }), [A], DEFAULT_RULES);
     expect(result).toMatchObject({ ok: true, save: [{ studentId: A, status: "graded", value: 6 }] });
+  });
+});
+
+describe("which rows were on the page (GROUP-6)", () => {
+  it("keeps only students whose row was sent, so a filtered page clears no one else", () => {
+    const sent = new Set([`status.${A}`, `score.${A}`, `status.${C}`]);
+    expect(rowsInForm((name) => sent.has(name), [A, B, C])).toEqual([A, C]);
   });
 });

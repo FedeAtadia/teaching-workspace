@@ -6,6 +6,7 @@ import { z } from "zod";
 import type { Db } from "@/db";
 import {
   academicYears,
+  classGroupStudents,
   classes,
   courseStudents,
   courses,
@@ -19,8 +20,10 @@ import {
 } from "@/db/schema";
 import { compareCourses, type Shift } from "@/lib/courses";
 import { DEFAULT_RULES, suggestTermGrade, type Suggestion } from "@/lib/grading";
+import { isAssessed } from "@/lib/groups";
 import type { ScoreStatus } from "@/lib/scoresForm";
 import { classResult, type ClassResult, type YearOutcome } from "@/lib/yearEnd";
+import { getTaskGroups } from "./groups";
 import { toExamRow, type ExamRow } from "./yearEnd";
 
 export type HistoryTask = {
@@ -121,9 +124,9 @@ export async function getStudentHistory(
   if (!student) return null;
   if (memberships.length === 0) return { student, courses: [] };
 
-  // Wave 2: the classes of those courses, and their tasks.
+  // Wave 2: the classes of those courses, their tasks, and the student's groups in them.
   const courseIds = memberships.map((m) => m.courseId);
-  const [classRows, taskRows] = await Promise.all([
+  const [classRows, taskRows, groupRows] = await Promise.all([
     db
       .select({ id: classes.id, courseId: classes.courseId, name: classes.name, passMark: classes.passMark })
       .from(classes)
@@ -142,13 +145,24 @@ export async function getStudentHistory(
       .where(and(inArray(classes.courseId, courseIds), eq(tasks.teacherId, teacherId)))
       // TASK-3
       .orderBy(asc(terms.position), sql`${tasks.dueOn} asc nulls last`, asc(tasks.createdAt)),
+    db
+      .select({ classId: classGroupStudents.classId, groupId: classGroupStudents.groupId })
+      .from(classGroupStudents)
+      .where(and(eq(classGroupStudents.studentId, studentId), eq(classGroupStudents.teacherId, teacherId))),
   ]);
+
+  // Wave 3: which groups those tasks are for (GROUP-3).
+  const taskGroupMap = await getTaskGroups(db, teacherId, taskRows.map((t) => t.id));
+  const groupIn = new Map(groupRows.map((m) => [m.classId, m.groupId]));
+  const assessed = (t: (typeof taskRows)[number]) =>
+    isAssessed((taskGroupMap.get(t.id) ?? []).map((g) => g.groupId), groupIn.get(t.classId));
 
   const scoreByTask = new Map(saved.map((s) => [s.taskId, s]));
 
   const buildClass = (c: (typeof classRows)[number]): HistoryClass => {
     const terms = new Map<number, HistoryTask[]>();
-    for (const t of taskRows.filter((t) => t.classId === c.id)) {
+    // GROUP-5: only the tasks this student is assessed on.
+    for (const t of taskRows.filter((t) => t.classId === c.id && assessed(t))) {
       const s = scoreByTask.get(t.id);
       const task: HistoryTask = {
         id: t.id,

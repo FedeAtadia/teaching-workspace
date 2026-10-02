@@ -5,12 +5,25 @@
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
-import { courseStudents, scores, standards, taskStandards, tasks, termGrades, terms, units } from "@/db/schema";
+import {
+  classGroups,
+  courseStudents,
+  scores,
+  standards,
+  taskGroups,
+  taskStandards,
+  tasks,
+  termGrades,
+  terms,
+  units,
+} from "@/db/schema";
 import { isFileIn } from "@/lib/attachments";
 import { suggestTermGrade, type Suggestion } from "@/lib/grading";
+import { groupTaskDate, isAssessed } from "@/lib/groups";
 import type { ScoreRow, ScoreStatus } from "@/lib/scoresForm";
 import type { TaskEdit, TaskInput } from "@/lib/validation";
 import { getClass, listClassStudents, type ClassDetail, type RosterStudent } from "./classDetail";
+import { assessedSql, getStudentGroups, getTaskGroups, type TaskGroup } from "./groups";
 
 const isUuid = (v: string) => z.uuid().safeParse(v).success;
 
@@ -18,20 +31,22 @@ type NotFound = { ok: false; error: "notFound" };
 const notFound: NotFound = { ok: false, error: "notFound" };
 
 /**
- * TASK-2: the class, if it is this teacher's and the cuatrimestre, unit and
- * standards are all its own; and the standard ids without repeats.
+ * TASK-2, GROUP-3: the class, if it is this teacher's and the cuatrimestre,
+ * unit, standards and groups are all its own; and the standard ids and
+ * groups without repeats.
  */
 async function checkTaskInput(
   db: Db,
   teacherId: string,
   input: TaskInput,
-): Promise<{ cls: ClassDetail; standardIds: string[] } | null> {
+): Promise<{ cls: ClassDetail; standardIds: string[]; groups: { groupId: string; dueOn: string | null }[] } | null> {
   const cls = await getClass(db, teacherId, input.classId);
   if (!cls) return null;
 
   // Checked in parallel: one round trip's wait instead of three.
   const standardIds = [...new Set(input.standardIds)];
-  const [term, unit, ownStandards] = await Promise.all([
+  const groups = [...new Map((input.groups ?? []).map((g) => [g.groupId, g])).values()];
+  const [term, unit, ownStandards, ownGroups] = await Promise.all([
     db
       .select({ id: terms.id })
       .from(terms)
@@ -48,9 +63,16 @@ async function checkTaskInput(
           .from(standards)
           .where(and(inArray(standards.id, standardIds), eq(standards.classId, cls.id)))
       : Promise.resolve([]),
+    groups.length > 0
+      ? db
+          .select({ id: classGroups.id })
+          .from(classGroups)
+          .where(and(inArray(classGroups.id, groups.map((g) => g.groupId)), eq(classGroups.classId, cls.id)))
+      : Promise.resolve([]),
   ]);
   if (term.length === 0 || unit.length === 0 || ownStandards.length !== standardIds.length) return null;
-  return { cls, standardIds };
+  if (ownGroups.length !== groups.length) return null;
+  return { cls, standardIds, groups };
 }
 
 /** TASK-1, TASK-2 */
@@ -61,7 +83,7 @@ export async function createTask(
 ): Promise<{ ok: true; taskId: string } | NotFound> {
   const checked = await checkTaskInput(db, teacherId, input);
   if (!checked) return notFound;
-  const { cls, standardIds } = checked;
+  const { cls, standardIds, groups } = checked;
 
   const taskId = await db.transaction(async (tx) => {
     const [created] = await tx
@@ -72,7 +94,7 @@ export async function createTask(
         termId: input.termId,
         unitId: input.unitId,
         title: input.title,
-        dueOn: input.dueOn,
+        dueOn: groupTaskDate(groups, input.dueOn),
         description: input.description,
         criteria: input.criteria,
       })
@@ -82,6 +104,9 @@ export async function createTask(
         .insert(taskStandards)
         .values(standardIds.map((standardId) => ({ teacherId, taskId: created.id, standardId })));
     }
+    if (groups.length > 0) {
+      await tx.insert(taskGroups).values(groups.map((g) => ({ teacherId, taskId: created.id, ...g })));
+    }
     return created.id;
   });
   return { ok: true, taskId };
@@ -89,13 +114,13 @@ export async function createTask(
 
 /**
  * TASK-6. Checked like TASK-2; then, in one transaction, the task is updated
- * (only if it is this class's) and its standard links replaced. Scores and the
+ * (only if it is this class's) and its standard links and groups replaced. Scores and the
  * attached file are not touched.
  */
 export async function updateTask(db: Db, teacherId: string, input: TaskEdit): Promise<{ ok: true } | NotFound> {
   const checked = await checkTaskInput(db, teacherId, input);
   if (!checked) return notFound;
-  const { cls, standardIds } = checked;
+  const { cls, standardIds, groups } = checked;
 
   return db.transaction(async (tx) => {
     const updated = await tx
@@ -104,7 +129,7 @@ export async function updateTask(db: Db, teacherId: string, input: TaskEdit): Pr
         termId: input.termId,
         unitId: input.unitId,
         title: input.title,
-        dueOn: input.dueOn,
+        dueOn: groupTaskDate(groups, input.dueOn),
         description: input.description,
         criteria: input.criteria,
       })
@@ -116,6 +141,10 @@ export async function updateTask(db: Db, teacherId: string, input: TaskEdit): Pr
       await tx
         .insert(taskStandards)
         .values(standardIds.map((standardId) => ({ teacherId, taskId: input.taskId, standardId })));
+    }
+    await tx.delete(taskGroups).where(eq(taskGroups.taskId, input.taskId));
+    if (groups.length > 0) {
+      await tx.insert(taskGroups).values(groups.map((g) => ({ teacherId, taskId: input.taskId, ...g })));
     }
     return { ok: true } as const;
   });
@@ -129,15 +158,23 @@ export type TaskRow = {
   unitTitle: string | null;
   dueOn: string | null;
   description: string | null;
-  /** Students with a score or a mark on this task. */
+  /** Assessed students (GROUP-3) with a score or a mark on this task. */
   scored: number;
+  /** GROUP-5: active students assessed on it. */
+  assessed: number;
   /** An attached file (FILE-1). */
   hasFile: boolean;
+  /** GROUP-3: the groups it is for, each with its date; empty when it is for everyone. */
+  groups: TaskGroup[];
 };
 
-/** TASK-3 */
-export async function listTasks(db: Db, teacherId: string, cls: Pick<ClassDetail, "id">): Promise<TaskRow[]> {
-  return db
+/** TASK-3, GROUP-5 */
+export async function listTasks(
+  db: Db,
+  teacherId: string,
+  cls: Pick<ClassDetail, "id" | "courseId">,
+): Promise<TaskRow[]> {
+  const rows = await db
     .select({
       id: tasks.id,
       title: tasks.title,
@@ -150,6 +187,12 @@ export async function listTasks(db: Db, teacherId: string, cls: Pick<ClassDetail
         select count(*)::int from ${scores}
         where ${scores.taskId} = ${tasks.id}
           and (${scores.value} is not null or ${scores.status} <> 'graded')
+          and ${assessedSql(tasks.id, scores.studentId)}
+      )`,
+      assessed: sql<number>`(
+        select count(*)::int from course_students cs
+        where cs.course_id = ${cls.courseId} and cs.status = 'active'
+          and ${assessedSql(tasks.id, sql`cs.student_id`)}
       )`,
       hasFile: sql<boolean>`${tasks.attachmentPath} is not null`,
     })
@@ -158,9 +201,11 @@ export async function listTasks(db: Db, teacherId: string, cls: Pick<ClassDetail
     .leftJoin(units, eq(tasks.unitId, units.id))
     .where(and(eq(tasks.classId, cls.id), eq(tasks.teacherId, teacherId)))
     .orderBy(asc(terms.position), sql`${tasks.dueOn} asc nulls last`, asc(tasks.createdAt));
+  const groups = await getTaskGroups(db, teacherId, rows.map((r) => r.id));
+  return rows.map((r) => ({ ...r, groups: groups.get(r.id) ?? [] }));
 }
 
-export type TaskDetail = Omit<TaskRow, "scored" | "hasFile"> & {
+export type TaskDetail = Omit<TaskRow, "scored" | "assessed" | "hasFile"> & {
   unitId: string | null;
   criteria: string | null;
   attachmentPath: string | null;
@@ -176,7 +221,7 @@ export async function getTask(
   taskId: string,
 ): Promise<TaskDetail | null> {
   if (!isUuid(taskId)) return null;
-  const [[row], linked] = await Promise.all([
+  const [[row], linked, groups] = await Promise.all([
     db
       .select({
         id: tasks.id,
@@ -201,9 +246,10 @@ export async function getTask(
       .innerJoin(standards, eq(taskStandards.standardId, standards.id))
       .where(and(eq(taskStandards.taskId, taskId), eq(taskStandards.teacherId, teacherId)))
       .orderBy(asc(standards.position)),
+    getTaskGroups(db, teacherId, [taskId]),
   ]);
   if (!row) return null;
-  return { ...row, standards: linked };
+  return { ...row, standards: linked, groups: groups.get(taskId) ?? [] };
 }
 
 /**
@@ -257,8 +303,9 @@ export async function listTaskScores(db: Db, teacherId: string, taskId: string):
 }
 
 /**
- * SCORE-1..4. Saves all rows or none. Students who aren't active in the
- * class's course are skipped, whatever the form sent.
+ * SCORE-1..4, GROUP-4. Saves all rows or none. Students who aren't active in
+ * the class's course, or aren't assessed on the task, are skipped, whatever
+ * the form sent.
  */
 export async function saveScores(
   db: Db,
@@ -268,7 +315,7 @@ export async function saveScores(
   entries: { save: ScoreRow[]; clear: string[] },
 ): Promise<{ ok: true } | NotFound> {
   if (!isUuid(taskId)) return notFound;
-  const [[task], roster] = await Promise.all([
+  const [[task], roster, taskGroupMap, studentGroups] = await Promise.all([
     db
       .select({ id: tasks.id })
       .from(tasks)
@@ -283,10 +330,13 @@ export async function saveScores(
           eq(courseStudents.status, "active"),
         ),
       ),
+    getTaskGroups(db, teacherId, [taskId]),
+    getStudentGroups(db, teacherId, cls.id),
   ]);
   if (!task) return notFound;
 
-  const inCourse = new Set(roster.map((r) => r.id));
+  const groupIds = (taskGroupMap.get(taskId) ?? []).map((g) => g.groupId);
+  const inCourse = new Set(roster.map((r) => r.id).filter((id) => isAssessed(groupIds, studentGroups.get(id))));
   const save = entries.save.filter((r) => inCourse.has(r.studentId));
   const clear = entries.clear.filter((id) => inCourse.has(id));
 
@@ -312,7 +362,8 @@ export async function saveScores(
   return { ok: true };
 }
 
-export type GradebookCell = { status: ScoreStatus; value: number | null } | null;
+/** A score or mark, nothing yet (null), or a task the student isn't assessed on (GROUP-5). */
+export type GradebookCell = { status: ScoreStatus; value: number | null } | null | "notAssessed";
 export type GradebookRow = {
   student: RosterStudent;
   cells: GradebookCell[];
@@ -322,15 +373,19 @@ export type GradebookRow = {
 };
 export type Gradebook = { tasks: TaskRow[]; rows: GradebookRow[] };
 
-/** BOOK-1, BOOK-2, TERM-7: one cuatrimestre of a class. */
+/**
+ * BOOK-1, BOOK-2, TERM-7, GROUP-5, GROUP-6: one cuatrimestre of a class, or of
+ * one of its groups: that group's students, and the tasks for everyone or for it.
+ */
 export async function getGradebook(
   db: Db,
   teacherId: string,
   cls: Pick<ClassDetail, "id" | "courseId">,
   termId: string,
+  groupId?: string,
 ): Promise<Gradebook> {
   if (!isUuid(termId)) return { tasks: [], rows: [] };
-  const [allTasks, roster, saved, grades] = await Promise.all([
+  const [allTasks, roster, saved, grades, studentGroups] = await Promise.all([
     listTasks(db, teacherId, cls),
     listClassStudents(db, teacherId, cls),
     db
@@ -344,16 +399,24 @@ export async function getGradebook(
       .where(
         and(eq(termGrades.classId, cls.id), eq(termGrades.termId, termId), eq(termGrades.teacherId, teacherId)),
       ),
+    getStudentGroups(db, teacherId, cls.id),
   ]);
-  const termTasks = allTasks.filter((t) => t.termId === termId);
+  const groupIdsOf = (t: TaskRow) => t.groups.map((g) => g.groupId);
+  const termTasks = allTasks
+    .filter((t) => t.termId === termId)
+    .filter((t) => !groupId || isAssessed(groupIdsOf(t), groupId));
+  const students = groupId ? roster.filter((s) => studentGroups.get(s.id) === groupId) : roster;
   const byKey = new Map(saved.map((s) => [`${s.studentId}:${s.taskId}`, s]));
 
-  const rows = roster.map((student) => {
+  const rows = students.map((student) => {
     const cells: GradebookCell[] = termTasks.map((t) => {
+      if (!isAssessed(groupIdsOf(t), studentGroups.get(student.id))) return "notAssessed";
       const s = byKey.get(`${student.id}:${t.id}`);
       return s ? { status: s.status, value: s.value } : null;
     });
-    const suggestion = suggestTermGrade(cells.filter((c): c is NonNullable<GradebookCell> => c !== null));
+    const suggestion = suggestTermGrade(
+      cells.filter((c): c is { status: ScoreStatus; value: number | null } => c !== null && c !== "notAssessed"),
+    );
     const termGrade = grades.find((g) => g.studentId === student.id)?.value ?? null;
     return { student, cells, suggestion, termGrade };
   });
