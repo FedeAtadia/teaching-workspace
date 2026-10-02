@@ -199,10 +199,21 @@ export async function deleteClass(
         .select({ path: table.attachmentPath })
         .from(table)
         .where(and(eq(table.classId, classId), eq(table.teacherId, teacherId), isNotNull(table.attachmentPath)));
-    const [taskFiles, standardFiles] = await Promise.all([files(tasks), files(standards)]);
+    const [taskFiles, standardFiles, adaptedFiles] = await Promise.all([
+      files(tasks),
+      files(standards),
+      // ADAPT-3: the tasks' adapted files.
+      tx
+        .select({ path: tasks.adaptedAttachmentPath })
+        .from(tasks)
+        .where(
+          and(eq(tasks.classId, classId), eq(tasks.teacherId, teacherId), isNotNull(tasks.adaptedAttachmentPath)),
+        ),
+    ]);
     const deleted = await tx.delete(classes).where(ownClass(teacherId, classId)).returning({ id: classes.id });
     if (deleted.length === 0) return { ok: false, error: "notFound" } as const;
-    return { ok: true, attachmentPaths: [...taskFiles, ...standardFiles].map((f) => f.path!) } as const;
+    const paths = [...taskFiles, ...standardFiles, ...adaptedFiles].map((f) => f.path!);
+    return { ok: true, attachmentPaths: paths } as const;
   });
 }
 

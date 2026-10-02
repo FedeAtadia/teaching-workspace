@@ -7,6 +7,7 @@ import { Attachment } from "@/components/classes/Attachment";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { FormDialog } from "@/components/forms/FormDialog";
 import { listClassStudents, listStandards, listTerms, listUnits } from "@/db/queries/classDetail";
+import { getAdaptations } from "@/db/queries/adaptations";
 import { getStudentGroups, listGroups } from "@/db/queries/groups";
 import { getTask, listTaskScores } from "@/db/queries/tasks";
 import { formatDate, formatGrade } from "@/lib/format";
@@ -20,7 +21,7 @@ export default async function TaskPage({ params, searchParams }: PageProps<"/cla
   const { id, taskId } = await params;
   const { group } = await searchParams;
   const { db, teacherId, cls } = await loadClass(id);
-  const [task, roster, saved, terms, units, standards, groups, studentGroups] = await Promise.all([
+  const [task, roster, saved, terms, units, standards, groups, studentGroups, adaptations] = await Promise.all([
     getTask(db, teacherId, cls, taskId),
     listClassStudents(db, teacherId, cls),
     listTaskScores(db, teacherId, taskId),
@@ -29,8 +30,12 @@ export default async function TaskPage({ params, searchParams }: PageProps<"/cla
     listStandards(db, teacherId, id),
     listGroups(db, teacherId, id),
     getStudentGroups(db, teacherId, id),
+    getAdaptations(db, teacherId, id),
   ]);
   if (!task) notFound();
+  // ADAPT-3, ADAPT-4: whether the task has an adapted version, which adapted students' scores start marked with.
+  const hasAdaptedVersion = !!(task.adaptedDescription || task.adaptedCriteria || task.adaptedAttachmentName);
+  const showAdapted = adaptations.size > 0 || hasAdaptedVersion;
 
   // GROUP-4: only the students assessed on this task; GROUP-6: maybe one group of them.
   const taskGroupIds = task.groups.map((g) => g.groupId);
@@ -64,7 +69,7 @@ export default async function TaskPage({ params, searchParams }: PageProps<"/cla
             action={editTask}
             hidden={{ classId: id, taskId: task.id }}
             formErrors={{ notFound: tErr("notFound") }}
-            fields={await taskFields({ terms, units, standards, groups }, task)}
+            fields={await taskFields({ terms, units, standards, groups, adapted: showAdapted }, task)}
           />
           <ConfirmDeleteButton
             label={tDelete("button")}
@@ -123,6 +128,39 @@ export default async function TaskPage({ params, searchParams }: PageProps<"/cla
         current={task.attachmentName ? { name: task.attachmentName } : null}
       />
 
+      {showAdapted && (
+        // ADAPT-3: the adapted version, for students with an adaptation.
+        <section className="mt-4 rounded-2xl bg-primary/5 p-4 ring-1 ring-primary/30">
+          <h3 className="mb-2 text-sm font-extrabold text-chalk">{t("adapted.title")}</h3>
+          {!task.adaptedDescription && !task.adaptedCriteria && (
+            <p className="mb-2 text-sm text-muted-foreground">{t("adapted.empty")}</p>
+          )}
+          <dl className="grid gap-3 text-sm sm:grid-cols-2">
+            {task.adaptedDescription && (
+              <div>
+                <dt className="font-medium">{t("fields.description")}</dt>
+                <dd className="text-muted-foreground">{task.adaptedDescription}</dd>
+              </div>
+            )}
+            {task.adaptedCriteria && (
+              <div>
+                <dt className="font-medium">{t("fields.criteria")}</dt>
+                <dd className="whitespace-pre-line text-muted-foreground">{task.adaptedCriteria}</dd>
+              </div>
+            )}
+          </dl>
+          <div className="mt-3">
+            <Attachment
+              compact
+              classId={id}
+              target={{ kind: "adaptedTask", id: task.id }}
+              teacherId={teacherId}
+              current={task.adaptedAttachmentName ? { name: task.adaptedAttachmentName } : null}
+            />
+          </div>
+        </section>
+      )}
+
       <div className="mt-6">
         <GroupFilter
           groups={filterGroups}
@@ -147,6 +185,9 @@ export default async function TaskPage({ params, searchParams }: PageProps<"/cla
                 status: s?.status ?? "graded",
                 notes: s?.notes ?? "",
                 passing: s?.value != null ? isPassing(s.value, rules) : null,
+                adaptation: adaptations.get(student.id) ?? null,
+                // ADAPT-4: as saved; with nothing saved yet, marked when the task has an adapted version.
+                adapted: s ? (s.adapted ?? false) : adaptations.has(student.id) && hasAdaptedVersion,
               };
             })}
           />

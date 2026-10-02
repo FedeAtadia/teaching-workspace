@@ -7,6 +7,7 @@ import type { Db } from "@/db";
 import {
   academicYears,
   classGroupStudents,
+  studentAdaptations,
   classes,
   courseStudents,
   courses,
@@ -30,7 +31,8 @@ export type HistoryTask = {
   id: string;
   title: string;
   dueOn: string | null;
-  score: { status: ScoreStatus; value: number | null; notes: string | null } | null;
+  /** `adapted`: given on adapted content (ADAPT-4). */
+  score: { status: ScoreStatus; value: number | null; notes: string | null; adapted: boolean } | null;
 };
 export type HistoryTerm = {
   position: number;
@@ -50,6 +52,8 @@ export type HistoryClass = {
   result: ClassResult;
   /** HISTORY-4, EXAM-1: in date order. */
   exams: ExamRow[];
+  /** ADAPT-1: what is adapted for this student in the class, if anything. */
+  adaptation: string | null;
 };
 export type HistoryCourse = {
   courseId: string;
@@ -78,7 +82,7 @@ export async function getStudentHistory(
   if (!z.uuid().safeParse(studentId).success) return null;
 
   // Wave 1: the student, their courses, all their scores, cuatrimestre grades and exams.
-  const [[student], memberships, saved, grades, examRows] = await Promise.all([
+  const [[student], memberships, saved, grades, examRows, adaptations] = await Promise.all([
     db
       .select({ id: students.id, firstName: students.firstName, lastName: students.lastName })
       .from(students)
@@ -100,7 +104,13 @@ export async function getStudentHistory(
       .innerJoin(schools, eq(courses.schoolId, schools.id))
       .where(and(eq(courseStudents.studentId, studentId), eq(courseStudents.teacherId, teacherId))),
     db
-      .select({ taskId: scores.taskId, status: scores.status, value: scores.value, notes: scores.notes })
+      .select({
+        taskId: scores.taskId,
+        status: scores.status,
+        value: scores.value,
+        notes: scores.notes,
+        adapted: scores.adapted,
+      })
       .from(scores)
       .where(and(eq(scores.studentId, studentId), eq(scores.teacherId, teacherId))),
     db
@@ -120,6 +130,10 @@ export async function getStudentHistory(
       .from(exams)
       .where(and(eq(exams.studentId, studentId), eq(exams.teacherId, teacherId)))
       .orderBy(asc(exams.takenOn), asc(exams.createdAt)),
+    db
+      .select({ classId: studentAdaptations.classId, notes: studentAdaptations.notes })
+      .from(studentAdaptations)
+      .where(and(eq(studentAdaptations.studentId, studentId), eq(studentAdaptations.teacherId, teacherId))),
   ]);
   if (!student) return null;
   if (memberships.length === 0) return { student, courses: [] };
@@ -168,7 +182,7 @@ export async function getStudentHistory(
         id: t.id,
         title: t.title,
         dueOn: t.dueOn,
-        score: s ? { status: s.status, value: s.value, notes: s.notes } : null,
+        score: s ? { status: s.status, value: s.value, notes: s.notes, adapted: s.adapted } : null,
       };
       terms.set(t.termPosition, [...(terms.get(t.termPosition) ?? []), task]);
     }
@@ -193,6 +207,7 @@ export async function getStudentHistory(
       finalGrade: gradeAt(2),
       result: classResult(gradeAt(2), classExams, passMark),
       exams: classExams,
+      adaptation: adaptations.find((a) => a.classId === c.id)?.notes ?? null,
     };
   };
 

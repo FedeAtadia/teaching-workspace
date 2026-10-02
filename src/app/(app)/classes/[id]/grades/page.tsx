@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
+import { AdaptedBadge } from "@/components/classes/Adaptation";
 import { GroupFilter } from "@/components/classes/GroupFilter";
+import { getAdaptations } from "@/db/queries/adaptations";
 import { listTerms } from "@/db/queries/classDetail";
 import { listGroups } from "@/db/queries/groups";
 import { getGradebook, listTasks } from "@/db/queries/tasks";
@@ -13,10 +15,11 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
   const { id } = await params;
   const { term: termParam, group } = await searchParams;
   const { db, teacherId, cls } = await loadClass(id);
-  const [terms, tasks, groups] = await Promise.all([
+  const [terms, tasks, groups, adaptations] = await Promise.all([
     listTerms(db, teacherId, cls),
     listTasks(db, teacherId, cls),
     listGroups(db, teacherId, id),
+    getAdaptations(db, teacherId, id),
   ]);
   // GROUP-6: one group, or all.
   const groupId = typeof group === "string" && groups.some((g) => g.id === group) ? group : undefined;
@@ -93,6 +96,8 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                     >
                       {student.lastName}, <span className="font-normal">{student.firstName}</span>
                     </Link>
+                    {/* ADAPT-1 */}
+                    {adaptations.has(student.id) && <AdaptedBadge notes={adaptations.get(student.id)!} />}
                   </td>
                   {cells.map((cell, i) => (
                     <td key={book.tasks[i].id} className="px-2 py-1.5 text-center tabular-nums">
@@ -116,6 +121,12 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                       ) : (
                         <span className={isPassing(cell.value, rules) ? "" : "font-medium text-destructive"}>
                           {formatGrade(cell.value, locale)}
+                          {/* ADAPT-4 */}
+                          {cell.adapted && (
+                            <abbr title={t("adapted")} className="ml-0.5 align-super text-[0.65rem] text-chalk no-underline">
+                              {t("adaptedShort")}
+                            </abbr>
+                          )}
                         </span>
                       )}
                     </td>

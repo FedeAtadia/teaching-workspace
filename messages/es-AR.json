@@ -144,7 +144,11 @@
       "fields": {
         "title": "Criterio",
         "description": "Descripción (opcional)"
-      }
+      },
+      "ownTitle": "Criterios de {name}",
+      "ownBadge": "Adaptación",
+      "ownDialogTitle": "Nuevo criterio de {name}",
+      "ownEmpty": "Todavía no tiene criterios propios."
     },
     "units": {
       "intro": "Los temas que se dan a lo largo del año.",
@@ -183,7 +187,13 @@
         "criteria": "Criterio específico",
         "standards": "Criterios de aprobación que evalúa",
         "groups": "Para qué grupos",
-        "groupsHint": "Sin tildar ninguno, es para todos con la fecha de arriba. Tildá los grupos que la hacen, cada uno con su fecha."
+        "groupsHint": "Sin tildar ninguno, es para todos con la fecha de arriba. Tildá los grupos que la hacen, cada uno con su fecha.",
+        "adaptedDescription": "Descripción adaptada (opcional)",
+        "adaptedCriteria": "Criterio específico adaptado (opcional)"
+      },
+      "adapted": {
+        "title": "Versión adaptada",
+        "empty": "Para estudiantes con adaptación. Agregá la consigna o el criterio adaptado con «Editar tarea», y el archivo acá."
       }
     },
     "deleteTask": {
@@ -225,7 +235,9 @@
       "errors": {
         "invalidScore": "Tiene que ser una nota del 1 al 10 (por ejemplo 7,5).",
         "notesTooLong": "Las observaciones son demasiado largas."
-      }
+      },
+      "adapted": "Adaptada",
+      "adaptedFor": "Nota adaptada de {name}"
     },
     "grades": {
       "student": "Estudiante",
@@ -239,7 +251,9 @@
       "noStudents": "Este curso todavía no tiene estudiantes.",
       "legend": "En rojo, debajo de {passMark}. NE: no entregó. J: justificado. ·: la tarea no es para su grupo. El promedio no cuenta las tareas no entregadas; se muestran aparte.",
       "notAssessed": "No corresponde a su grupo",
-      "notAssessedShort": "·"
+      "notAssessedShort": "·",
+      "adapted": "Nota sobre contenido adaptado",
+      "adaptedShort": "A"
     },
     "termGrades": {
       "introFirst": "La nota de cada estudiante para el cuatrimestre. La sugerida es el promedio de sus tareas.",
@@ -293,6 +307,13 @@
       "duplicate": "Ya hay un grupo con ese nombre en este curso.",
       "notFound": "No se encontró. Recargá la página."
     }
+  },
+  "adaptations": {
+    "badge": "Adaptación",
+    "add": "+ Adaptación",
+    "title": "Adaptación de {name}",
+    "field": "Qué se adapta (sin diagnóstico). Dejalo vacío para quitar la adaptación.",
+    "notFound": "No se encontró. Recargá la página."
   },
   "studentPage": {
     "back": "Estudiantes",

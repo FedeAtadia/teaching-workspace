@@ -2,10 +2,12 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { AdaptationButton } from "@/components/classes/Adaptation";
 import { BringStudentsDialog } from "@/components/classes/BringStudentsDialog";
 import { GroupFilter } from "@/components/classes/GroupFilter";
 import { StudentGroupSelect } from "@/components/classes/StudentGroupSelect";
 import { FormDialog, type FieldSpec } from "@/components/forms/FormDialog";
+import { getAdaptations } from "@/db/queries/adaptations";
 import { listClassStudents } from "@/db/queries/classDetail";
 import { getStudentGroups, listGroups } from "@/db/queries/groups";
 import { listNextYearCandidates } from "@/db/queries/nextYear";
@@ -13,7 +15,7 @@ import { formatCourse } from "@/lib/courses";
 import { addGroup, editGroup, removeGroup } from "./actions";
 import { loadClass } from "./data";
 
-/** ROSTER-1, NEXT-1, GROUP-1, GROUP-2, GROUP-6 */
+/** ROSTER-1, NEXT-1, GROUP-1, GROUP-2, GROUP-6, ADAPT-1 */
 export default async function ClassStudentsPage({ params, searchParams }: PageProps<"/classes/[id]">) {
   const { id } = await params;
   const { group } = await searchParams;
@@ -22,11 +24,12 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
   const tGroups = await getTranslations("groups");
   const tNext = await getTranslations("nextYear");
   const tShift = await getTranslations("shifts");
-  const [roster, candidates, groups, studentGroups] = await Promise.all([
+  const [roster, candidates, groups, studentGroups, adaptations] = await Promise.all([
     listClassStudents(db, teacherId, cls),
     listNextYearCandidates(db, teacherId, cls),
     listGroups(db, teacherId, id),
     getStudentGroups(db, teacherId, id),
+    getAdaptations(db, teacherId, id),
   ]);
   const groupId = typeof group === "string" && groups.some((g) => g.id === group) ? group : undefined;
   const shown = groupId ? roster.filter((s) => studentGroups.get(s.id) === groupId) : roster;
@@ -136,10 +139,10 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
         {shown.map((s, i) => {
           const name = `${s.lastName}, ${s.firstName}`;
           return (
-            // NAV-2: the name's link stretches over the whole card; the group picker sits above it.
+            // NAV-2: the name's link stretches over the whole card; its controls sit above it.
             <li
               key={s.id}
-              className="group relative flex items-center gap-3 rounded-2xl bg-card p-3 ring-1 ring-border transition hover:ring-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring"
+              className="group relative flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-2xl bg-card p-3 ring-1 ring-border transition hover:ring-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring"
             >
               <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-sm font-extrabold text-chalk tabular-nums">
                 {i + 1}
@@ -150,6 +153,14 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
               >
                 {s.lastName}, <span className="font-normal">{s.firstName}</span>
               </Link>
+              <div className="relative z-10">
+                <AdaptationButton
+                  classId={id}
+                  studentId={s.id}
+                  studentName={name}
+                  notes={adaptations.get(s.id) ?? null}
+                />
+              </div>
               {groups.length > 0 ? (
                 <div className="relative z-10">
                   <StudentGroupSelect

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  adaptationInput,
   classEdit,
   classInput,
   examInput,
@@ -110,6 +111,7 @@ describe("adding a passing standard (STD)", () => {
       classId: CLASS_ID,
       title: "Resuelve ecuaciones",
       description: null,
+      studentId: null,
     });
   });
 
@@ -205,6 +207,7 @@ describe("changing a standard, unit or task (STD-3, UNIT-3, TASK-6)", () => {
       standardId: ID,
       title: "Justifica",
       description: null,
+      studentId: null,
     });
     expect(unitEdit.parse({ classId: CLASS_ID, unitId: ID, title: "Repaso", termId: "" })).toEqual({
       classId: CLASS_ID,
@@ -331,6 +334,47 @@ describe("groups (GROUP-1..3)", () => {
       { groupId: STUDENT, dueOn: null },
     ]);
     expect(taskInput.safeParse({ ...task, groups: [{ groupId: GROUP, dueOn: "10/05" }] }).success).toBe(false);
+  });
+});
+
+describe("adaptations (ADAPT-1..3)", () => {
+  const STUDENT = "5c2d1b0a-9e8f-4a7b-8c6d-5e4f3a2b1c0d";
+
+  it("takes the adaptation text trimmed, up to 2000 characters; empty means remove it (ADAPT-1)", () => {
+    expect(adaptationInput.parse({ classId: CLASS_ID, studentId: STUDENT, notes: " Consignas más cortas " })).toEqual(
+      { classId: CLASS_ID, studentId: STUDENT, notes: "Consignas más cortas" },
+    );
+    expect(adaptationInput.parse({ classId: CLASS_ID, studentId: STUDENT, notes: "  " }).notes).toBe("");
+    expect(adaptationInput.safeParse({ classId: CLASS_ID, studentId: STUDENT, notes: "x".repeat(2001) }).success).toBe(
+      false,
+    );
+  });
+
+  it("takes a standard for one student, or for the class when left out (ADAPT-2)", () => {
+    expect(standardInput.parse({ classId: CLASS_ID, title: "Lee", description: "", studentId: STUDENT })).toMatchObject({
+      studentId: STUDENT,
+    });
+    expect(standardInput.parse({ classId: CLASS_ID, title: "Lee", description: "" }).studentId ?? null).toBeNull();
+    expect(standardInput.parse({ classId: CLASS_ID, title: "Lee", description: "", studentId: "" }).studentId).toBeNull();
+  });
+
+  it("takes a task's adapted description and specific standard, with the same limits (ADAPT-3)", () => {
+    const task = {
+      classId: CLASS_ID,
+      title: "TP",
+      termId: STUDENT,
+      unitId: "",
+      dueOn: "",
+      description: "",
+      criteria: "",
+      standardIds: [],
+    };
+    expect(taskInput.parse({ ...task, adaptedDescription: " Solo 1 a 5 ", adaptedCriteria: "" })).toMatchObject({
+      adaptedDescription: "Solo 1 a 5",
+      adaptedCriteria: null,
+    });
+    expect(taskInput.safeParse({ ...task, adaptedDescription: "x".repeat(281) }).success).toBe(false);
+    expect(taskInput.safeParse({ ...task, adaptedCriteria: "x".repeat(1001) }).success).toBe(false);
   });
 });
 

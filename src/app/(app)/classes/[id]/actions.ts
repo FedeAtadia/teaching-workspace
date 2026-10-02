@@ -17,7 +17,15 @@ import { redirect } from "next/navigation";
 import { deleteClass } from "@/db/queries/classes";
 import { createGroup, deleteGroup, setStudentGroup, updateGroup } from "@/db/queries/groups";
 import { bringStudents } from "@/db/queries/nextYear";
-import { createTask, deleteTask, saveScores, setTaskAttachment, updateTask } from "@/db/queries/tasks";
+import {
+  createTask,
+  deleteTask,
+  saveScores,
+  setTaskAdaptedAttachment,
+  setTaskAttachment,
+  updateTask,
+} from "@/db/queries/tasks";
+import { setAdaptation } from "@/db/queries/adaptations";
 import { getTermGradeSheet, saveTermGrades } from "@/db/queries/termGrades";
 import { deleteExam, recordExam, setOutcome } from "@/db/queries/yearEnd";
 import { ATTACHMENT_BUCKET } from "@/lib/attachments";
@@ -28,6 +36,7 @@ import { DEFAULT_RULES } from "@/lib/grading";
 import { parseScoresForm, rowsInForm, type ScoreEntryError } from "@/lib/scoresForm";
 import { parseTermGradesForm, type TermGradeEntryError } from "@/lib/termGradesForm";
 import {
+  adaptationInput,
   examInput,
   groupEdit,
   groupInput,
@@ -231,6 +240,37 @@ export async function removeTaskFile(input: { classId: string; taskId: string })
   return { ok: true };
 }
 
+/** ADAPT-3: as recordTaskFile, for the task's adapted file. */
+export async function recordAdaptedTaskFile(input: {
+  classId: string;
+  taskId: string;
+  path: string;
+  name: string;
+}): Promise<ActionResult> {
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const cls = await getClass(db, teacherId, input.classId);
+  if (!cls) return { ok: false, error: "notFound" };
+  const result = await setTaskAdaptedAttachment(db, teacherId, cls, input.taskId, { path: input.path, name: input.name });
+  if (!result.ok) return result;
+  if (result.previousPath && result.previousPath !== input.path) await deleteStoredFiles(result.previousPath);
+  revalidatePath(`/classes/${cls.id}/tasks/${input.taskId}`);
+  return { ok: true };
+}
+
+/** ADAPT-3: removes the task's adapted file and the link to it. */
+export async function removeAdaptedTaskFile(input: { classId: string; taskId: string }): Promise<ActionResult> {
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const cls = await getClass(db, teacherId, input.classId);
+  if (!cls) return { ok: false, error: "notFound" };
+  const result = await setTaskAdaptedAttachment(db, teacherId, cls, input.taskId, null);
+  if (!result.ok) return result;
+  if (result.previousPath) await deleteStoredFiles(result.previousPath);
+  revalidatePath(`/classes/${cls.id}/tasks/${input.taskId}`);
+  return { ok: true };
+}
+
 /** CLASS-7: deletes the class, its work and its files, then goes back to the list. */
 export async function removeClass(input: { classId: string }): Promise<ActionResult> {
   const result = await deleteClass(getDb(), await requireTeacherId(), input.classId);
@@ -248,7 +288,8 @@ export async function deleteTaskAction(input: { classId: string; taskId: string 
   if (!cls) return { ok: false, error: "notFound" };
   const result = await deleteTask(db, teacherId, cls, input.taskId);
   if (!result.ok) return result;
-  if (result.attachmentPath) await deleteStoredFiles(result.attachmentPath);
+  // FILE-1, ADAPT-3: its file and its adapted file.
+  await deleteStoredFiles(...[result.attachmentPath, result.adaptedAttachmentPath].filter((f) => f !== null));
   revalidatePath(`/classes/${cls.id}/tasks`);
   revalidatePath(`/classes/${cls.id}/grades`);
   redirect(`/classes/${cls.id}/tasks`);
@@ -438,4 +479,22 @@ export async function setStudentGroupAction(input: {
     revalidatePath("/dashboard");
   }
   return { ok: result.ok };
+}
+
+/** ADAPT-1: what is adapted for a student; saved empty, the adaptation is removed. */
+export async function saveAdaptation(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = adaptationInput.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const cls = await getClass(db, teacherId, parsed.data.classId);
+  if (!cls) return { status: "error", formError: "notFound", values };
+
+  const result = await setAdaptation(db, teacherId, cls, parsed.data);
+  if (!result.ok) return { status: "error", formError: result.error, values };
+
+  refreshClass(cls.id);
+  revalidatePath("/students/[id]", "page");
+  return { status: "saved" };
 }

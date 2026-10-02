@@ -25,8 +25,8 @@ describe("reading the scoring form (SCORE)", () => {
     expect(result).toEqual({
       ok: true,
       save: [
-        { studentId: A, status: "graded", value: 7.5, notes: "Muy prolijo" },
-        { studentId: B, status: "graded", value: 9, notes: null },
+        { studentId: A, status: "graded", value: 7.5, notes: "Muy prolijo", adapted: false },
+        { studentId: B, status: "graded", value: 9, notes: null, adapted: false },
       ],
       clear: [],
     });
@@ -61,8 +61,8 @@ describe("reading the scoring form (SCORE)", () => {
     expect(result).toEqual({
       ok: true,
       save: [
-        { studentId: A, status: "missing", value: null, notes: null },
-        { studentId: B, status: "excused", value: null, notes: "Certificado médico" },
+        { studentId: A, status: "missing", value: null, notes: null, adapted: false },
+        { studentId: B, status: "excused", value: null, notes: "Certificado médico", adapted: false },
       ],
       clear: [],
     });
@@ -81,7 +81,7 @@ describe("reading the scoring form (SCORE)", () => {
     );
     expect(result).toEqual({
       ok: true,
-      save: [{ studentId: B, status: "graded", value: null, notes: "Entrega la semana que viene" }],
+      save: [{ studentId: B, status: "graded", value: null, notes: "Entrega la semana que viene", adapted: false }],
       clear: [A],
     });
   });
@@ -89,6 +89,29 @@ describe("reading the scoring form (SCORE)", () => {
   it("treats an unknown status as a plain score (SCORE-1)", () => {
     const result = parseScoresForm(form({ [`score.${A}`]: "6", [`status.${A}`]: "whatever" }), [A], DEFAULT_RULES);
     expect(result).toMatchObject({ ok: true, save: [{ studentId: A, status: "graded", value: 6 }] });
+  });
+});
+
+describe("adapted scores (ADAPT-4)", () => {
+  it("marks a score as adapted when its box is ticked", () => {
+    const result = parseScoresForm(
+      form({
+        [`score.${A}`]: "8",
+        [`status.${A}`]: "graded",
+        [`adapted.${A}`]: "on",
+        [`score.${B}`]: "6",
+        [`status.${B}`]: "graded",
+      }),
+      [A, B],
+      DEFAULT_RULES,
+    );
+    expect(result).toMatchObject({
+      ok: true,
+      save: [
+        { studentId: A, value: 8, adapted: true },
+        { studentId: B, value: 6, adapted: false },
+      ],
+    });
   });
 });
 

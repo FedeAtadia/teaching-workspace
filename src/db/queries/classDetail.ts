@@ -1,7 +1,7 @@
 // Everything on a class's own page: the class itself, its course's students,
 // its passing standards and its units. Scoped to one teacher (OWNER-1).
 
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
 import {
@@ -18,6 +18,7 @@ import {
   units,
 } from "@/db/schema";
 import { isFileIn, standardFolder } from "@/lib/attachments";
+import { hasAdaptation } from "./adaptations";
 import { compareStudents, type Shift } from "@/lib/courses";
 import type { StandardEdit, StandardInput, UnitEdit, UnitInput } from "@/lib/validation";
 
@@ -96,7 +97,7 @@ export type StandardRow = {
   attachmentName: string | null;
 };
 
-/** STD-2 */
+/** STD-2: the class's own standards; students' own ones are listed apart (ADAPT-2). */
 export async function listStandards(db: Db, teacherId: string, classId: string): Promise<StandardRow[]> {
   if (!isUuid(classId)) return [];
   return db
@@ -109,7 +110,12 @@ export async function listStandards(db: Db, teacherId: string, classId: string):
     })
     .from(standards)
     .where(
-      and(eq(standards.classId, classId), eq(standards.teacherId, teacherId), eq(standards.scope, "class")),
+      and(
+        eq(standards.classId, classId),
+        eq(standards.teacherId, teacherId),
+        eq(standards.scope, "class"),
+        isNull(standards.studentId),
+      ),
     )
     .orderBy(asc(standards.position));
 }
@@ -121,13 +127,23 @@ const notFound = { ok: false, error: "notFound" } as const;
 const nextPosition = (table: typeof standards | typeof units, classId: string) =>
   sql<number>`(select coalesce(max(${table.position}), 0) + 1 from ${table} where ${table.classId} = ${classId})`;
 
-/** STD-1. Two round trips: the ownership check, then the insert. */
-export async function createStandard(db: Db, teacherId: string, input: StandardInput): Promise<AddResult> {
+/**
+ * STD-1; ADAPT-2 for a student's own standard, who must have an adaptation.
+ * Two or three round trips: ownership, the adaptation if any, the insert.
+ */
+export async function createStandard(
+  db: Db,
+  teacherId: string,
+  input: Omit<StandardInput, "studentId"> & { studentId?: string | null },
+): Promise<AddResult> {
   if (!(await getClass(db, teacherId, input.classId))) return notFound;
+  const studentId = input.studentId ?? null;
+  if (studentId && !(await hasAdaptation(db, teacherId, input.classId, studentId))) return notFound;
   await db.insert(standards).values({
     teacherId,
     scope: "class",
     classId: input.classId,
+    studentId,
     title: input.title,
     description: input.description,
     position: nextPosition(standards, input.classId),
@@ -142,7 +158,11 @@ const ownStandard = (teacherId: string, classId: string, standardId: string) =>
  * STD-3. One round trip: the update only matches a standard of this teacher
  * in this class, so a missing or foreign one changes nothing.
  */
-export async function updateStandard(db: Db, teacherId: string, input: StandardEdit): Promise<AddResult> {
+export async function updateStandard(
+  db: Db,
+  teacherId: string,
+  input: Omit<StandardEdit, "studentId">,
+): Promise<AddResult> {
   const updated = await db
     .update(standards)
     .set({ title: input.title, description: input.description })

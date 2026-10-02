@@ -144,7 +144,11 @@
       "fields": {
         "title": "Standard",
         "description": "Description (optional)"
-      }
+      },
+      "ownTitle": "{name}'s standards",
+      "ownBadge": "Adaptation",
+      "ownDialogTitle": "New standard for {name}",
+      "ownEmpty": "No standards of their own yet."
     },
     "units": {
       "intro": "The topics taught across the year.",
@@ -183,7 +187,13 @@
         "criteria": "Specific standard",
         "standards": "Passing standards it assesses",
         "groups": "Which groups",
-        "groupsHint": "With none ticked, it's for everyone on the date above. Tick the groups doing it, each with its own date."
+        "groupsHint": "With none ticked, it's for everyone on the date above. Tick the groups doing it, each with its own date.",
+        "adaptedDescription": "Adapted description (optional)",
+        "adaptedCriteria": "Adapted specific standard (optional)"
+      },
+      "adapted": {
+        "title": "Adapted version",
+        "empty": "For students with an adaptation. Add the adapted instructions or standard with “Edit task”, and the file here."
       }
     },
     "deleteTask": {
@@ -225,7 +235,9 @@
       "errors": {
         "invalidScore": "Must be a score from 1 to 10 (e.g. 7.5).",
         "notesTooLong": "The notes are too long."
-      }
+      },
+      "adapted": "Adapted",
+      "adaptedFor": "{name}'s score is adapted"
     },
     "grades": {
       "student": "Student",
@@ -239,7 +251,9 @@
       "noStudents": "This course has no students yet.",
       "legend": "In red: below {passMark}. NH: not handed in. E: excused. ·: the task isn't for their group. The average leaves out tasks not handed in; they're shown next to it.",
       "notAssessed": "Not for their group",
-      "notAssessedShort": "·"
+      "notAssessedShort": "·",
+      "adapted": "Score on adapted content",
+      "adaptedShort": "A"
     },
     "termGrades": {
       "introFirst": "Each student's grade for the term. The suggested one is the average of their tasks.",
@@ -293,6 +307,13 @@
       "duplicate": "This class already has a group with that name.",
       "notFound": "Not found. Reload the page."
     }
+  },
+  "adaptations": {
+    "badge": "Adaptation",
+    "add": "+ Adaptation",
+    "title": "{name}'s adaptation",
+    "field": "What is adapted (no diagnosis). Leave it empty to remove the adaptation.",
+    "notFound": "Not found. Reload the page."
   },
   "studentPage": {
     "back": "Students",

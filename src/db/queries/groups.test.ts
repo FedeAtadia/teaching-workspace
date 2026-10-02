@@ -218,7 +218,7 @@ describe("who is scored and counted (GROUP-4, GROUP-5)", () => {
 
     const book = await getGradebook(db, s.teacher, s.cls, s.term1);
     const carla = book.rows.find((r) => r.student.id === s.students.Carla)!;
-    expect(carla.cells).toEqual([{ status: "graded", value: 6 }, "notAssessed", null]);
+    expect(carla.cells).toEqual([{ status: "graded", value: 6, adapted: false }, "notAssessed", null]);
     expect(carla.suggestion.average).toBe(6);
 
     const lunes = await getGradebook(db, s.teacher, s.cls, s.term1, s.groups.lunes);

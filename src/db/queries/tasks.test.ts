@@ -179,8 +179,8 @@ describe("scoring a task (SCORE)", () => {
     const saved = await listTaskScores(db, s.teacher, id);
     expect(saved).toEqual(
       expect.arrayContaining([
-        { studentId: Pérez, status: "graded", value: 8, notes: "Corrigió" },
-        { studentId: Álvarez, status: "missing", value: null, notes: null },
+        { studentId: Pérez, status: "graded", value: 8, notes: "Corrigió", adapted: false },
+        { studentId: Álvarez, status: "missing", value: null, notes: null, adapted: false },
       ]),
     );
     const rows = await db.select().from(scores).where(and(eq(scores.taskId, id), eq(scores.studentId, Pérez)));
@@ -314,6 +314,7 @@ describe("deleting a task (TASK-5)", () => {
     expect(await deleteTask(db, s.teacher, s.cls, doomed)).toEqual({
       ok: true,
       attachmentPath: `${s.teacher}/${doomed}/tp.pdf`,
+      adaptedAttachmentPath: null,
     });
     expect((await listTasks(db, s.teacher, s.cls)).map((t) => t.title)).toEqual(["Queda"]);
     expect(await listTaskScores(db, s.teacher, doomed)).toEqual([]);
