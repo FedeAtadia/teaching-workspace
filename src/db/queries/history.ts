@@ -9,6 +9,7 @@ import {
   classes,
   courseStudents,
   courses,
+  exams,
   schools,
   scores,
   students,
@@ -19,6 +20,8 @@ import {
 import { compareCourses, type Shift } from "@/lib/courses";
 import { DEFAULT_RULES, suggestTermGrade, type Suggestion } from "@/lib/grading";
 import type { ScoreStatus } from "@/lib/scoresForm";
+import { classResult, type ClassResult, type YearOutcome } from "@/lib/yearEnd";
+import { toExamRow, type ExamRow } from "./yearEnd";
 
 export type HistoryTask = {
   id: string;
@@ -40,6 +43,10 @@ export type HistoryClass = {
   terms: HistoryTerm[];
   /** TERM-1, TERM-7: the 2° cuatrimestre grade. */
   finalGrade: number | null;
+  /** HISTORY-4, YEAR-1 */
+  result: ClassResult;
+  /** HISTORY-4, EXAM-1: in date order. */
+  exams: ExamRow[];
 };
 export type HistoryCourse = {
   courseId: string;
@@ -49,6 +56,8 @@ export type HistoryCourse = {
   division: string;
   shift: Shift;
   status: "active" | "withdrawn";
+  /** HISTORY-4, YEAR-2 */
+  outcome: YearOutcome | null;
   classes: HistoryClass[];
 };
 export type StudentHistory = {
@@ -65,8 +74,8 @@ export async function getStudentHistory(
 ): Promise<StudentHistory | null> {
   if (!z.uuid().safeParse(studentId).success) return null;
 
-  // Wave 1: the student, their courses, all their scores and cuatrimestre grades.
-  const [[student], memberships, saved, grades] = await Promise.all([
+  // Wave 1: the student, their courses, all their scores, cuatrimestre grades and exams.
+  const [[student], memberships, saved, grades, examRows] = await Promise.all([
     db
       .select({ id: students.id, firstName: students.firstName, lastName: students.lastName })
       .from(students)
@@ -80,6 +89,7 @@ export async function getStudentHistory(
         division: courses.division,
         shift: courses.shift,
         status: courseStudents.status,
+        outcome: courseStudents.outcome,
       })
       .from(courseStudents)
       .innerJoin(courses, eq(courseStudents.courseId, courses.id))
@@ -95,6 +105,18 @@ export async function getStudentHistory(
       .from(termGrades)
       .innerJoin(terms, eq(termGrades.termId, terms.id))
       .where(and(eq(termGrades.studentId, studentId), eq(termGrades.teacherId, teacherId))),
+    db
+      .select({
+        id: exams.id,
+        classId: exams.classId,
+        takenOn: exams.takenOn,
+        status: exams.status,
+        value: exams.value,
+        notes: exams.notes,
+      })
+      .from(exams)
+      .where(and(eq(exams.studentId, studentId), eq(exams.teacherId, teacherId)))
+      .orderBy(asc(exams.takenOn), asc(exams.createdAt)),
   ]);
   if (!student) return null;
   if (memberships.length === 0) return { student, courses: [] };
@@ -140,10 +162,12 @@ export async function getStudentHistory(
     const classGrades = grades.filter((g) => g.classId === c.id);
     for (const g of classGrades) if (!terms.has(g.position)) terms.set(g.position, []);
     const gradeAt = (position: number) => classGrades.find((g) => g.position === position)?.value ?? null;
+    const passMark = c.passMark ?? DEFAULT_RULES.passMark;
+    const classExams = examRows.filter((e) => e.classId === c.id).map(toExamRow);
     return {
       id: c.id,
       name: c.name,
-      passMark: c.passMark ?? DEFAULT_RULES.passMark,
+      passMark,
       terms: [...terms.entries()]
         .sort(([a], [b]) => a - b)
         .map(([position, list]) => ({
@@ -153,6 +177,8 @@ export async function getStudentHistory(
           grade: gradeAt(position),
         })),
       finalGrade: gradeAt(2),
+      result: classResult(gradeAt(2), classExams, passMark),
+      exams: classExams,
     };
   };
 

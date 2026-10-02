@@ -1,6 +1,16 @@
 "use client";
 
-import { BookOpen, House, Menu, PanelLeftClose, PanelLeftOpen, Settings, Users, type LucideIcon } from "lucide-react";
+import {
+  BookOpen,
+  ClipboardCheck,
+  House,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Settings,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -17,6 +27,7 @@ type Labels = {
   dashboard: string;
   classes: string;
   students: string;
+  exams: string;
   settings: string;
 };
 
@@ -24,6 +35,7 @@ const ITEMS: { href: string; key: keyof Labels; icon: LucideIcon }[] = [
   { href: "/dashboard", key: "dashboard", icon: House },
   { href: "/classes", key: "classes", icon: BookOpen },
   { href: "/students", key: "students", icon: Users },
+  { href: "/exams", key: "exams", icon: ClipboardCheck },
 ];
 
 /** NAV-1: a side menu that collapses to its icons; on a phone, a menu button and a sheet. */
