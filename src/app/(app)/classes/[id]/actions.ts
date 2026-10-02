@@ -9,11 +9,13 @@ import {
   deleteUnit,
   getClass,
   listClassStudents,
+  setStandardAttachment,
   updateStandard,
   updateUnit,
 } from "@/db/queries/classDetail";
 import { redirect } from "next/navigation";
 import { deleteClass } from "@/db/queries/classes";
+import { bringStudents } from "@/db/queries/nextYear";
 import { createTask, deleteTask, saveScores, setTaskAttachment, updateTask } from "@/db/queries/tasks";
 import { getTermGradeSheet, saveTermGrades } from "@/db/queries/termGrades";
 import { deleteExam, recordExam, setOutcome } from "@/db/queries/yearEnd";
@@ -69,11 +71,42 @@ export async function editStandard(_prev: FormState, formData: FormData): Promis
   return { status: "saved" };
 }
 
-/** STD-4 */
+/** STD-4, FILE-4: the standard and its file. */
 export async function removeStandard(input: { classId: string; standardId: string }): Promise<ActionResult> {
   const result = await deleteStandard(getDb(), await requireTeacherId(), input);
-  if (result.ok) refreshClass(input.classId);
-  return result;
+  if (!result.ok) return result;
+  if (result.attachmentPath) await deleteStoredFiles(result.attachmentPath);
+  refreshClass(input.classId);
+  return { ok: true };
+}
+
+/**
+ * FILE-4: called by the browser after it uploaded the standard's file
+ * straight to Storage. Records it and deletes the file it replaces.
+ */
+export async function recordStandardFile(input: {
+  classId: string;
+  standardId: string;
+  path: string;
+  name: string;
+}): Promise<ActionResult> {
+  const result = await setStandardAttachment(getDb(), await requireTeacherId(), input, {
+    path: input.path,
+    name: input.name,
+  });
+  if (!result.ok) return result;
+  if (result.previousPath && result.previousPath !== input.path) await deleteStoredFiles(result.previousPath);
+  revalidatePath(`/classes/${input.classId}/standards`);
+  return { ok: true };
+}
+
+/** FILE-4: removes the standard's file and the link to it. */
+export async function removeStandardFile(input: { classId: string; standardId: string }): Promise<ActionResult> {
+  const result = await setStandardAttachment(getDb(), await requireTeacherId(), input, null);
+  if (!result.ok) return result;
+  if (result.previousPath) await deleteStoredFiles(result.previousPath);
+  revalidatePath(`/classes/${input.classId}/standards`);
+  return { ok: true };
 }
 
 export async function addUnit(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -314,4 +347,20 @@ export async function removeExam(input: { classId: string; examId: string }): Pr
   const result = await deleteExam(getDb(), await requireTeacherId(), input);
   if (result.ok) refreshYearEnd(input.classId);
   return result;
+}
+
+export type BringState = FormState<"notFound"> & { added?: number };
+
+/** NEXT-2, NEXT-3: adds the ticked students to the class's course. */
+export async function bringStudentsAction(_prev: BringState, formData: FormData): Promise<BringState> {
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const cls = await getClass(db, teacherId, String(formData.get("classId") ?? ""));
+  if (!cls) return { status: "error", formError: "notFound" };
+
+  const result = await bringStudents(db, teacherId, cls, formData.getAll("studentIds").map(String));
+  revalidatePath(`/classes/${cls.id}`, "layout");
+  revalidatePath("/students");
+  revalidatePath("/dashboard");
+  return { status: "saved", added: result.added };
 }

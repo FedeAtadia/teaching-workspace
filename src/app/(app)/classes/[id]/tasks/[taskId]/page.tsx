@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { BackLink } from "@/components/BackLink";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ScoresForm } from "@/components/classes/ScoresForm";
-import { TaskAttachment } from "@/components/classes/TaskAttachment";
+import { Attachment } from "@/components/classes/Attachment";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { FormDialog } from "@/components/forms/FormDialog";
 import { listClassStudents, listStandards, listTerms, listUnits } from "@/db/queries/classDetail";
@@ -94,9 +94,9 @@ export default async function TaskPage({ params }: PageProps<"/classes/[id]/task
         )}
       </dl>
 
-      <TaskAttachment
+      <Attachment
         classId={id}
-        taskId={task.id}
+        target={{ kind: "task", id: task.id }}
         teacherId={teacherId}
         current={task.attachmentName ? { name: task.attachmentName } : null}
       />

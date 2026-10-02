@@ -11,10 +11,12 @@ import {
   deleteStandard,
   deleteUnit,
   getClass,
+  getStandardFile,
   listClassStudents,
   listStandards,
   listTerms,
   listUnits,
+  setStandardAttachment,
   updateStandard,
   updateUnit,
   type ClassDetail,
@@ -207,9 +209,62 @@ describe("changing and deleting standards (STD-3, STD-4)", () => {
     const [doomed, kept] = await listStandards(db, teacher, classId);
     const taskId = await addTask(teacher, cls, { standardIds: [doomed.id, kept.id] });
 
-    expect(await deleteStandard(db, teacher, { classId, standardId: doomed.id })).toEqual({ ok: true });
+    expect(await deleteStandard(db, teacher, { classId, standardId: doomed.id })).toEqual({
+      ok: true,
+      attachmentPath: null,
+    });
     expect((await listStandards(db, teacher, classId)).map((s) => s.title)).toEqual(["Queda"]);
     expect((await getTask(db, teacher, cls, taskId))?.standards).toEqual([{ id: kept.id, title: "Queda" }]);
+  });
+});
+
+describe("a passing standard's file (FILE-4)", () => {
+  it("records the file, hands back the one it replaces, and clears it", async () => {
+    const { teacher, classId } = await setup();
+    await createStandard(db, teacher, { classId, title: "Resuelve", description: null });
+    const [standard] = await listStandards(db, teacher, classId);
+    const path = (name: string) => `${teacher}/standards/${standard.id}/${name}`;
+    const target = { classId, standardId: standard.id };
+
+    expect(await setStandardAttachment(db, teacher, target, { path: path("r1.pdf"), name: "Rúbrica 1.pdf" })).toEqual({
+      ok: true,
+      previousPath: null,
+    });
+    expect((await listStandards(db, teacher, classId))[0].attachmentName).toBe("Rúbrica 1.pdf");
+    expect(await getStandardFile(db, teacher, target)).toBe(path("r1.pdf"));
+
+    expect(await setStandardAttachment(db, teacher, target, { path: path("r2.pdf"), name: "r2.pdf" })).toEqual({
+      ok: true,
+      previousPath: path("r1.pdf"),
+    });
+    expect(await setStandardAttachment(db, teacher, target, null)).toEqual({ ok: true, previousPath: path("r2.pdf") });
+    expect((await listStandards(db, teacher, classId))[0].attachmentName).toBeNull();
+  });
+
+  it("hands back the file when the standard is deleted (STD-4)", async () => {
+    const { teacher, classId } = await setup();
+    await createStandard(db, teacher, { classId, title: "Resuelve", description: null });
+    const [standard] = await listStandards(db, teacher, classId);
+    const path = `${teacher}/standards/${standard.id}/r.pdf`;
+    await setStandardAttachment(db, teacher, { classId, standardId: standard.id }, { path, name: "r.pdf" });
+    expect(await deleteStandard(db, teacher, { classId, standardId: standard.id })).toEqual({
+      ok: true,
+      attachmentPath: path,
+    });
+  });
+
+  it("refuses a path outside the standard's folder, and another teacher's standard (FILE-4, OWNER-1)", async () => {
+    const { teacher, classId } = await setup();
+    await createStandard(db, teacher, { classId, title: "Resuelve", description: null });
+    const [standard] = await listStandards(db, teacher, classId);
+    const target = { classId, standardId: standard.id };
+    expect(await setStandardAttachment(db, teacher, target, { path: `${teacher}/${standard.id}/r.pdf`, name: "r.pdf" })).toEqual(notFound);
+    const intruder = newTeacher();
+    expect(
+      await setStandardAttachment(db, intruder, target, { path: `${intruder}/standards/${standard.id}/r.pdf`, name: "r.pdf" }),
+    ).toEqual(notFound);
+    expect(await getStandardFile(db, intruder, target)).toBeNull();
+    expect((await listStandards(db, teacher, classId))[0].attachmentName).toBeNull();
   });
 
   it("changes or deletes nothing of another teacher's, or of another class (OWNER-1)", async () => {

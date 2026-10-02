@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { Attachment } from "@/components/classes/Attachment";
 import { FormDialog } from "@/components/forms/FormDialog";
 import { listStandards } from "@/db/queries/classDetail";
 import { addStandard, editStandard, removeStandard } from "../actions";
@@ -42,6 +43,16 @@ export default async function StandardsPage({ params }: PageProps<"/classes/[id]
                 {s.description && (
                   <p className="mt-1 text-sm whitespace-pre-line text-muted-foreground">{s.description}</p>
                 )}
+                {/* FILE-4: a rubric or any other file for this standard. */}
+                <div className="mt-3">
+                  <Attachment
+                    compact
+                    classId={id}
+                    target={{ kind: "standard", id: s.id }}
+                    teacherId={teacherId}
+                    current={s.attachmentName ? { name: s.attachmentName } : null}
+                  />
+                </div>
               </div>
               <div className="-my-1 flex shrink-0">
                 <FormDialog
@@ -66,7 +77,9 @@ export default async function StandardsPage({ params }: PageProps<"/classes/[id]
                   iconOnly
                   label={t("delete")}
                   title={t("deleteTitle", { title: s.title })}
-                  body={t("deleteBody", { tasks: s.tasks })}
+                  body={[t("deleteBody", { tasks: s.tasks }), s.attachmentName && t("deleteWithFile")]
+                    .filter(Boolean)
+                    .join(" ")}
                   action={removeStandard.bind(null, { classId: id, standardId: s.id })}
                 />
               </div>
