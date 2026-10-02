@@ -6,7 +6,7 @@ import { formatGrade } from "@/lib/format";
 import { DEFAULT_RULES, isPassing } from "@/lib/grading";
 import { loadClass } from "../data";
 
-/** BOOK-1..3: one cuatrimestre at a time, chosen with ?term=1 or ?term=2. */
+/** BOOK-1..3, TERM-7: one cuatrimestre at a time, chosen with ?term=1 or ?term=2. */
 export default async function GradesPage({ params, searchParams }: PageProps<"/classes/[id]/grades">) {
   const { id } = await params;
   const { term: termParam } = await searchParams;
@@ -59,10 +59,15 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                   </th>
                 ))}
                 <th className="border-l px-3 py-2 font-medium">{t("average")}</th>
+                <th className="px-3 py-2 font-medium">
+                  <Link href={`/classes/${id}/term-grades?term=${term?.position ?? 1}`} className="hover:underline">
+                    {t("termGrade")}
+                  </Link>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {book.rows.map(({ student, cells, suggestion }) => (
+              {book.rows.map(({ student, cells, suggestion, termGrade }) => (
                 // NAV-2: the student's name link stretches over the row, to their history.
                 <tr key={student.id} className="relative border-b last:border-0 hover:bg-muted/60 has-[a:focus-visible]:bg-muted">
                   <td className="sticky left-0 bg-card px-4 py-2 font-bold whitespace-nowrap">
@@ -107,6 +112,16 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                     {suggestion.missing > 0 && (
                       <span className="ml-1 text-xs text-muted-foreground">
                         ({suggestion.missing} {t("missingShort")})
+                      </span>
+                    )}
+                  </td>
+                  {/* TERM-7 */}
+                  <td className="px-3 py-1.5 text-center font-bold tabular-nums">
+                    {termGrade === null ? (
+                      "—"
+                    ) : (
+                      <span className={isPassing(termGrade, rules) ? "" : "text-destructive"}>
+                        {formatGrade(termGrade, locale)}
                       </span>
                     )}
                   </td>

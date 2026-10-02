@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, Layers, Sheet, Target, Users, type LucideIcon } from "lucide-react";
+import { ClipboardList, GraduationCap, Layers, Sheet, Target, Users, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,6 +10,7 @@ const ICONS: Record<string, LucideIcon> = {
   units: Layers,
   tasks: ClipboardList,
   grades: Sheet,
+  termGrades: GraduationCap,
 };
 
 /** The tabs under a class's header; each tab is its own route. */
