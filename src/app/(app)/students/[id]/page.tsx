@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BackLink } from "@/components/BackLink";
+import { ResultLabel } from "@/components/classes/StudentExams";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getDb } from "@/db";
@@ -10,7 +11,7 @@ import { formatDate, formatGrade } from "@/lib/format";
 import { DEFAULT_RULES, isPassing } from "@/lib/grading";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-/** HISTORY-1..3 */
+/** HISTORY-1..4 */
 export default async function StudentPage({ params }: PageProps<"/students/[id]">) {
   const { id } = await params;
   if (!isSupabaseConfigured()) notFound();
@@ -42,6 +43,11 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
               {course.status === "withdrawn" && (
                 <span className="text-sm font-normal text-muted-foreground">{t("left")}</span>
               )}
+              {course.outcome && (
+                <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-bold text-chalk">
+                  {t(`outcomes.${course.outcome}`)}
+                </span>
+              )}
             </h2>
 
             {course.classes.length === 0 && <p className="text-sm text-muted-foreground">{t("noClasses")}</p>}
@@ -65,6 +71,26 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                         </p>
                       )}
                     </div>
+                    {/* HISTORY-4: the result once there is a final grade, and any exams. */}
+                    {cls.result.kind !== "pending" && (
+                      <p className="mt-1 text-sm">
+                        <ResultLabel result={cls.result} />
+                        {cls.exams.length > 0 && (
+                          <span className="text-muted-foreground">
+                            {" · "}
+                            {t("exams")}:{" "}
+                            {cls.exams
+                              .map(
+                                (e) =>
+                                  `${formatDate(e.takenOn, locale)} ${
+                                    e.status === "absent" || e.value === null ? t("absent") : formatGrade(e.value, locale)
+                                  }`,
+                              )
+                              .join(", ")}
+                          </span>
+                        )}
+                      </p>
+                    )}
                     {cls.terms.length === 0 && (
                       <p className="mt-1 text-sm text-muted-foreground">{t("noTasks")}</p>
                     )}

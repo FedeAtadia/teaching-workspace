@@ -22,6 +22,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
           dashboard: t("nav.dashboard"),
           classes: t("nav.classes"),
           students: t("nav.students"),
+          exams: t("nav.exams"),
           settings: t("nav.settings"),
         }}
       />

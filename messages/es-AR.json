@@ -7,6 +7,7 @@
     "dashboard": "Inicio",
     "classes": "Cursos",
     "students": "Estudiantes",
+    "exams": "Previas",
     "settings": "Configuración",
     "menu": "Menú principal",
     "collapse": "Contraer menú",
@@ -52,7 +53,8 @@
     "stats": {
       "classes": "{count, plural, one {curso} other {cursos}}",
       "students": "{count, plural, one {estudiante} other {estudiantes}}",
-      "pending": "{count, plural, one {nota por cargar} other {notas por cargar}}"
+      "pending": "{count, plural, one {nota por cargar} other {notas por cargar}}",
+      "owed": "{count, plural, one {previa pendiente} other {previas pendientes}}"
     },
     "card": {
       "students": "{count, plural, =0 {Sin estudiantes todavía} one {# estudiante} other {# estudiantes}}",
@@ -104,7 +106,8 @@
       "units": "Unidades",
       "tasks": "Tareas",
       "grades": "Calificaciones",
-      "termGrades": "Notas de cuatrimestre"
+      "termGrades": "Notas de cuatrimestre",
+      "closing": "Cierre"
     },
     "errors": {
       "notFound": "No se encontró este curso. Volvé a la lista y probá de nuevo."
@@ -268,7 +271,60 @@
     "noTasks": "Todavía no hay tareas.",
     "average": "Promedio",
     "grade": "Nota",
-    "finalGrade": "Nota final"
+    "finalGrade": "Nota final",
+    "outcomes": {
+      "promoted": "Promocionó",
+      "repeats": "Repite",
+      "graduated": "Egresó"
+    },
+    "exams": "Exámenes",
+    "absent": "ausente"
+  },
+  "closing": {
+    "intro": "El resultado de cada estudiante en la materia, y si promociona o repite el año. La nota final es la del 2° cuatrimestre.",
+    "introLast": "El resultado de cada estudiante en la materia, y su egreso. La nota final es la del 2° cuatrimestre; quien no aprueba la debe hasta rendirla.",
+    "toFinalGrades": "Cargar notas finales",
+    "finalGrade": "Nota final",
+    "outcomeFor": "Fin de año de {name}",
+    "undecided": "Sin decidir",
+    "outcomes": {
+      "promoted": "Promociona",
+      "repeats": "Repite",
+      "graduated": "Egresa"
+    },
+    "saving": "Guardando…",
+    "saved": "Guardado",
+    "failed": "No se pudo guardar. Probá de nuevo.",
+    "noStudents": "Este curso todavía no tiene estudiantes.",
+    "results": {
+      "pending": "Sin nota final",
+      "passed": "Aprobada",
+      "passedByExam": "Aprobada en examen el {date} ({grade})",
+      "owed": "Debe la materia"
+    }
+  },
+  "exams": {
+    "title": "Previas",
+    "intro": "Las materias que tus estudiantes todavía deben, de todos los ciclos lectivos. Registrá cada examen: al aprobarlo, sale de la lista.",
+    "empty": "Nadie debe materias.",
+    "finalGrade": "Nota final",
+    "record": "Registrar examen",
+    "recordTitle": "Examen de {name}",
+    "absent": "Ausente",
+    "delete": "Eliminar examen",
+    "deleteTitle": "¿Eliminar el examen de {name} del {date}?",
+    "deleteBody": "El resultado de la materia se vuelve a calcular con los demás exámenes.",
+    "fields": {
+      "takenOn": "Fecha",
+      "status": "Resultado",
+      "graded": "Con nota",
+      "grade": "Nota (si no estuvo ausente)",
+      "notes": "Observaciones"
+    },
+    "errors": {
+      "notOwed": "Esta materia ya no está adeudada. Recargá la página.",
+      "notFound": "No se encontró. Recargá la página."
+    }
   },
   "students": {
     "title": "Estudiantes",

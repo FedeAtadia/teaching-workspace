@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   classEdit,
   classInput,
+  examInput,
+  outcomeInput,
   schoolInput,
   standardEdit,
   standardInput,
@@ -231,6 +233,50 @@ describe("changing a standard, unit or task (STD-3, UNIT-3, TASK-6)", () => {
       taskEdit.safeParse({ classId: CLASS_ID, title: "TP", termId: TERM, unitId: "", dueOn: "", description: "", criteria: "", standardIds: [] })
         .success,
     ).toBe(false);
+  });
+});
+
+describe("recording an exam (EXAM-1)", () => {
+  const STUDENT = "5c2d1b0a-9e8f-4a7b-8c6d-5e4f3a2b1c0d";
+  const base = { classId: CLASS_ID, studentId: STUDENT, takenOn: "2026-12-10", status: "graded", grade: " 7,5 ", notes: "" };
+
+  it("takes a date and a grade typed as in INPUT, with optional notes", () => {
+    expect(examInput.parse(base)).toEqual({
+      classId: CLASS_ID,
+      studentId: STUDENT,
+      takenOn: "2026-12-10",
+      status: "graded",
+      value: 7.5,
+      notes: null,
+    });
+  });
+
+  it("takes absent with no grade, whatever was typed", () => {
+    expect(examInput.parse({ ...base, status: "absent", grade: "9", notes: " Avisó " })).toMatchObject({
+      status: "absent",
+      value: null,
+      notes: "Avisó",
+    });
+  });
+
+  it("names the grade or the date when they are wrong", () => {
+    const wrong = (over: Record<string, string>) => {
+      const r = examInput.safeParse({ ...base, ...over });
+      return r.success ? null : Object.keys(toFieldErrors(r.error));
+    };
+    expect(wrong({ grade: "" })).toEqual(["grade"]);
+    expect(wrong({ grade: "11" })).toEqual(["grade"]);
+    expect(wrong({ takenOn: "10/12/2026" })).toEqual(["takenOn"]);
+    expect(wrong({ status: "late" })).toEqual(["status"]);
+  });
+});
+
+describe("setting a year outcome (YEAR-2)", () => {
+  it("takes one of the three outcomes, or none to clear it", () => {
+    const studentId = "5c2d1b0a-9e8f-4a7b-8c6d-5e4f3a2b1c0d";
+    expect(outcomeInput.parse({ classId: CLASS_ID, studentId, outcome: "repeats" })).toMatchObject({ outcome: "repeats" });
+    expect(outcomeInput.parse({ classId: CLASS_ID, studentId, outcome: "" })).toMatchObject({ outcome: null });
+    expect(outcomeInput.safeParse({ classId: CLASS_ID, studentId, outcome: "expelled" }).success).toBe(false);
   });
 });
 

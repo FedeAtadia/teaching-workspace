@@ -296,6 +296,45 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   nothing yet, and their notes; then the student's suggested average and
   tasks not handed in for that cuatrimestre (SUGGEST-1, SUGGEST-2), shown as
   passing or not against the class's pass mark.
+- **HISTORY-4** Each course shows the student's year outcome (YEAR-2), and
+  each class its result and exams (YEAR-1, EXAM-1).
+
+## YEAR — Closing the school year
+
+*Enforced by `src/lib/yearEnd.ts`, `src/lib/validation.ts`,
+`src/db/queries/yearEnd.ts`. Covered by `src/lib/yearEnd.test.ts`,
+`src/lib/validation.test.ts`, `src/db/queries/yearEnd.test.ts`.*
+
+- **YEAR-1** A student's result in a class is: *pending* with no 2°
+  cuatrimestre grade yet; *passed* when that final grade (TERM-7) is at or
+  above the pass mark (GRADE-2, GRADE-3); otherwise *passed by exam* once an
+  exam is at or above the pass mark (the earliest such exam counts), and
+  *owed* until then.
+- **YEAR-2** Each student of a course gets a year outcome: *promoted* or
+  *repeats* in 1° to 5°, *graduated* in 6°. It starts undecided, and the
+  teacher can set, change or clear it; the app never decides it. A promoted
+  or graduated student may still owe classes (EXAM). The outcome belongs to
+  the course, so all its classes share it.
+- **YEAR-3** A class's Cierre tab lists the course's active students
+  (ROSTER-1) with their final grade, result, exams and year outcome.
+
+## EXAM — Owed classes (previas)
+
+*Enforced by `src/lib/validation.ts`, `src/db/queries/yearEnd.ts`. Covered by
+`src/lib/validation.test.ts`, `src/db/queries/yearEnd.test.ts`.*
+
+- **EXAM-1** An exam is recorded for a class a student owes (YEAR-1): its
+  date, and a grade typed as in INPUT-1..3 or *absent*, with optional notes
+  (up to 1000 characters). For a class the student doesn't owe, it is
+  refused.
+- **EXAM-2** An exam recorded by mistake can be deleted; the result is worked
+  out again (YEAR-1).
+- **EXAM-3** The Previas page lists every class a student still owes, from
+  every school year, grouped by class (COURSE-3 order, then subject), with
+  their final grade and earlier exams. Only students still active in the
+  course are listed. Recording a passing exam removes the row.
+- **EXAM-4** Home shows how many owed classes are pending, linking to the
+  Previas page.
 
 ## HOME — The home page
 
@@ -341,8 +380,8 @@ Covered by `src/lib/theme.test.ts`.*
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
 
 - **OWNER-1** A teacher only ever sees, adds to, changes or deletes their own
-  schools, school years, courses, classes, students, standards, units, tasks
-  and scores. Opening another teacher's class, task or student — or one that does
+  schools, school years, courses, classes, students, standards, units, tasks,
+  scores, cuatrimestre grades, year outcomes and exams. Opening another teacher's class, task or student — or one that does
   not exist — shows "not found", and nothing can be added to it, saved on it,
   changed or deleted.
 

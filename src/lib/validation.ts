@@ -4,6 +4,8 @@
 
 import { z } from "zod";
 import { SHIFTS } from "./courses";
+import { DEFAULT_RULES, parseGrade } from "./grading";
+import { YEAR_OUTCOMES } from "./yearEnd";
 
 const name = z.string().trim().min(1).max(80);
 
@@ -97,6 +99,38 @@ export type TaskInput = z.infer<typeof taskInput>;
 /** TASK-6 */
 export const taskEdit = taskInput.extend({ taskId: z.uuid() });
 export type TaskEdit = z.infer<typeof taskEdit>;
+
+/**
+ * EXAM-1. The grade arrives as typed (`7,5`) and leaves as `value`: a number
+ * for a graded exam, null when the student was absent.
+ */
+export const examInput = z
+  .object({
+    classId: z.uuid(),
+    studentId: z.uuid(),
+    takenOn: z.iso.date(),
+    status: z.enum(["graded", "absent"]),
+    grade: z.string(),
+    notes: optionalText(1000),
+  })
+  .superRefine((v, ctx) => {
+    if (v.status === "graded" && parseGrade(v.grade, DEFAULT_RULES) === null) {
+      ctx.addIssue({ code: "custom", path: ["grade"], message: "invalid" });
+    }
+  })
+  .transform(({ grade, ...rest }) => ({
+    ...rest,
+    value: rest.status === "graded" ? parseGrade(grade, DEFAULT_RULES) : null,
+  }));
+export type ExamInput = z.infer<typeof examInput>;
+
+/** YEAR-2: one student's outcome; the form's "undecided" option sends "". */
+export const outcomeInput = z.object({
+  classId: z.uuid(),
+  studentId: z.uuid(),
+  outcome: z.union([z.literal(""), z.enum(YEAR_OUTCOMES)]).transform((v) => v || null),
+});
+export type OutcomeInput = z.infer<typeof outcomeInput>;
 
 /** A message key per field, looked up under `errors.` in messages/. */
 export type FieldError = "required" | "tooLong" | "invalid";
