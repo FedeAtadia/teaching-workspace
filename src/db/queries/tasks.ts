@@ -2,7 +2,7 @@
 // Functions that act inside a class take the class already loaded (and
 // ownership-checked) by `getClass`, so they don't look it up again.
 
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
 import {
@@ -17,7 +17,7 @@ import {
   terms,
   units,
 } from "@/db/schema";
-import { isFileIn } from "@/lib/attachments";
+import { adaptedTaskFolder, isFileIn } from "@/lib/attachments";
 import { suggestTermGrade, type Suggestion } from "@/lib/grading";
 import { groupTaskDate, isAssessed } from "@/lib/groups";
 import type { ScoreRow, ScoreStatus } from "@/lib/scoresForm";
@@ -61,7 +61,8 @@ async function checkTaskInput(
       ? db
           .select({ id: standards.id })
           .from(standards)
-          .where(and(inArray(standards.id, standardIds), eq(standards.classId, cls.id)))
+          // ADAPT-2: only the class's own standards, never a student's.
+          .where(and(inArray(standards.id, standardIds), eq(standards.classId, cls.id), isNull(standards.studentId)))
       : Promise.resolve([]),
     groups.length > 0
       ? db
@@ -97,6 +98,8 @@ export async function createTask(
         dueOn: groupTaskDate(groups, input.dueOn),
         description: input.description,
         criteria: input.criteria,
+        adaptedDescription: input.adaptedDescription ?? null,
+        adaptedCriteria: input.adaptedCriteria ?? null,
       })
       .returning({ id: tasks.id });
     if (standardIds.length > 0) {
@@ -132,6 +135,9 @@ export async function updateTask(db: Db, teacherId: string, input: TaskEdit): Pr
         dueOn: groupTaskDate(groups, input.dueOn),
         description: input.description,
         criteria: input.criteria,
+        // ADAPT-3: left out of the form when the class has no adapted students; then kept.
+        ...(input.adaptedDescription !== undefined && { adaptedDescription: input.adaptedDescription }),
+        ...(input.adaptedCriteria !== undefined && { adaptedCriteria: input.adaptedCriteria }),
       })
       .where(and(eq(tasks.id, input.taskId), eq(tasks.classId, cls.id), eq(tasks.teacherId, teacherId)))
       .returning({ id: tasks.id });
@@ -210,6 +216,11 @@ export type TaskDetail = Omit<TaskRow, "scored" | "assessed" | "hasFile"> & {
   criteria: string | null;
   attachmentPath: string | null;
   attachmentName: string | null;
+  /** ADAPT-3: the adapted version. */
+  adaptedDescription: string | null;
+  adaptedCriteria: string | null;
+  adaptedAttachmentPath: string | null;
+  adaptedAttachmentName: string | null;
   standards: { id: string; title: string }[];
 };
 
@@ -235,6 +246,10 @@ export async function getTask(
         criteria: tasks.criteria,
         attachmentPath: tasks.attachmentPath,
         attachmentName: tasks.attachmentName,
+        adaptedDescription: tasks.adaptedDescription,
+        adaptedCriteria: tasks.adaptedCriteria,
+        adaptedAttachmentPath: tasks.adaptedAttachmentPath,
+        adaptedAttachmentName: tasks.adaptedAttachmentName,
       })
       .from(tasks)
       .innerJoin(terms, eq(tasks.termId, terms.id))
@@ -276,28 +291,59 @@ export async function setTaskAttachment(
 }
 
 /**
+ * ADAPT-3 (as FILE-2, FILE-3): record the task's adapted file, kept in its
+ * `adapted/` folder, or clear it with null. Returns the path it had before.
+ */
+export async function setTaskAdaptedAttachment(
+  db: Db,
+  teacherId: string,
+  cls: Pick<ClassDetail, "id">,
+  taskId: string,
+  file: { path: string; name: string } | null,
+): Promise<{ ok: true; previousPath: string | null } | NotFound> {
+  if (!isUuid(taskId)) return notFound;
+  if (file && !isFileIn(file.path, teacherId, adaptedTaskFolder(taskId))) return notFound;
+  const where = and(eq(tasks.id, taskId), eq(tasks.classId, cls.id), eq(tasks.teacherId, teacherId));
+  const [current] = await db.select({ path: tasks.adaptedAttachmentPath }).from(tasks).where(where);
+  if (!current) return notFound;
+  await db
+    .update(tasks)
+    .set({ adaptedAttachmentPath: file?.path ?? null, adaptedAttachmentName: file?.name.slice(0, 200) ?? null })
+    .where(where);
+  return { ok: true, previousPath: current.path };
+}
+
+/**
  * TASK-5. Scores and standard links go with it (ON DELETE CASCADE). Returns
- * the attached file's path, for the caller to delete from Storage.
+ * its files' paths (FILE-1, ADAPT-3), for the caller to delete from Storage.
  */
 export async function deleteTask(
   db: Db,
   teacherId: string,
   cls: Pick<ClassDetail, "id">,
   taskId: string,
-): Promise<{ ok: true; attachmentPath: string | null } | NotFound> {
+): Promise<{ ok: true; attachmentPath: string | null; adaptedAttachmentPath: string | null } | NotFound> {
   if (!isUuid(taskId)) return notFound;
   const [deleted] = await db
     .delete(tasks)
     .where(and(eq(tasks.id, taskId), eq(tasks.classId, cls.id), eq(tasks.teacherId, teacherId)))
-    .returning({ attachmentPath: tasks.attachmentPath });
-  return deleted ? { ok: true, attachmentPath: deleted.attachmentPath } : notFound;
+    .returning({ attachmentPath: tasks.attachmentPath, adaptedAttachmentPath: tasks.adaptedAttachmentPath });
+  return deleted
+    ? { ok: true, attachmentPath: deleted.attachmentPath, adaptedAttachmentPath: deleted.adaptedAttachmentPath }
+    : notFound;
 }
 
 /** The saved scores of one task. */
 export async function listTaskScores(db: Db, teacherId: string, taskId: string): Promise<ScoreRow[]> {
   if (!isUuid(taskId)) return [];
   return db
-    .select({ studentId: scores.studentId, status: scores.status, value: scores.value, notes: scores.notes })
+    .select({
+      studentId: scores.studentId,
+      status: scores.status,
+      value: scores.value,
+      notes: scores.notes,
+      adapted: scores.adapted,
+    })
     .from(scores)
     .where(and(eq(scores.taskId, taskId), eq(scores.teacherId, teacherId)));
 }
@@ -347,13 +393,14 @@ export async function saveScores(
     if (save.length > 0) {
       await tx
         .insert(scores)
-        .values(save.map((r) => ({ teacherId, taskId, ...r })))
+        .values(save.map((r) => ({ teacherId, taskId, ...r, adapted: r.adapted ?? false })))
         .onConflictDoUpdate({
           target: [scores.taskId, scores.studentId],
           set: {
             status: sql`excluded.status`,
             value: sql`excluded.value`,
             notes: sql`excluded.notes`,
+            adapted: sql`excluded.adapted`,
             gradedAt: sql`now()`,
           },
         });
@@ -363,7 +410,8 @@ export async function saveScores(
 }
 
 /** A score or mark, nothing yet (null), or a task the student isn't assessed on (GROUP-5). */
-export type GradebookCell = { status: ScoreStatus; value: number | null } | null | "notAssessed";
+export type ScoreCell = { status: ScoreStatus; value: number | null; adapted: boolean };
+export type GradebookCell = ScoreCell | null | "notAssessed";
 export type GradebookRow = {
   student: RosterStudent;
   cells: GradebookCell[];
@@ -389,7 +437,13 @@ export async function getGradebook(
     listTasks(db, teacherId, cls),
     listClassStudents(db, teacherId, cls),
     db
-      .select({ taskId: scores.taskId, studentId: scores.studentId, status: scores.status, value: scores.value })
+      .select({
+        taskId: scores.taskId,
+        studentId: scores.studentId,
+        status: scores.status,
+        value: scores.value,
+        adapted: scores.adapted,
+      })
       .from(scores)
       .innerJoin(tasks, eq(scores.taskId, tasks.id))
       .where(and(eq(tasks.classId, cls.id), eq(tasks.termId, termId), eq(scores.teacherId, teacherId))),
@@ -412,10 +466,10 @@ export async function getGradebook(
     const cells: GradebookCell[] = termTasks.map((t) => {
       if (!isAssessed(groupIdsOf(t), studentGroups.get(student.id))) return "notAssessed";
       const s = byKey.get(`${student.id}:${t.id}`);
-      return s ? { status: s.status, value: s.value } : null;
+      return s ? { status: s.status, value: s.value, adapted: s.adapted } : null;
     });
     const suggestion = suggestTermGrade(
-      cells.filter((c): c is { status: ScoreStatus; value: number | null } => c !== null && c !== "notAssessed"),
+      cells.filter((c): c is ScoreCell => c !== null && c !== "notAssessed"),
     );
     const termGrade = grades.find((g) => g.studentId === student.id)?.value ?? null;
     return { student, cells, suggestion, termGrade };

@@ -72,8 +72,9 @@ export function FormDialog({
   /**
    * "add": the main button. "addSmall": a small outlined one with a plus, for
    * inside a row. "edit": an outlined button with a pencil. "editIcon": just the pencil.
+   * "badge": a small pill showing the label. "text": a small plain-text button.
    */
-  trigger?: "add" | "addSmall" | "edit" | "editIcon";
+  trigger?: "add" | "addSmall" | "edit" | "editIcon" | "badge" | "text";
   title: string;
   /** A wider dialog, for forms with many fields. */
   wide?: boolean;
@@ -91,6 +92,16 @@ export function FormDialog({
       {trigger === "addSmall" && (
         <DialogTrigger render={<Button variant="outline" size="sm" />}>
           <Plus aria-hidden />
+          {triggerLabel}
+        </DialogTrigger>
+      )}
+      {trigger === "badge" && (
+        <DialogTrigger className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-bold text-chalk hover:bg-primary/25">
+          {triggerLabel}
+        </DialogTrigger>
+      )}
+      {trigger === "text" && (
+        <DialogTrigger render={<Button variant="ghost" size="xs" className="text-muted-foreground" />}>
           {triggerLabel}
         </DialogTrigger>
       )}

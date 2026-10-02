@@ -4,6 +4,7 @@ import { progress } from "@/lib/courses";
 import { getLocale, getTranslations } from "next-intl/server";
 import { FormDialog } from "@/components/forms/FormDialog";
 import { listStandards, listTerms, listUnits } from "@/db/queries/classDetail";
+import { getAdaptations } from "@/db/queries/adaptations";
 import { listGroups } from "@/db/queries/groups";
 import { listTasks, type TaskRow } from "@/db/queries/tasks";
 import { formatDate } from "@/lib/format";
@@ -19,12 +20,13 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
   const tErr = await getTranslations("classPage.errors");
   const locale = await getLocale();
 
-  const [tasks, terms, units, standards, groups] = await Promise.all([
+  const [tasks, terms, units, standards, groups, adaptations] = await Promise.all([
     listTasks(db, teacherId, cls),
     listTerms(db, teacherId, cls),
     listUnits(db, teacherId, id),
     listStandards(db, teacherId, id),
     listGroups(db, teacherId, id),
+    getAdaptations(db, teacherId, id),
   ]);
 
   const byTerm = new Map<number, TaskRow[]>();
@@ -41,7 +43,7 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
           action={addTask}
           hidden={{ classId: id }}
           formErrors={{ notFound: tErr("notFound") }}
-          fields={await taskFields({ terms, units, standards, groups })}
+          fields={await taskFields({ terms, units, standards, groups, adapted: adaptations.size > 0 })}
         />
       </div>
 

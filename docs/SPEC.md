@@ -261,6 +261,32 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   one group at a time, or all; the choice is kept in the address. Saving
   scores with one group shown only changes that group's students.
 
+## ADAPT — Adaptations
+
+*Enforced by `src/lib/validation.ts`, `src/lib/scoresForm.ts`,
+`src/db/queries/adaptations.ts`, `src/db/queries/classDetail.ts`,
+`src/db/queries/tasks.ts`. Covered by `src/lib/validation.test.ts`,
+`src/lib/scoresForm.test.ts`, `src/db/queries/adaptations.test.ts`.*
+
+- **ADAPT-1** A student can have an adaptation in a class: a text of what is
+  adapted (trimmed, 1 to 2000 characters), never a diagnosis. An
+  "Adaptación" badge shows next to them on the class's roster, when scoring,
+  in the gradebook and in their history. Saving the text empty removes the
+  adaptation. Only active students of the course can have one.
+- **ADAPT-2** A student with an adaptation can have their own passing
+  standards, with the STD-1..4 rules and FILE-4 files. They are listed under
+  that student, apart from the class's standards, and tasks can't link them
+  (TASK-2). Removing the adaptation hides them until it is added again.
+- **ADAPT-3** A task can have an adapted version: a brief description (up to
+  280 characters), a specific standard (up to 1000) and a file (FILE-1..3
+  rules, stored in `<teacher id>/<task id>/adapted/`). It shows on the task
+  page. Deleting the task or its class deletes that file too.
+- **ADAPT-4** A score can be marked as adapted. When scoring, a student with
+  an adaptation and no saved score starts marked if the task has an adapted
+  version. Adapted scores show an "A" in the gradebook and the history and
+  count in averages like any other.
+- **ADAPT-5** OWNER-1 covers adaptations and students' own standards.
+
 ## SCORE — Scoring a task
 
 *Enforced by `src/lib/scoresForm.ts`, `src/db/queries/tasks.ts`. Covered by

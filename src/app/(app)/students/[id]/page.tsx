@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BackLink } from "@/components/BackLink";
+import { AdaptedBadge } from "@/components/classes/Adaptation";
 import { ResultLabel } from "@/components/classes/StudentExams";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -62,6 +63,8 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                         <Link href={`/classes/${cls.id}`} className="underline-offset-4 hover:underline">
                           {cls.name}
                         </Link>
+                        {/* ADAPT-1 */}
+                        {cls.adaptation && <AdaptedBadge notes={cls.adaptation} />}
                       </h3>
                       {/* TERM-1, TERM-7: the 2° cuatrimestre grade. */}
                       {cls.finalGrade !== null && (
@@ -71,6 +74,9 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                         </p>
                       )}
                     </div>
+                    {cls.adaptation && (
+                      <p className="mt-1 text-sm whitespace-pre-line text-muted-foreground">{cls.adaptation}</p>
+                    )}
                     {/* HISTORY-4: the result once there is a final grade, and any exams. */}
                     {cls.result.kind !== "pending" && (
                       <p className="mt-1 text-sm">
@@ -154,7 +160,12 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                                       score={task.score}
                                       rules={rules}
                                       locale={locale}
-                                      labels={{ missing: tGrades("missing"), excused: tGrades("excused") }}
+                                      labels={{
+                                        missing: tGrades("missing"),
+                                        excused: tGrades("excused"),
+                                        adapted: tGrades("adapted"),
+                                        adaptedShort: tGrades("adaptedShort"),
+                                      }}
                                     />
                                   </td>
                                   <td className="py-1.5 text-muted-foreground">{task.score?.notes ?? ""}</td>
@@ -200,10 +211,10 @@ function ScoreCell({
   locale,
   labels,
 }: {
-  score: { status: string; value: number | null } | null;
+  score: { status: string; value: number | null; adapted: boolean } | null;
   rules: typeof DEFAULT_RULES;
   locale: string;
-  labels: { missing: string; excused: string };
+  labels: { missing: string; excused: string; adapted: string; adaptedShort: string };
 }) {
   if (!score) return <span className="text-muted-foreground">—</span>;
   if (score.status === "missing") return <span className="text-destructive">{labels.missing}</span>;
@@ -212,6 +223,12 @@ function ScoreCell({
   return (
     <span className={isPassing(score.value, rules) ? "" : "font-medium text-destructive"}>
       {formatGrade(score.value, locale)}
+      {/* ADAPT-4 */}
+      {score.adapted && (
+        <abbr title={labels.adapted} className="ml-0.5 align-super text-[0.65rem] text-chalk no-underline">
+          {labels.adaptedShort}
+        </abbr>
+      )}
     </span>
   );
 }

@@ -78,6 +78,13 @@
       "when": 1790977052092,
       "tag": "0010_groups",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790983068488,
+      "tag": "0011_adaptations",
+      "breakpoints": true
     }
   ]
 }

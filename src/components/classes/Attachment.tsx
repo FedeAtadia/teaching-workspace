@@ -4,13 +4,16 @@ import { FileText, Paperclip } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRef, useState, useTransition } from "react";
 import {
+  recordAdaptedTaskFile,
   recordStandardFile,
   recordTaskFile,
+  removeAdaptedTaskFile,
   removeStandardFile,
   removeTaskFile,
 } from "@/app/(app)/classes/[id]/actions";
 import { Button } from "@/components/ui/button";
 import {
+  adaptedTaskFolder,
   ATTACHMENT_BUCKET,
   ATTACHMENT_TYPES,
   attachmentPath,
@@ -21,8 +24,8 @@ import { createClient } from "@/lib/supabase/client";
 
 type Props = {
   classId: string;
-  /** What the file belongs to: a task (FILE-1..3) or a passing standard (FILE-4). */
-  target: { kind: "task" | "standard"; id: string };
+  /** What the file belongs to: a task (FILE-1..3), a passing standard (FILE-4) or a task's adapted version (ADAPT-3). */
+  target: { kind: "task" | "standard" | "adaptedTask"; id: string };
   /** The signed-in teacher: the file goes in their folder (FILE-2). */
   teacherId: string;
   current: { name: string } | null;
@@ -46,7 +49,12 @@ export function Attachment({ classId, target, teacherId, current, compact = fals
 
     // Straight to Storage from the browser: a Server Action would cap it at 1 MB.
     setUploading(true);
-    const folder = target.kind === "task" ? target.id : standardFolder(target.id);
+    const folder =
+      target.kind === "task"
+        ? target.id
+        : target.kind === "adaptedTask"
+          ? adaptedTaskFolder(target.id)
+          : standardFolder(target.id);
     const path = attachmentPath(teacherId, folder, file.name);
     const { error: uploadError } = await createClient()
       .storage.from(ATTACHMENT_BUCKET)
@@ -55,10 +63,13 @@ export function Attachment({ classId, target, teacherId, current, compact = fals
     if (uploadError) return setError(t("errors.uploadFailed"));
 
     startTransition(async () => {
+      const record = { path, name: file.name };
       const result =
         target.kind === "task"
-          ? await recordTaskFile({ classId, taskId: target.id, path, name: file.name })
-          : await recordStandardFile({ classId, standardId: target.id, path, name: file.name });
+          ? await recordTaskFile({ classId, taskId: target.id, ...record })
+          : target.kind === "adaptedTask"
+            ? await recordAdaptedTaskFile({ classId, taskId: target.id, ...record })
+            : await recordStandardFile({ classId, standardId: target.id, ...record });
       if (!result.ok) setError(t("errors.notFound"));
     });
   }
@@ -69,7 +80,9 @@ export function Attachment({ classId, target, teacherId, current, compact = fals
       const result =
         target.kind === "task"
           ? await removeTaskFile({ classId, taskId: target.id })
-          : await removeStandardFile({ classId, standardId: target.id });
+          : target.kind === "adaptedTask"
+            ? await removeAdaptedTaskFile({ classId, taskId: target.id })
+            : await removeStandardFile({ classId, standardId: target.id });
       if (!result.ok) setError(t("errors.notFound"));
     });
   }
@@ -77,7 +90,9 @@ export function Attachment({ classId, target, teacherId, current, compact = fals
   const href =
     target.kind === "task"
       ? `/classes/${classId}/tasks/${target.id}/file`
-      : `/classes/${classId}/standards/${target.id}/file`;
+      : target.kind === "adaptedTask"
+        ? `/classes/${classId}/tasks/${target.id}/file?adapted=1`
+        : `/classes/${classId}/standards/${target.id}/file`;
 
   return (
     <section className={compact ? "" : "mt-4 rounded-lg border p-3"}>
