@@ -1,0 +1,44 @@
+# Supabase's free plan pauses a project after a week without activity. This
+# runs one small read on each database every 3 days so neither gets paused,
+# school holidays included. Each database's connection string is a repository
+# secret; a database whose secret isn't set is skipped.
+#
+#   SUPABASE_DEV_DB_URL   the DATABASE_URL in .env.local
+#   SUPABASE_PROD_DB_URL  the DATABASE_URL in .env.prod
+#
+# Scheduled runs only start from `main`, so this begins after the next release.
+# It can also be run by hand from the Actions tab.
+
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: "17 9 */3 * *" # every 3 days, 06:17 in Argentina
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: dev
+            secret: SUPABASE_DEV_DB_URL
+          - name: prod
+            secret: SUPABASE_PROD_DB_URL
+    steps:
+      - name: Read from the ${{ matrix.name }} database
+        env:
+          DATABASE_URL: ${{ secrets[matrix.secret] }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::notice::${{ matrix.secret }} isn't set; skipping ${{ matrix.name }}."
+            exit 0
+          fi
+          # One row count: real database activity, nothing written.
+          psql "$DATABASE_URL" --no-psqlrc --quiet --tuples-only \
+            --command "select 'schools: ' || count(*) from schools;"
