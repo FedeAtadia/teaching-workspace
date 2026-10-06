@@ -73,7 +73,20 @@ for working, `prod` for Vercel — so experiments never touch real grades.
    Authentication → URL Configuration → Redirect URLs.
 
 The free plan pauses a project after a week without activity (school holidays).
-Restoring it is one click in the dashboard; nothing is lost.
+To prevent it, `.github/workflows/keep-supabase-awake.yml` reads from each
+database every 3 days. It needs each project's `DATABASE_URL` as a repository
+secret, set once from a terminal in the project folder:
+
+```bash
+grep '^DATABASE_URL=' .env.local | cut -d= -f2- | gh secret set SUPABASE_DEV_DB_URL
+```
+
+```bash
+grep '^DATABASE_URL=' .env.prod | cut -d= -f2- | gh secret set SUPABASE_PROD_DB_URL
+```
+
+If a project does get paused, restoring it is one click in the dashboard;
+nothing is lost.
 
 ## Layout
 
