@@ -72,10 +72,11 @@ for working, `prod` for Vercel — so experiments never touch real grades.
    Add `http://localhost:3000/auth/callback` and the Vercel URL under
    Authentication → URL Configuration → Redirect URLs.
 
-The free plan pauses a project after a week without activity (school holidays).
-To prevent it, `.github/workflows/keep-supabase-awake.yml` reads from each
-database every 3 days. It needs each project's `DATABASE_URL` as a repository
-secret, set once from a terminal in the project folder:
+The free plan pauses a project that gets too little activity over a week
+(school holidays). One read every 3 days wasn't enough, so
+`.github/workflows/keep-supabase-awake.yml` now touches each project twice a
+day: one request through Supabase's API and one read on the database. It needs
+four repository secrets, set once from a terminal in the project folder:
 
 ```bash
 grep '^DATABASE_URL=' .env.local | cut -d= -f2- | gh secret set SUPABASE_DEV_DB_URL
@@ -85,8 +86,19 @@ grep '^DATABASE_URL=' .env.local | cut -d= -f2- | gh secret set SUPABASE_DEV_DB_
 grep '^DATABASE_URL=' .env.prod | cut -d= -f2- | gh secret set SUPABASE_PROD_DB_URL
 ```
 
-If a project does get paused, restoring it is one click in the dashboard;
-nothing is lost.
+```bash
+grep '^NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=' .env.local | cut -d= -f2- | gh secret set SUPABASE_DEV_PUBLISHABLE_KEY
+```
+
+The prod publishable key isn't in `.env.prod`: copy it from the prod project's
+Project Settings → API Keys, run this and paste it at the prompt:
+
+```bash
+gh secret set SUPABASE_PROD_PUBLISHABLE_KEY
+```
+
+A missing secret fails the run, and GitHub emails about it. If a project does
+get paused, restoring it is one click in the dashboard; nothing is lost.
 
 ## Layout
 
