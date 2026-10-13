@@ -1,19 +1,26 @@
-# Supabase's free plan pauses a project after a week without activity. This
-# runs one small read on each database every 3 days so neither gets paused,
-# school holidays included. Each database's connection string is a repository
-# secret; a database whose secret isn't set is skipped.
+# Supabase's free plan pauses a project that gets too little activity over a
+# week. Its docs ask for "a few user requests to the database each day", so
+# this touches each project twice a day, school holidays included, in two ways:
 #
-#   SUPABASE_DEV_DB_URL   the DATABASE_URL in .env.local
-#   SUPABASE_PROD_DB_URL  the DATABASE_URL in .env.prod
+#   - one read through Supabase's API (the activity the docs name), and
+#   - one read on the database itself, through the connection pooler.
 #
-# Scheduled runs only start from `main`, so this begins after the next release.
-# It can also be run by hand from the Actions tab.
+# Neither returns any data or writes anything. Each project needs two
+# repository secrets; a missing one fails the run, so GitHub emails about it.
+#
+#   SUPABASE_DEV_DB_URL             the DATABASE_URL in .env.local
+#   SUPABASE_DEV_PUBLISHABLE_KEY    the NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in .env.local
+#   SUPABASE_PROD_DB_URL            the DATABASE_URL in .env.prod
+#   SUPABASE_PROD_PUBLISHABLE_KEY   the prod project's publishable key (dashboard → API Keys)
+#
+# Scheduled runs only start from `main`. It can also be run by hand from the
+# Actions tab.
 
 name: Keep Supabase awake
 
 on:
   schedule:
-    - cron: "17 9 */3 * *" # every 3 days, 06:17 in Argentina
+    - cron: "17 9,21 * * *" # twice a day, 06:17 and 18:17 in Argentina
   workflow_dispatch:
 
 permissions: {}
@@ -27,17 +34,36 @@ jobs:
       matrix:
         include:
           - name: dev
-            secret: SUPABASE_DEV_DB_URL
+            url: https://chkfeznnfpugyatwuzxd.supabase.co
+            db_secret: SUPABASE_DEV_DB_URL
+            key_secret: SUPABASE_DEV_PUBLISHABLE_KEY
           - name: prod
-            secret: SUPABASE_PROD_DB_URL
+            url: https://dlqvhxmskpaumultxmjt.supabase.co
+            db_secret: SUPABASE_PROD_DB_URL
+            key_secret: SUPABASE_PROD_PUBLISHABLE_KEY
     steps:
-      - name: Read from the ${{ matrix.name }} database
+      - name: Call the ${{ matrix.name }} API
         env:
-          DATABASE_URL: ${{ secrets[matrix.secret] }}
+          KEY: ${{ secrets[matrix.key_secret] }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::The ${{ matrix.key_secret }} secret isn't set."
+            exit 1
+          fi
+          # RLS lets the publishable key read nothing, so this answers [] (HTTP 200).
+          curl --silent --show-error --fail-with-body --max-time 30 \
+            --write-out '\nHTTP %{http_code}\n' \
+            --header "apikey: $KEY" \
+            "${{ matrix.url }}/rest/v1/schools?select=id&limit=1"
+
+      - name: Read from the ${{ matrix.name }} database
+        if: ${{ !cancelled() }}
+        env:
+          DATABASE_URL: ${{ secrets[matrix.db_secret] }}
         run: |
           if [ -z "$DATABASE_URL" ]; then
-            echo "::notice::${{ matrix.secret }} isn't set; skipping ${{ matrix.name }}."
-            exit 0
+            echo "::error::The ${{ matrix.db_secret }} secret isn't set."
+            exit 1
           fi
           # One row count: real database activity, nothing written.
           psql "$DATABASE_URL" --no-psqlrc --quiet --tuples-only \
