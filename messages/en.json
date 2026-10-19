@@ -83,7 +83,8 @@
       "division": "Division",
       "divisionPlaceholder": "A",
       "shift": "Shift",
-      "schoolYear": "School year"
+      "schoolYear": "School year",
+      "weekdays": "Days it meets"
     },
     "columns": {
       "subject": "Subject",
@@ -107,7 +108,8 @@
       "tasks": "Tasks",
       "grades": "Grades",
       "termGrades": "Term grades",
-      "closing": "Year end"
+      "closing": "Year end",
+      "attendance": "Attendance"
     },
     "errors": {
       "notFound": "This class wasn't found. Go back to the list and try again."
@@ -253,7 +255,9 @@
       "notAssessed": "Not for their group",
       "notAssessedShort": "·",
       "adapted": "Score on adapted content",
-      "adaptedShort": "A"
+      "adaptedShort": "A",
+      "lowAttendance": "Attendance too low ({rate}%)",
+      "lowAttendanceShort": "Att. {rate}%"
     },
     "termGrades": {
       "introFirst": "Each student's grade for the term. The suggested one is the average of their tasks.",
@@ -300,8 +304,10 @@
     "failed": "Couldn't save it.",
     "fields": {
       "name": "Name",
-      "days": "Days (optional)",
-      "daysPlaceholder": "Monday 8 to 10"
+      "days": "Schedule (optional)",
+      "daysPlaceholder": "Monday 8 to 10",
+      "weekdays": "The group's days (optional)",
+      "weekdaysHint": "With none ticked, the group comes on the class's days."
     },
     "errors": {
       "duplicate": "This class already has a group with that name.",
@@ -330,7 +336,8 @@
       "graduated": "Graduated"
     },
     "exams": "Exams",
-    "absent": "absent"
+    "absent": "absent",
+    "attendance": "Attendance {rate}%"
   },
   "closing": {
     "intro": "Each student's result in the class, and whether they move up or repeat the year. The final grade is the 2nd term's.",
@@ -423,14 +430,154 @@
     },
     "schools": {
       "title": "Schools",
-      "intro": "They're created when you add a class. You can rename them here.",
+      "intro": "They're created when you add a class. Here you can rename them and set each year's school calendar.",
       "empty": "No schools yet: one is created with your first class.",
       "courses": "{count, plural, one {# course} other {# courses}}",
       "rename": "Rename",
       "renameTitle": "Rename “{name}”",
       "name": "School name",
       "duplicate": "You already have another school with that name.",
-      "notFound": "That school wasn't found. Reload the page."
+      "notFound": "That school wasn't found. Reload the page.",
+      "calendar": "{year} calendar"
+    },
+    "attendance": {
+      "title": "Attendance",
+      "minimum": "Minimum attendance (%)",
+      "hint": "Below this percentage in a cuatrimestre, the suggested average shows as not passing, with “attendance too low”. The number doesn't change. 0 turns it off.",
+      "saved": "Saved."
+    }
+  },
+  "weekdays": {
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday"
+  },
+  "weekdaysShort": {
+    "1": "Mo",
+    "2": "Tu",
+    "3": "We",
+    "4": "Th",
+    "5": "Fr",
+    "6": "Sa"
+  },
+  "calendar": {
+    "title": "{year} school calendar",
+    "back": "Settings",
+    "dates": {
+      "title": "School year dates",
+      "startsOn": "Classes start",
+      "term2StartsOn": "2nd term starts",
+      "endsOn": "Classes end",
+      "set": "Set dates",
+      "edit": "Change dates",
+      "missing": "Set these dates to be able to add the days without class."
+    },
+    "daysOff": {
+      "title": "Days without class",
+      "intro": "Holidays, jornadas, breaks and any other day without class at this school. Every class at the school takes them on its own.",
+      "empty": "No days without class yet.",
+      "add": "Add a day without class",
+      "addTitle": "New day without class",
+      "edit": "Edit",
+      "editTitle": "Edit day without class",
+      "delete": "Delete",
+      "deleteTitle": "Delete “{name}”?",
+      "deleteBody": "Those days become class days again.",
+      "fields": {
+        "startsOn": "From",
+        "endsOn": "To (optional, for several days)",
+        "kind": "Kind",
+        "name": "Name",
+        "namePlaceholder": "Jornada institucional"
+      },
+      "kinds": {
+        "holiday": "Holiday",
+        "jornada": "Jornada",
+        "recess": "Break",
+        "other": "Other"
+      }
+    },
+    "holidays": {
+      "add": "Add national holidays",
+      "adding": "Adding…",
+      "added": "{count, plural, =0 {They were all there already.} one {Added # holiday.} other {Added # holidays.}}",
+      "noList": "The app doesn't have {year}'s holidays yet. Add them by hand.",
+      "failed": "Couldn't save."
+    },
+    "errors": {
+      "notFound": "Not found. Reload the page."
+    }
+  },
+  "attendance": {
+    "student": "Student",
+    "rate": "Attendance",
+    "noCalendar": "To see the class days, set {school}'s {year} school calendar.",
+    "openCalendar": "Open the calendar",
+    "noWeekdays": "This class has no days of the week yet. Choose them in “Edit class”.",
+    "noDays": "This term has no class days.",
+    "noStudents": "This class has no students yet.",
+    "statuses": {
+      "present": "Present",
+      "absent": "Absent",
+      "late": "Late",
+      "excused": "Excused absence"
+    },
+    "short": {
+      "present": "P",
+      "absent": "A",
+      "late": "L",
+      "excused": "E",
+      "notExpected": "·"
+    },
+    "states": {
+      "off": "No class",
+      "pending": "Not taken",
+      "taken": "Taken",
+      "notHeld": "Class didn't happen"
+    },
+    "notExpected": "Doesn't come that day",
+    "reasons": {
+      "weather": "Weather",
+      "teacher_absent": "Teacher sick / on leave",
+      "strike": "Strike",
+      "other": "Other / event / trip"
+    },
+    "legend": "P: present · A: absent · L: late (half an absence) · E: excused (doesn't count) · ·: doesn't come that day. Click a date to take attendance.",
+    "chart": {
+      "title": "Attendance by student",
+      "minimum": "Minimum {min}%",
+      "none": "No days taken yet.",
+      "below": "below the minimum"
+    },
+    "otherDate": {
+      "label": "Another date (make-up class)",
+      "go": "Take attendance"
+    },
+    "day": {
+      "back": "Attendance",
+      "dayOff": "No class: {name}",
+      "dayOffNote": "If there was class anyway, you can take attendance.",
+      "notHeld": "Class didn't happen: {reason}",
+      "outsideYear": "That date is outside the school's year.",
+      "noStudents": "Nobody comes that day.",
+      "save": "Save attendance",
+      "saved": "Attendance saved.",
+      "failed": "Couldn't save. Reload the page.",
+      "noClass": {
+        "title": "Class didn't happen?",
+        "reason": "Reason",
+        "note": "Note (optional)",
+        "save": "Save as “didn't happen”",
+        "warning": "That day's marks are removed."
+      },
+      "clear": {
+        "button": "Clear this day",
+        "title": "Clear what was saved on {date}?",
+        "body": "The day goes back to not taken, with no marks."
+      }
     }
   }
 }

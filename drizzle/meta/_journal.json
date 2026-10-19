@@ -85,6 +85,20 @@
       "when": 1790983068488,
       "tag": "0011_adaptations",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792414020802,
+      "tag": "0012_school-calendar",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792415579124,
+      "tag": "0013_attendance",
+      "breakpoints": true
     }
   ]
 }

@@ -68,13 +68,21 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 
 ## SUGGEST — Suggested term grade
 
-*Enforced by `src/lib/grading.ts`. Covered by `src/lib/grading.test.ts`.*
+*Enforced by `src/lib/grading.ts`, `src/lib/attendance.ts`,
+`src/db/queries/settings.ts`. Covered by `src/lib/grading.test.ts`,
+`src/lib/attendance.test.ts`, `src/db/queries/attendance.test.ts`.*
 
 - **SUGGEST-1** The suggested term grade is the mean of the graded tasks in that
   term, rounded to two decimals. Missing and excused tasks are left out. With
   nothing graded there is no suggestion.
 - **SUGGEST-2** The number of missing tasks is reported alongside the
   suggestion, so the teacher weighs them rather than the average hiding them.
+- **SUGGEST-3** The teacher sets a minimum attendance, 0 to 100 % (75 by
+  default; 0 turns it off). A student whose attendance in the cuatrimestre
+  (ATT-4) is below it has their suggestion shown as not passing, with
+  "asistencia insuficiente" and the percentage, in the gradebook (BOOK-2) and
+  on the cuatrimestre grades page (TERM-5). The suggested number itself does
+  not change, and without a percentage nothing is shown.
 
 ## INPUT — Typing a grade
 
@@ -105,16 +113,16 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   course in one school year.
 - **CLASS-2** A class is added with six fields: school (SCHOOL-1), subject,
   course year (1° to 6°), division, shift (mañana, tarde or vespertino) and
-  school year (a year between 2000 and 2100). The subject is trimmed and 1 to
-  80 characters long.
+  school year (a year between 2000 and 2100), plus the days of the week it
+  meets (CAL-4). The subject is trimmed and 1 to 80 characters long.
 - **CLASS-3** The division is trimmed and upper-cased, and is 1 to 10
   characters long: `" a"` is stored as `"A"`.
 - **CLASS-4** The first class of a school year creates that school year, with
   its two cuatrimestres (TERM-1).
 - **CLASS-5** A course cannot have the same subject twice; adding it again is
   rejected with a message, and nothing is saved.
-- **CLASS-6** A class's six fields can be changed, with the CLASS-2 and CLASS-3
-  rules. The subject changes only this class, and CLASS-5 still applies. The
+- **CLASS-6** A class's six fields and its days can be changed, with the
+  CLASS-2 and CLASS-3 rules. The subject and the days change only this class, and CLASS-5 still applies. The
   school, course year, division, shift and school year are the course's: they
   change for every class of the course, whose students stay in it. If the
   teacher already has another course with those fields, nothing is saved. A
@@ -155,6 +163,33 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   the teacher's schools already has is refused.
 - **SCHOOL-4** Courses created before schools existed belong to a school called
   "Mi escuela", one per teacher, which the teacher can rename.
+
+## CAL — The school calendar
+
+*Enforced by `src/lib/calendar.ts`, `src/lib/holidays.ts`,
+`src/lib/validation.ts`, `src/db/queries/calendar.ts`. Covered by
+`src/lib/calendar.test.ts`, `src/lib/validation.test.ts`,
+`src/db/queries/calendar.test.ts`.*
+
+- **CAL-1** Each school has a calendar for each school year: the day classes
+  start, the day the 2° cuatrimestre starts and the day classes end, in that
+  order. A calendar is only saved with all three.
+- **CAL-2** The calendar lists the days without class: one day or a range
+  (from and to, the second not before the first), a kind (feriado, jornada,
+  receso or otro) and a name (trimmed, 1 to 120 characters). They can be
+  added, changed and deleted, and are listed by date.
+- **CAL-3** "Agregar feriados nacionales" adds the school year's national
+  holidays of Argentina, as kept in the app, as one-day feriados. A day
+  already covered by a day without class is skipped, so adding them twice
+  adds nothing. A year the app has no list for adds nothing and says so.
+- **CAL-4** A class has the days of the week it meets, lunes to sábado, set
+  when it is added or changed (CLASS-2, CLASS-6); it may have none yet. A
+  group can have its own days (GROUP-1). A student is expected on a class's
+  day when it is one of their group's days, or, when their group has no days
+  of its own or they have no group, one of the class's days.
+- **CAL-5** A class's days between two dates are the dates that fall on its
+  days of the week, in order; a date is without class when a day without
+  class of its school's calendar covers it.
 
 ## STUDENT — Students
 
@@ -238,8 +273,8 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 
 - **GROUP-1** A class can be split into groups — say, the days each part of
   the course attends. Each group has a name (trimmed, 1 to 60 characters,
-  unique in the class ignoring case) and optional days (up to 120
-  characters). Groups can be renamed and deleted. Deleting one leaves its
+  unique in the class ignoring case), an optional schedule as text (up to
+  120 characters) and optional days of the week (CAL-4). Groups can be renamed and deleted. Deleting one leaves its
   students without a group and takes its dates off tasks; a task that was
   only for that group becomes a task for everyone, and the confirmation says
   how many.
@@ -286,6 +321,45 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   version. Adapted scores show an "A" in the gradebook and the history and
   count in averages like any other.
 - **ADAPT-5** OWNER-1 covers adaptations and students' own standards.
+
+## ATT — Attendance
+
+*Enforced by `src/lib/attendance.ts`, `src/lib/attendanceForm.ts`,
+`src/lib/validation.ts`, `src/db/queries/attendance.ts`. Covered by
+`src/lib/attendance.test.ts`, `src/lib/attendanceForm.test.ts`,
+`src/lib/validation.test.ts`, `src/db/queries/attendance.test.ts`.*
+
+- **ATT-1** A class's days in a cuatrimestre are the dates between that
+  cuatrimestre's start and end (the 1° ends the day before the 2° starts,
+  CAL-1) that fall on the class's days or any of its groups' days (CAL-4,
+  CAL-5), plus any other date recorded for it. Each day is either without
+  class (a day without class of the school's calendar covers it and nothing
+  was recorded: it needs nothing and counts for nothing), pending, taken
+  (attendance saved) or not held (saved with a reason). With one group
+  shown (GROUP-6), only that group's days are listed.
+- **ATT-2** Attendance is taken for one date of the school year (CAL-1). It
+  lists the active students of the course expected that day (CAL-4), or all
+  of them on a date that is none of the class's days, with what each one
+  has saved; a student with no mark yet starts as presente. Each gets
+  presente, ausente, tarde or ausente justificado, and one save stores them
+  all, marking the day as held. Only active students of the course are
+  saved; a student not on the page keeps what they had.
+- **ATT-3** A day can instead be saved as not held, with a reason (clima,
+  docente enfermo / licencia, paro, otro) and an optional note (up to 500
+  characters); the marks of that day are removed. A saved day can also be
+  cleared, so it is pending again.
+- **ATT-4** A student's attendance in a cuatrimestre is worked out from
+  their marks on the days held in it: ausente justificado is left out, a
+  tarde counts as half an absence, and the percentage is the days counted
+  minus the absences over the days counted, rounded to a whole number. With
+  no day counted there is no percentage.
+- **ATT-5** The Asistencia tab shows one cuatrimestre at a time: the students
+  against the days (ATT-1), each cell a student's mark, not expected, or
+  empty; then each student's percentage and their counts of presente,
+  ausente, tarde and justificado, and a chart of each one's percentage
+  against the minimum (SUGGEST-3).
+- **ATT-6** A class whose school has no calendar for the school year shows no
+  days, and says where to set it.
 
 ## SCORE — Scoring a task
 
@@ -362,6 +436,8 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   passing or not against the class's pass mark.
 - **HISTORY-4** Each course shows the student's year outcome (YEAR-2), and
   each class its result and exams (YEAR-1, EXAM-1).
+- **HISTORY-5** Each cuatrimestre of a class also shows the student's
+  attendance in it (ATT-4), when there is a percentage.
 
 ## YEAR — Closing the school year
 
@@ -463,7 +539,8 @@ Covered by `src/lib/theme.test.ts`.*
 
 - **OWNER-1** A teacher only ever sees, adds to, changes or deletes their own
   schools, school years, courses, classes, students, standards, units, tasks,
-  scores, cuatrimestre grades, year outcomes, exams and groups. Opening
+  scores, cuatrimestre grades, year outcomes, exams, groups, school
+  calendars with their days without class, attendance and settings. Opening
   another teacher's class, task or student — or one that does not exist —
   shows "not found", and nothing can be added to it, saved on it, changed or
   deleted.

@@ -3,6 +3,8 @@
 // which field is wrong.
 
 import { z } from "zod";
+import { SESSION_REASONS } from "./attendance";
+import { DAY_OFF_KINDS } from "./calendar";
 import { SHIFTS } from "./courses";
 import { DEFAULT_RULES, parseGrade } from "./grading";
 import { YEAR_OUTCOMES } from "./yearEnd";
@@ -10,6 +12,16 @@ import { YEAR_OUTCOMES } from "./yearEnd";
 const name = z.string().trim().min(1).max(80);
 
 const schoolName = z.string().trim().min(1).max(120);
+
+/**
+ * CAL-4: the ticked days of the week, lunes 1 to sábado 6, once each and in
+ * order. Checkboxes, so the action reads them with getAll. Left out, the
+ * saved days stay as they are.
+ */
+const weekdays = z
+  .array(z.coerce.number().int().min(1).max(6))
+  .transform((days) => [...new Set(days)].sort((a, b) => a - b))
+  .optional();
 
 /** CLASS-2, CLASS-3, SCHOOL-1 */
 export const classInput = z.object({
@@ -24,6 +36,7 @@ export const classInput = z.object({
     .transform((d) => d.toUpperCase()),
   shift: z.enum(SHIFTS),
   schoolYear: z.coerce.number().int().min(2000).max(2100),
+  weekdays,
 });
 export type ClassInput = z.infer<typeof classInput>;
 
@@ -161,6 +174,7 @@ export const groupInput = z.object({
   classId: z.uuid(),
   name: z.string().trim().min(1).max(60),
   days: optionalText(120),
+  weekdays,
 });
 export type GroupInput = z.infer<typeof groupInput>;
 
@@ -174,6 +188,60 @@ export const studentGroupInput = z.object({
   groupId: optionalUuid,
 });
 export type StudentGroupInput = z.infer<typeof studentGroupInput>;
+
+/** CAL-1: the school's three dates for a school year, in order. */
+export const calendarInput = z
+  .object({
+    schoolId: z.uuid(),
+    schoolYear: z.coerce.number().int().min(2000).max(2100),
+    startsOn: z.iso.date(),
+    term2StartsOn: z.iso.date(),
+    endsOn: z.iso.date(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.term2StartsOn <= v.startsOn) ctx.addIssue({ code: "custom", path: ["term2StartsOn"], message: "invalid" });
+    else if (v.endsOn <= v.term2StartsOn) ctx.addIssue({ code: "custom", path: ["endsOn"], message: "invalid" });
+  });
+export type CalendarInput = z.infer<typeof calendarInput>;
+
+/** CAL-2: one day, or a range; an empty "to" makes it one day. */
+export const dayOffInput = z
+  .object({
+    calendarId: z.uuid(),
+    startsOn: z.iso.date(),
+    endsOn: z.union([z.literal(""), z.iso.date()]),
+    kind: z.enum(DAY_OFF_KINDS),
+    name: z.string().trim().min(1).max(120),
+  })
+  .transform((v) => ({ ...v, endsOn: v.endsOn || v.startsOn }))
+  .superRefine((v, ctx) => {
+    if (v.endsOn < v.startsOn) ctx.addIssue({ code: "custom", path: ["endsOn"], message: "invalid" });
+  });
+export type DayOffInput = z.infer<typeof dayOffInput>;
+
+export const dayOffEdit = z
+  .object({ dayOffId: z.uuid() })
+  .and(dayOffInput);
+export type DayOffEdit = z.infer<typeof dayOffEdit>;
+
+/** ATT-3: a day saved as not held. */
+export const noClassInput = z.object({
+  classId: z.uuid(),
+  date: z.iso.date(),
+  reason: z.enum(SESSION_REASONS),
+  note: optionalText(500),
+});
+export type NoClassInput = z.infer<typeof noClassInput>;
+
+/** SUGGEST-3 */
+export const minAttendanceInput = z.object({
+  minAttendance: z
+    .string()
+    .trim()
+    .regex(/^\d{1,3}$/)
+    .transform(Number)
+    .pipe(z.number().int().min(0).max(100)),
+});
 
 /** A message key per field, looked up under `errors.` in messages/. */
 export type FieldError = "required" | "tooLong" | "invalid";

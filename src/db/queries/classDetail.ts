@@ -29,12 +29,15 @@ export type ClassDetail = {
   name: string;
   courseId: string;
   academicYearId: string;
+  schoolId: string;
   year: number;
   division: string;
   shift: Shift;
   schoolYear: string;
   school: string;
   passMark: number | null;
+  /** CAL-4 */
+  weekdays: number[];
 };
 
 /** The class, or null when it isn't this teacher's (or doesn't exist). */
@@ -47,12 +50,14 @@ export async function getClass(db: Db, teacherId: string, classId: string): Prom
       name: classes.name,
       courseId: courses.id,
       academicYearId: academicYears.id,
+      schoolId: schools.id,
       year: courses.year,
       division: courses.division,
       shift: courses.shift,
       schoolYear: academicYears.name,
       school: schools.name,
       passMark: classes.passMark,
+      weekdays: classes.weekdays,
     })
     .from(classes)
     .innerJoin(courses, eq(classes.courseId, courses.id))

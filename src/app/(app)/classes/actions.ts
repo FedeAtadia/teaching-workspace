@@ -19,9 +19,19 @@ export type AddClassState = {
   savedAt?: number;
 };
 
+/**
+ * The class form as sent: the ticked days of the week (CAL-4) read with
+ * getAll, and joined in `values` so an error can re-tick them.
+ */
+function readClassForm(formData: FormData) {
+  const weekdays = formData.getAll("weekdays").map(String);
+  const values = { ...(Object.fromEntries(formData) as Record<string, string>), weekdays: weekdays.join(",") };
+  return { values, input: { ...values, weekdays } };
+}
+
 export async function addClass(_prev: AddClassState, formData: FormData): Promise<AddClassState> {
-  const values = Object.fromEntries(formData) as Record<string, string>;
-  const parsed = classInput.safeParse(values);
+  const { values, input } = readClassForm(formData);
+  const parsed = classInput.safeParse(input);
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
 
   const result = await createClass(getDb(), await requireTeacherId(), parsed.data);
@@ -34,8 +44,8 @@ export async function addClass(_prev: AddClassState, formData: FormData): Promis
 
 /** CLASS-6. A change to the course shows everywhere it is listed, so every page is refreshed. */
 export async function editClass(_prev: AddClassState, formData: FormData): Promise<AddClassState> {
-  const values = Object.fromEntries(formData) as Record<string, string>;
-  const parsed = classEdit.safeParse(values);
+  const { values, input } = readClassForm(formData);
+  const parsed = classEdit.safeParse(input);
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
 
   const result = await updateClass(getDb(), await requireTeacherId(), parsed.data);

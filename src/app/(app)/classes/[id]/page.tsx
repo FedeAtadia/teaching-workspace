@@ -11,6 +11,7 @@ import { getAdaptations } from "@/db/queries/adaptations";
 import { listClassStudents } from "@/db/queries/classDetail";
 import { getStudentGroups, listGroups } from "@/db/queries/groups";
 import { listNextYearCandidates } from "@/db/queries/nextYear";
+import { WEEKDAYS } from "@/lib/calendar";
 import { formatCourse } from "@/lib/courses";
 import { addGroup, editGroup, removeGroup } from "./actions";
 import { loadClass } from "./data";
@@ -22,6 +23,8 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
   const { db, teacherId, cls } = await loadClass(id);
   const t = await getTranslations("classPage.students");
   const tGroups = await getTranslations("groups");
+  const tDay = await getTranslations("weekdays");
+  const tDayShort = await getTranslations("weekdaysShort");
   const tNext = await getTranslations("nextYear");
   const tShift = await getTranslations("shifts");
   const [roster, candidates, groups, studentGroups, adaptations] = await Promise.all([
@@ -50,8 +53,17 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
     ) : null;
 
   // GROUP-1: the same form adds a group or, with its current values, changes one.
-  const groupFields = (current?: { name: string; days: string | null }): FieldSpec[] => [
+  const groupFields = (current?: { name: string; days: string | null; weekdays: number[] }): FieldSpec[] => [
     { kind: "text", name: "name", label: tGroups("fields.name"), maxLength: 60, defaultValue: current?.name },
+    {
+      kind: "checkboxes",
+      name: "weekdays",
+      label: tGroups("fields.weekdays"),
+      hint: tGroups("fields.weekdaysHint"),
+      inline: true,
+      options: WEEKDAYS.map((d) => ({ value: String(d), label: tDay(String(d)) })),
+      defaultValue: current?.weekdays.map(String),
+    },
     {
       kind: "text",
       name: "days",
@@ -84,6 +96,9 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
           {groups.map((g) => (
             <li key={g.id} className="flex items-center gap-1 rounded-full bg-muted py-0.5 pr-0.5 pl-3.5 text-sm">
               <span className="font-bold">{g.name}</span>
+              {g.weekdays.length > 0 && (
+                <span className="text-muted-foreground">· {g.weekdays.map((d) => tDayShort(String(d))).join(", ")}</span>
+              )}
               {g.days && <span className="text-muted-foreground">· {g.days}</span>}
               <span className="text-muted-foreground">· {tGroups("students", { count: g.students })}</span>
               <FormDialog

@@ -2,9 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { TermGradesForm } from "@/components/classes/TermGradesForm";
+import { getAttendanceRates } from "@/db/queries/attendance";
 import { listTerms } from "@/db/queries/classDetail";
+import { getMinAttendance } from "@/db/queries/settings";
 import { listTasks } from "@/db/queries/tasks";
 import { getTermGradeSheet } from "@/db/queries/termGrades";
+import { belowMinimum } from "@/lib/attendance";
 import { formatGrade } from "@/lib/format";
 import { DEFAULT_RULES } from "@/lib/grading";
 import { loadClass } from "../data";
@@ -20,7 +23,11 @@ export default async function TermGradesPage({ params, searchParams }: PageProps
   const latestWithTasks = Math.max(1, ...tasks.map((t) => t.termPosition));
   const position = termParam === "1" || termParam === "2" ? Number(termParam) : latestWithTasks;
   const term = terms.find((t) => t.position === position) ?? terms[0];
-  const sheet = term ? await getTermGradeSheet(db, teacherId, cls, term.id) : null;
+  const [sheet, rates, minimum] = await Promise.all([
+    term ? getTermGradeSheet(db, teacherId, cls, term.id) : null,
+    term ? getAttendanceRates(db, teacherId, cls, term.position) : new Map(),
+    getMinAttendance(db, teacherId),
+  ]);
   if (!term || !sheet) notFound();
 
   const t = await getTranslations("classPage.termGrades");
@@ -60,6 +67,9 @@ export default async function TermGradesPage({ params, searchParams }: PageProps
             studentId: student.id,
             name: `${student.lastName}, ${student.firstName}`,
             suggestion,
+            lowAttendance: belowMinimum(rates.get(student.id)?.rate ?? null, minimum)
+              ? rates.get(student.id)!.rate
+              : null,
             grade: saved ? formatGrade(saved.value, locale) : "",
             notes: saved?.notes ?? "",
             reason: saved?.outsideRangeReason ?? "",

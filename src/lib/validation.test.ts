@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   adaptationInput,
+  calendarInput,
   classEdit,
   classInput,
+  dayOffEdit,
+  dayOffInput,
   examInput,
   groupEdit,
   groupInput,
+  minAttendanceInput,
+  noClassInput,
   outcomeInput,
   schoolInput,
   standardEdit,
@@ -398,5 +403,79 @@ describe("form errors", () => {
         year: "invalid",
       });
     }
+  });
+});
+
+describe("days of the week (CAL-4)", () => {
+  it("take lunes to sábado as the form's boxes send them, once each, in order", () => {
+    expect(classInput.parse({ ...validClass, weekdays: ["5", "1", "3", "1"] }).weekdays).toEqual([1, 3, 5]);
+    expect(classInput.parse({ ...validClass, weekdays: [] }).weekdays).toEqual([]);
+    expect(classInput.safeParse({ ...validClass, weekdays: ["7"] }).success).toBe(false);
+    expect(classInput.safeParse({ ...validClass, weekdays: ["0"] }).success).toBe(false);
+  });
+
+  it("can go on a group too (GROUP-1)", () => {
+    const g = { classId: "0b7f3c2e-4a1d-4c8e-9f6a-2d5b8e1c3a7f", name: "Lunes", days: "", weekdays: ["1"] };
+    expect(groupInput.parse(g).weekdays).toEqual([1]);
+  });
+});
+
+describe("the school calendar (CAL-1, CAL-2)", () => {
+  const SCHOOL = "0b7f3c2e-4a1d-4c8e-9f6a-2d5b8e1c3a7f";
+  const cal = { schoolId: SCHOOL, schoolYear: "2026", startsOn: "2026-03-02", term2StartsOn: "2026-07-27", endsOn: "2026-12-11" };
+
+  it("takes the three dates in order (CAL-1)", () => {
+    expect(calendarInput.parse(cal)).toEqual({ ...cal, schoolYear: 2026 });
+    expect(calendarInput.safeParse({ ...cal, term2StartsOn: "2026-02-01" }).success).toBe(false);
+    expect(calendarInput.safeParse({ ...cal, endsOn: "2026-07-01" }).success).toBe(false);
+    expect(calendarInput.safeParse({ ...cal, startsOn: "" }).success).toBe(false);
+  });
+
+  it("names which date is out of order (CAL-1)", () => {
+    const r = calendarInput.safeParse({ ...cal, endsOn: "2026-07-01" });
+    expect(r.success || toFieldErrors(r.error)).toEqual({ endsOn: "invalid" });
+  });
+
+  const off = { calendarId: SCHOOL, startsOn: "2026-07-13", endsOn: "2026-07-24", kind: "recess", name: " Receso " };
+
+  it("takes a day without class with a kind and a trimmed name (CAL-2)", () => {
+    expect(dayOffInput.parse(off)).toEqual({ ...off, name: "Receso" });
+    expect(dayOffInput.safeParse({ ...off, kind: "strike" }).success).toBe(false);
+    expect(dayOffInput.safeParse({ ...off, name: " " }).success).toBe(false);
+    expect(dayOffInput.safeParse({ ...off, name: "x".repeat(121) }).success).toBe(false);
+  });
+
+  it("makes one day of it when \"to\" is left empty, and refuses a \"to\" before \"from\" (CAL-2)", () => {
+    expect(dayOffInput.parse({ ...off, endsOn: "" }).endsOn).toBe("2026-07-13");
+    const r = dayOffInput.safeParse({ ...off, endsOn: "2026-07-01" });
+    expect(r.success || toFieldErrors(r.error)).toEqual({ endsOn: "invalid" });
+  });
+
+  it("changes one with its id (CAL-2)", () => {
+    expect(dayOffEdit.parse({ ...off, dayOffId: SCHOOL }).dayOffId).toBe(SCHOOL);
+    expect(dayOffEdit.safeParse({ ...off, dayOffId: "x" }).success).toBe(false);
+  });
+});
+
+describe("a day that wasn't held (ATT-3)", () => {
+  const CLASS = "0b7f3c2e-4a1d-4c8e-9f6a-2d5b8e1c3a7f";
+  const day = { classId: CLASS, date: "2026-10-07", reason: "strike", note: "" };
+
+  it("takes one of the four reasons and an optional note of up to 500 characters", () => {
+    expect(noClassInput.parse(day)).toEqual({ ...day, note: null });
+    expect(noClassInput.parse({ ...day, note: " Paro CTERA " }).note).toBe("Paro CTERA");
+    expect(noClassInput.safeParse({ ...day, reason: "holiday" }).success).toBe(false);
+    expect(noClassInput.safeParse({ ...day, note: "x".repeat(501) }).success).toBe(false);
+    expect(noClassInput.safeParse({ ...day, date: "7/10" }).success).toBe(false);
+  });
+});
+
+describe("the minimum attendance (SUGGEST-3)", () => {
+  it("is a whole number from 0 to 100", () => {
+    expect(minAttendanceInput.parse({ minAttendance: "80" })).toEqual({ minAttendance: 80 });
+    expect(minAttendanceInput.parse({ minAttendance: "0" })).toEqual({ minAttendance: 0 });
+    expect(minAttendanceInput.safeParse({ minAttendance: "101" }).success).toBe(false);
+    expect(minAttendanceInput.safeParse({ minAttendance: "7,5" }).success).toBe(false);
+    expect(minAttendanceInput.safeParse({ minAttendance: "" }).success).toBe(false);
   });
 });

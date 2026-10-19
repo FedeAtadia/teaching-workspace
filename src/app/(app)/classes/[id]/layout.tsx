@@ -13,6 +13,7 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
   const { db, teacherId, cls } = await loadClass(id);
   const [counts, schools] = await Promise.all([getClassCounts(db, teacherId, id), listSchools(db, teacherId)]);
   const t = await getTranslations("classPage");
+  const tDayShort = await getTranslations("weekdaysShort");
   const tShift = await getTranslations("shifts");
   const base = `/classes/${id}`;
   const course = `${formatCourse(cls.year, cls.division)} · ${tShift(cls.shift)} · ${cls.schoolYear}`;
@@ -37,6 +38,7 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
               division: cls.division,
               shift: cls.shift,
               schoolYear: cls.schoolYear,
+              weekdays: cls.weekdays,
             }}
             schools={schools.map((s) => s.name)}
             otherClasses={counts?.otherClasses ?? []}
@@ -58,7 +60,7 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
         </div>
       </div>
       <p className="mt-1 mb-5 text-muted-foreground">
-        {course} · {cls.school}
+        {[course, cls.school, cls.weekdays.map((d) => tDayShort(String(d))).join(", ")].filter(Boolean).join(" · ")}
       </p>
       <ClassTabs
         tabs={[
@@ -67,6 +69,7 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
           { href: `${base}/units`, label: t("tabs.units"), icon: "units" },
           { href: `${base}/tasks`, label: t("tabs.tasks"), icon: "tasks" },
           { href: `${base}/grades`, label: t("tabs.grades"), icon: "grades" },
+          { href: `${base}/attendance`, label: t("tabs.attendance"), icon: "attendance" },
           { href: `${base}/term-grades`, label: t("tabs.termGrades"), icon: "termGrades" },
           { href: `${base}/closing`, label: t("tabs.closing"), icon: "closing" },
         ]}
