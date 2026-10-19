@@ -33,6 +33,8 @@ export type GroupRow = {
   id: string;
   name: string;
   days: string | null;
+  /** CAL-4: empty means the class's days. */
+  weekdays: number[];
   /** Active students of the course in it. */
   students: number;
   /** Tasks only for this group: they become for everyone if it is deleted (GROUP-1). */
@@ -43,7 +45,7 @@ export type GroupRow = {
 export async function listGroups(db: Db, teacherId: string, classId: string): Promise<GroupRow[]> {
   if (!isUuid(classId)) return [];
   const groups = await db
-    .select({ id: classGroups.id, name: classGroups.name, days: classGroups.days })
+    .select({ id: classGroups.id, name: classGroups.name, days: classGroups.days, weekdays: classGroups.weekdays })
     .from(classGroups)
     .where(and(eq(classGroups.classId, classId), eq(classGroups.teacherId, teacherId)))
     .orderBy(asc(classGroups.position), asc(classGroups.createdAt));
@@ -107,6 +109,7 @@ export async function createGroup(
       classId: input.classId,
       name: input.name,
       days: input.days,
+      weekdays: input.weekdays ?? [],
       position: sql`(select coalesce(max(g.position), 0) + 1 from ${classGroups} g where g.class_id = ${input.classId})`,
     })
     .returning({ id: classGroups.id });
@@ -130,7 +133,7 @@ export async function updateGroup(
   if (await nameTaken(db, input.classId, input.name, input.groupId)) return duplicate;
   await db
     .update(classGroups)
-    .set({ name: input.name, days: input.days })
+    .set({ name: input.name, days: input.days, ...(input.weekdays && { weekdays: input.weekdays }) })
     .where(ownGroup(teacherId, input.classId, input.groupId));
   return { ok: true };
 }

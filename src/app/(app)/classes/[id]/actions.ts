@@ -425,10 +425,17 @@ export async function bringStudentsAction(_prev: BringState, formData: FormData)
   return { status: "saved", added: result.added };
 }
 
+/** The group form as sent: its days of the week (CAL-4) read with getAll, joined in `values` for a refill. */
+function readGroupForm(formData: FormData) {
+  const weekdays = formData.getAll("weekdays").map(String);
+  const values = { ...(Object.fromEntries(formData) as Record<string, string>), weekdays: weekdays.join(",") };
+  return { values, input: { ...values, weekdays } };
+}
+
 /** GROUP-1 */
 export async function addGroup(_prev: FormState, formData: FormData): Promise<FormState> {
-  const values = Object.fromEntries(formData) as Record<string, string>;
-  const parsed = groupInput.safeParse(values);
+  const { values, input } = readGroupForm(formData);
+  const parsed = groupInput.safeParse(input);
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
 
   const result = await createGroup(getDb(), await requireTeacherId(), parsed.data);
@@ -440,8 +447,8 @@ export async function addGroup(_prev: FormState, formData: FormData): Promise<Fo
 
 /** GROUP-1 */
 export async function editGroup(_prev: FormState, formData: FormData): Promise<FormState> {
-  const values = Object.fromEntries(formData) as Record<string, string>;
-  const parsed = groupEdit.safeParse(values);
+  const { values, input } = readGroupForm(formData);
+  const parsed = groupEdit.safeParse(input);
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
 
   const result = await updateGroup(getDb(), await requireTeacherId(), parsed.data);

@@ -83,7 +83,8 @@
       "division": "División",
       "divisionPlaceholder": "A",
       "shift": "Turno",
-      "schoolYear": "Ciclo lectivo"
+      "schoolYear": "Ciclo lectivo",
+      "weekdays": "Días que se dicta"
     },
     "columns": {
       "subject": "Materia",
@@ -300,8 +301,10 @@
     "failed": "No se pudo guardar.",
     "fields": {
       "name": "Nombre",
-      "days": "Días (opcional)",
-      "daysPlaceholder": "Lunes 8 a 10"
+      "days": "Horario (opcional)",
+      "daysPlaceholder": "Lunes 8 a 10",
+      "weekdays": "Días del grupo (opcional)",
+      "weekdaysHint": "Sin tildar ninguno, el grupo viene los días del curso."
     },
     "errors": {
       "duplicate": "Ya hay un grupo con ese nombre en este curso.",
@@ -423,14 +426,79 @@
     },
     "schools": {
       "title": "Escuelas",
-      "intro": "Se crean al agregar un curso. Acá podés cambiarles el nombre.",
+      "intro": "Se crean al agregar un curso. Acá podés cambiarles el nombre y cargar el calendario escolar de cada año.",
       "empty": "Todavía no hay escuelas: se crean con tu primer curso.",
       "courses": "{count, plural, one {# curso} other {# cursos}}",
       "rename": "Cambiar nombre",
       "renameTitle": "Cambiar el nombre de «{name}»",
       "name": "Nombre de la escuela",
       "duplicate": "Ya tenés otra escuela con ese nombre.",
-      "notFound": "No se encontró esa escuela. Recargá la página."
+      "notFound": "No se encontró esa escuela. Recargá la página.",
+      "calendar": "Calendario {year}"
+    }
+  },
+  "weekdays": {
+    "1": "Lunes",
+    "2": "Martes",
+    "3": "Miércoles",
+    "4": "Jueves",
+    "5": "Viernes",
+    "6": "Sábado"
+  },
+  "weekdaysShort": {
+    "1": "Lu",
+    "2": "Ma",
+    "3": "Mi",
+    "4": "Ju",
+    "5": "Vi",
+    "6": "Sá"
+  },
+  "calendar": {
+    "title": "Calendario escolar {year}",
+    "back": "Configuración",
+    "dates": {
+      "title": "Fechas del ciclo lectivo",
+      "startsOn": "Inicio de clases",
+      "term2StartsOn": "Inicio del 2° cuatrimestre",
+      "endsOn": "Fin de clases",
+      "set": "Cargar fechas",
+      "edit": "Cambiar fechas",
+      "missing": "Cargá estas fechas para poder agregar los días sin clase."
+    },
+    "daysOff": {
+      "title": "Días sin clase",
+      "intro": "Feriados, jornadas, recesos y cualquier otro día sin clases en esta escuela. Cada curso de la escuela los toma solo.",
+      "empty": "Todavía no hay días sin clase.",
+      "add": "Agregar día sin clase",
+      "addTitle": "Nuevo día sin clase",
+      "edit": "Editar",
+      "editTitle": "Editar día sin clase",
+      "delete": "Eliminar",
+      "deleteTitle": "¿Eliminar «{name}»?",
+      "deleteBody": "Esos días vuelven a ser días de clase.",
+      "fields": {
+        "startsOn": "Desde",
+        "endsOn": "Hasta (opcional, para varios días)",
+        "kind": "Tipo",
+        "name": "Nombre",
+        "namePlaceholder": "Jornada institucional"
+      },
+      "kinds": {
+        "holiday": "Feriado",
+        "jornada": "Jornada",
+        "recess": "Receso",
+        "other": "Otro"
+      }
+    },
+    "holidays": {
+      "add": "Agregar feriados nacionales",
+      "adding": "Agregando…",
+      "added": "{count, plural, =0 {Ya estaban todos.} one {Se agregó # feriado.} other {Se agregaron # feriados.}}",
+      "noList": "La app todavía no tiene los feriados de {year}. Agregalos a mano.",
+      "failed": "No se pudo guardar."
+    },
+    "errors": {
+      "notFound": "No se encontró. Recargá la página."
     }
   }
 }

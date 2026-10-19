@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { WEEKDAYS } from "@/lib/calendar";
 import { COURSE_YEARS, SHIFTS, type Shift } from "@/lib/courses";
 
 export function AddClassDialog({
@@ -69,6 +70,8 @@ export type ClassFields = {
   division: string;
   shift: Shift;
   schoolYear: string;
+  /** CAL-4 */
+  weekdays: number[];
 };
 
 /** CLASS-6: the same form, filled in with the class as it is. */
@@ -99,7 +102,7 @@ export function EditClassDialog({
         <ClassForm
           action={editClass}
           hidden={{ classId }}
-          initial={{ ...current, year: String(current.year) }}
+          initial={{ ...current, year: String(current.year), weekdays: current.weekdays.join(",") }}
           schools={schools}
           note={otherClasses.length > 0 ? t("editNote", { classes: otherClasses.join(", ") }) : undefined}
           onSaved={() => setOpen(false)}
@@ -121,7 +124,8 @@ function ClassForm({
 }: {
   action: (prev: AddClassState, formData: FormData) => Promise<AddClassState>;
   /** What the fields start with, as the form sends them. */
-  initial: Partial<Record<"school" | "name" | "year" | "division" | "shift" | "schoolYear", string>>;
+  /** `weekdays` as the ticked days joined by commas, the way an error sends them back. */
+  initial: Partial<Record<"school" | "name" | "year" | "division" | "shift" | "schoolYear" | "weekdays", string>>;
   hidden?: Record<string, string>;
   schools: string[];
   /** Shown under the course fields. */
@@ -130,6 +134,7 @@ function ClassForm({
 }) {
   const t = useTranslations("classes");
   const tShift = useTranslations("shifts");
+  const tDay = useTranslations("weekdays");
   const tErr = useTranslations("errors");
   const tCommon = useTranslations("common");
 
@@ -243,6 +248,23 @@ function ClassForm({
           aria-invalid={!!err("schoolYear")}
           className="w-28"
         />
+      </Field>
+
+      <Field id="class-weekdays" label={t("fields.weekdays")} error={err("weekdays")}>
+        <div id="class-weekdays" className="flex flex-wrap gap-x-4 gap-y-1.5">
+          {WEEKDAYS.map((d) => (
+            <label key={d} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="weekdays"
+                value={d}
+                defaultChecked={(v.weekdays ?? "").split(",").includes(String(d))}
+                className="size-4 accent-primary"
+              />
+              {tDay(String(d))}
+            </label>
+          ))}
+        </div>
       </Field>
 
       {note && <p className="text-sm text-muted-foreground">{note}</p>}

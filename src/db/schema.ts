@@ -14,6 +14,7 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
+  smallint,
   text,
   timestamp,
   unique,
@@ -27,6 +28,12 @@ const createdAt = () =>
   timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
 // Grades live on a 1–10 scale with at most two decimals (7,5 is common).
 const grade = (name: string) => numeric(name, { precision: 4, scale: 2, mode: "number" });
+// CAL-4: days of the week, 1 = lunes … 6 = sábado.
+const weekdays = () =>
+  smallint("weekdays")
+    .array()
+    .notNull()
+    .default(sql`'{}'::smallint[]`);
 
 // ─── Settings ───────────────────────────────────────────────────────────────
 
@@ -129,6 +136,7 @@ export const classes = pgTable(
     // Null means "use the teacher's default" (teacher_settings.pass_mark).
     passMark: grade("pass_mark"),
     notes: text("notes"),
+    weekdays: weekdays(), // CAL-4
     createdAt: createdAt(),
   },
   (t) => [unique().on(t.courseId, t.name)], // CLASS-5
@@ -361,7 +369,8 @@ export const classGroups = pgTable(
       .notNull()
       .references(() => classes.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
-    days: text("days"), // "Lunes 8 a 10"
+    days: text("days"), // "Lunes 8 a 10": a schedule as text
+    weekdays: weekdays(), // CAL-4: empty means the class's days
     position: integer("position").notNull().default(0),
     createdAt: createdAt(),
   },
@@ -425,4 +434,40 @@ export const exams = pgTable("exams", {
   value: grade("value"), // null when absent
   notes: text("notes"),
   createdAt: createdAt(),
+}).enableRLS();
+
+// ─── School calendar ────────────────────────────────────────────────────────
+
+/** CAL-1: a school's dates for one school year. */
+export const schoolCalendars = pgTable(
+  "school_calendars",
+  {
+    id: id(),
+    teacherId: teacherId(),
+    schoolId: uuid("school_id")
+      .notNull()
+      .references(() => schools.id, { onDelete: "cascade" }),
+    academicYearId: uuid("academic_year_id")
+      .notNull()
+      .references(() => academicYears.id, { onDelete: "cascade" }),
+    startsOn: date("starts_on").notNull(),
+    term2StartsOn: date("term2_starts_on").notNull(),
+    endsOn: date("ends_on").notNull(),
+  },
+  (t) => [unique().on(t.schoolId, t.academicYearId)],
+).enableRLS();
+
+export const dayOffKind = pgEnum("day_off_kind", ["holiday", "jornada", "recess", "other"]);
+
+/** CAL-2: a day, or a range of days, without class at a school. */
+export const schoolDaysOff = pgTable("school_days_off", {
+  id: id(),
+  teacherId: teacherId(),
+  calendarId: uuid("calendar_id")
+    .notNull()
+    .references(() => schoolCalendars.id, { onDelete: "cascade" }),
+  startsOn: date("starts_on").notNull(),
+  endsOn: date("ends_on").notNull(),
+  kind: dayOffKind("kind").notNull(),
+  name: text("name").notNull(),
 }).enableRLS();

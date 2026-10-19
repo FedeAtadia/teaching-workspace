@@ -105,16 +105,16 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   course in one school year.
 - **CLASS-2** A class is added with six fields: school (SCHOOL-1), subject,
   course year (1° to 6°), division, shift (mañana, tarde or vespertino) and
-  school year (a year between 2000 and 2100). The subject is trimmed and 1 to
-  80 characters long.
+  school year (a year between 2000 and 2100), plus the days of the week it
+  meets (CAL-4). The subject is trimmed and 1 to 80 characters long.
 - **CLASS-3** The division is trimmed and upper-cased, and is 1 to 10
   characters long: `" a"` is stored as `"A"`.
 - **CLASS-4** The first class of a school year creates that school year, with
   its two cuatrimestres (TERM-1).
 - **CLASS-5** A course cannot have the same subject twice; adding it again is
   rejected with a message, and nothing is saved.
-- **CLASS-6** A class's six fields can be changed, with the CLASS-2 and CLASS-3
-  rules. The subject changes only this class, and CLASS-5 still applies. The
+- **CLASS-6** A class's six fields and its days can be changed, with the
+  CLASS-2 and CLASS-3 rules. The subject and the days change only this class, and CLASS-5 still applies. The
   school, course year, division, shift and school year are the course's: they
   change for every class of the course, whose students stay in it. If the
   teacher already has another course with those fields, nothing is saved. A
@@ -155,6 +155,33 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   the teacher's schools already has is refused.
 - **SCHOOL-4** Courses created before schools existed belong to a school called
   "Mi escuela", one per teacher, which the teacher can rename.
+
+## CAL — The school calendar
+
+*Enforced by `src/lib/calendar.ts`, `src/lib/holidays.ts`,
+`src/lib/validation.ts`, `src/db/queries/calendar.ts`. Covered by
+`src/lib/calendar.test.ts`, `src/lib/validation.test.ts`,
+`src/db/queries/calendar.test.ts`.*
+
+- **CAL-1** Each school has a calendar for each school year: the day classes
+  start, the day the 2° cuatrimestre starts and the day classes end, in that
+  order. A calendar is only saved with all three.
+- **CAL-2** The calendar lists the days without class: one day or a range
+  (from and to, the second not before the first), a kind (feriado, jornada,
+  receso or otro) and a name (trimmed, 1 to 120 characters). They can be
+  added, changed and deleted, and are listed by date.
+- **CAL-3** "Agregar feriados nacionales" adds the school year's national
+  holidays of Argentina, as kept in the app, as one-day feriados. A day
+  already covered by a day without class is skipped, so adding them twice
+  adds nothing. A year the app has no list for adds nothing and says so.
+- **CAL-4** A class has the days of the week it meets, lunes to sábado, set
+  when it is added or changed (CLASS-2, CLASS-6); it may have none yet. A
+  group can have its own days (GROUP-1). A student is expected on a class's
+  day when it is one of their group's days, or, when their group has no days
+  of its own or they have no group, one of the class's days.
+- **CAL-5** A class's days between two dates are the dates that fall on its
+  days of the week, in order; a date is without class when a day without
+  class of its school's calendar covers it.
 
 ## STUDENT — Students
 
@@ -238,8 +265,8 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 
 - **GROUP-1** A class can be split into groups — say, the days each part of
   the course attends. Each group has a name (trimmed, 1 to 60 characters,
-  unique in the class ignoring case) and optional days (up to 120
-  characters). Groups can be renamed and deleted. Deleting one leaves its
+  unique in the class ignoring case), an optional schedule as text (up to
+  120 characters) and optional days of the week (CAL-4). Groups can be renamed and deleted. Deleting one leaves its
   students without a group and takes its dates off tasks; a task that was
   only for that group becomes a task for everyone, and the confirmation says
   how many.
@@ -463,7 +490,8 @@ Covered by `src/lib/theme.test.ts`.*
 
 - **OWNER-1** A teacher only ever sees, adds to, changes or deletes their own
   schools, school years, courses, classes, students, standards, units, tasks,
-  scores, cuatrimestre grades, year outcomes, exams and groups. Opening
+  scores, cuatrimestre grades, year outcomes, exams, groups and school
+  calendars with their days without class. Opening
   another teacher's class, task or student — or one that does not exist —
   shows "not found", and nothing can be added to it, saved on it, changed or
   deleted.
