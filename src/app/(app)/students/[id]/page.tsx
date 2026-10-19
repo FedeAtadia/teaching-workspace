@@ -133,6 +133,13 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                                 <Grade value={term.grade} passing={isPassing(term.grade, rules)} locale={locale} />
                               </>
                             )}
+                            {/* HISTORY-5 */}
+                            {term.attendance !== null && (
+                              <>
+                                {" · "}
+                                {t("attendance", { rate: term.attendance })}
+                              </>
+                            )}
                           </p>
                         </div>
                         <div className="overflow-x-auto">

@@ -13,6 +13,8 @@ export type TermGradeFormRow = {
   studentId: string;
   name: string;
   suggestion: Suggestion;
+  /** SUGGEST-3: the attendance %, when below the teacher's minimum. */
+  lowAttendance: number | null;
   /** What is saved now, already written in the teacher's language (`7,5`). */
   grade: string;
   notes: string;
@@ -134,10 +136,22 @@ function GradeRow({
         <label htmlFor={`grade-${id}`}>{row.name}</label>
       </td>
       <td className="px-3 py-2.5 text-center whitespace-nowrap tabular-nums">
-        {suggestion.average === null ? "—" : formatGrade(suggestion.average, locale)}
+        {suggestion.average === null ? (
+          "—"
+        ) : (
+          <span className={row.lowAttendance !== null ? "font-medium text-destructive" : undefined}>
+            {formatGrade(suggestion.average, locale)}
+          </span>
+        )}
         {suggestion.missing > 0 && (
           <span className="ml-1 text-xs text-muted-foreground">
             ({suggestion.missing} {tGrades("missingShort")})
+          </span>
+        )}
+        {/* SUGGEST-3: shown as not passing; the number stays. */}
+        {row.lowAttendance !== null && (
+          <span className="mt-0.5 block text-xs font-bold text-destructive">
+            {tGrades("lowAttendance", { rate: row.lowAttendance })}
           </span>
         )}
       </td>

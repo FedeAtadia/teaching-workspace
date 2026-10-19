@@ -4,10 +4,12 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { FormDialog } from "@/components/forms/FormDialog";
 import { LanguageSelect } from "@/components/LanguageSelect";
+import { MinAttendanceForm } from "@/components/settings/MinAttendanceForm";
 import { ThemeSelect } from "@/components/ThemeSelect";
 import { resolveTheme, THEME_COOKIE } from "@/lib/theme";
 import { getDb } from "@/db";
 import { listSchools } from "@/db/queries/classes";
+import { getMinAttendance } from "@/db/queries/settings";
 import { requireTeacherId } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { renameSchoolAction } from "./actions";
@@ -15,7 +17,10 @@ import { renameSchoolAction } from "./actions";
 export default async function SettingsPage() {
   const t = await getTranslations("settings");
   const theme = resolveTheme((await cookies()).get(THEME_COOKIE)?.value);
-  const schools = isSupabaseConfigured() ? await listSchools(getDb(), await requireTeacherId()) : [];
+  const teacherId = isSupabaseConfigured() ? await requireTeacherId() : null;
+  const [schools, minAttendance] = teacherId
+    ? await Promise.all([listSchools(getDb(), teacherId), getMinAttendance(getDb(), teacherId)])
+    : [[], null];
 
   return (
     <>
@@ -34,6 +39,13 @@ export default async function SettingsPage() {
             <LanguageSelect current={await getLocale()} />
           </label>
         </section>
+
+        {minAttendance !== null && (
+          <section className="grid gap-3 rounded-2xl bg-card p-5 ring-1 ring-border">
+            <h2 className="text-sm font-bold">{t("attendance.title")}</h2>
+            <MinAttendanceForm current={minAttendance} />
+          </section>
+        )}
 
         <section>
           <h2 className="mb-1 text-lg font-semibold">{t("schools.title")}</h2>

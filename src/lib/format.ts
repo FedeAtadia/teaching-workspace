@@ -17,3 +17,8 @@ export function formatDate(iso: string, locale: string): string {
     year: "numeric",
   }).format(new Date(iso));
 }
+
+/** ATT-5: a column header's date, day and month only: `5/10` in es-AR, `10/5` in English. */
+export function formatShortDate(iso: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { timeZone: "UTC", day: "numeric", month: "numeric" }).format(new Date(iso));
+}

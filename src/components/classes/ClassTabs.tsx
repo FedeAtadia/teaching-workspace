@@ -1,6 +1,16 @@
 "use client";
 
-import { ClipboardList, Flag, GraduationCap, Layers, Sheet, Target, Users, type LucideIcon } from "lucide-react";
+import {
+  CalendarCheck,
+  ClipboardList,
+  Flag,
+  GraduationCap,
+  Layers,
+  Sheet,
+  Target,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,6 +21,7 @@ const ICONS: Record<string, LucideIcon> = {
   tasks: ClipboardList,
   grades: Sheet,
   termGrades: GraduationCap,
+  attendance: CalendarCheck,
   closing: Flag,
 };
 

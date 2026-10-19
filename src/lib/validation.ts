@@ -3,6 +3,7 @@
 // which field is wrong.
 
 import { z } from "zod";
+import { SESSION_REASONS } from "./attendance";
 import { DAY_OFF_KINDS } from "./calendar";
 import { SHIFTS } from "./courses";
 import { DEFAULT_RULES, parseGrade } from "./grading";
@@ -222,6 +223,25 @@ export const dayOffEdit = z
   .object({ dayOffId: z.uuid() })
   .and(dayOffInput);
 export type DayOffEdit = z.infer<typeof dayOffEdit>;
+
+/** ATT-3: a day saved as not held. */
+export const noClassInput = z.object({
+  classId: z.uuid(),
+  date: z.iso.date(),
+  reason: z.enum(SESSION_REASONS),
+  note: optionalText(500),
+});
+export type NoClassInput = z.infer<typeof noClassInput>;
+
+/** SUGGEST-3 */
+export const minAttendanceInput = z.object({
+  minAttendance: z
+    .string()
+    .trim()
+    .regex(/^\d{1,3}$/)
+    .transform(Number)
+    .pipe(z.number().int().min(0).max(100)),
+});
 
 /** A message key per field, looked up under `errors.` in messages/. */
 export type FieldError = "required" | "tooLong" | "invalid";
