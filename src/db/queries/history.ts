@@ -1,4 +1,4 @@
-// A student's school history (HISTORY-1..3). Scoped to one teacher (OWNER-1).
+// A student's school history (HISTORY-1..5). Scoped to one teacher (OWNER-1).
 // Two waves of parallel queries, so the page waits about two round trips.
 
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
@@ -6,12 +6,15 @@ import { z } from "zod";
 import type { Db } from "@/db";
 import {
   academicYears,
+  attendance,
   classGroupStudents,
+  classSessions,
   studentAdaptations,
   classes,
   courseStudents,
   courses,
   exams,
+  schoolCalendars,
   schools,
   scores,
   students,
@@ -19,6 +22,7 @@ import {
   termGrades,
   terms,
 } from "@/db/schema";
+import { attendanceRate, type AttendanceStatus } from "@/lib/attendance";
 import { compareCourses, type Shift } from "@/lib/courses";
 import { DEFAULT_RULES, suggestTermGrade, type Suggestion } from "@/lib/grading";
 import { isAssessed } from "@/lib/groups";
@@ -40,6 +44,8 @@ export type HistoryTerm = {
   suggestion: Suggestion;
   /** TERM-7: the grade set for this cuatrimestre, if any. */
   grade: number | null;
+  /** HISTORY-5, ATT-4: the student's attendance %, if any day counted. */
+  attendance: number | null;
 };
 export type HistoryClass = {
   id: string;
@@ -81,8 +87,8 @@ export async function getStudentHistory(
 ): Promise<StudentHistory | null> {
   if (!z.uuid().safeParse(studentId).success) return null;
 
-  // Wave 1: the student, their courses, all their scores, cuatrimestre grades and exams.
-  const [[student], memberships, saved, grades, examRows, adaptations] = await Promise.all([
+  // Wave 1: the student, their courses, all their scores, cuatrimestre grades, exams and attendance.
+  const [[student], memberships, saved, grades, examRows, adaptations, marks] = await Promise.all([
     db
       .select({ id: students.id, firstName: students.firstName, lastName: students.lastName })
       .from(students)
@@ -134,6 +140,25 @@ export async function getStudentHistory(
       .select({ classId: studentAdaptations.classId, notes: studentAdaptations.notes })
       .from(studentAdaptations)
       .where(and(eq(studentAdaptations.studentId, studentId), eq(studentAdaptations.teacherId, teacherId))),
+    // HISTORY-5: each mark with its cuatrimestre, from the school's calendar (ATT-1).
+    db
+      .select({
+        classId: classSessions.classId,
+        status: attendance.status,
+        position: sql<number>`case when ${classSessions.date} < ${schoolCalendars.term2StartsOn} then 1 else 2 end`,
+      })
+      .from(attendance)
+      .innerJoin(classSessions, eq(attendance.sessionId, classSessions.id))
+      .innerJoin(classes, eq(classSessions.classId, classes.id))
+      .innerJoin(courses, eq(classes.courseId, courses.id))
+      .innerJoin(
+        schoolCalendars,
+        and(
+          eq(schoolCalendars.schoolId, courses.schoolId),
+          eq(schoolCalendars.academicYearId, courses.academicYearId),
+        ),
+      )
+      .where(and(eq(attendance.studentId, studentId), eq(attendance.teacherId, teacherId))),
   ]);
   if (!student) return null;
   if (memberships.length === 0) return { student, courses: [] };
@@ -189,6 +214,11 @@ export async function getStudentHistory(
     // A cuatrimestre with a grade shows even if it has no tasks.
     const classGrades = grades.filter((g) => g.classId === c.id);
     for (const g of classGrades) if (!terms.has(g.position)) terms.set(g.position, []);
+    // ...and so does one with attendance (HISTORY-5).
+    const classMarks = marks.filter((m) => m.classId === c.id);
+    for (const m of classMarks) if (!terms.has(m.position)) terms.set(m.position, []);
+    const attendanceAt = (position: number) =>
+      attendanceRate(classMarks.filter((m) => m.position === position).map((m) => m.status as AttendanceStatus)).rate;
     const gradeAt = (position: number) => classGrades.find((g) => g.position === position)?.value ?? null;
     const passMark = c.passMark ?? DEFAULT_RULES.passMark;
     const classExams = examRows.filter((e) => e.classId === c.id).map(toExamRow);
@@ -203,6 +233,7 @@ export async function getStudentHistory(
           tasks: list,
           suggestion: suggestTermGrade(list.flatMap((t) => (t.score ? [t.score] : []))),
           grade: gradeAt(position),
+          attendance: attendanceAt(position),
         })),
       finalGrade: gradeAt(2),
       result: classResult(gradeAt(2), classExams, passMark),

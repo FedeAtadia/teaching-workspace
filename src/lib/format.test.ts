@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDate, formatGrade } from "./format";
+import { formatDate, formatGrade, formatShortDate } from "./format";
 
 describe("writing grades (BOOK-3)", () => {
   it("uses the language's decimal separator", () => {
@@ -16,5 +16,12 @@ describe("writing dates (TASK-4)", () => {
     // Argentina (UTC−3) if formatted in local time.
     expect(formatDate("2026-05-10", "es-AR")).toBe("10/5/2026");
     expect(formatDate("2026-05-10", "en")).toBe("5/10/2026");
+  });
+});
+
+describe("writing a short date (ATT-5)", () => {
+  it("shows day and month in the language's order, without shifting the day", () => {
+    expect(formatShortDate("2026-10-05", "es-AR")).toBe("5/10");
+    expect(formatShortDate("2026-10-05", "en")).toBe("10/5");
   });
 });

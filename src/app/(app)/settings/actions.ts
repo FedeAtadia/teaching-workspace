@@ -4,9 +4,17 @@ import { revalidatePath } from "next/cache";
 import { getDb } from "@/db";
 import { addDayOff, addNationalHolidays, deleteDayOff, saveCalendar, updateDayOff } from "@/db/queries/calendar";
 import { renameSchool } from "@/db/queries/classes";
+import { setMinAttendance } from "@/db/queries/settings";
 import { requireTeacherId } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
-import { calendarInput, dayOffEdit, dayOffInput, schoolInput, toFieldErrors } from "@/lib/validation";
+import {
+  calendarInput,
+  dayOffEdit,
+  dayOffInput,
+  minAttendanceInput,
+  schoolInput,
+  toFieldErrors,
+} from "@/lib/validation";
 
 /** SCHOOL-3 */
 export async function renameSchoolAction(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -81,4 +89,15 @@ export async function addHolidaysAction(_prev: AddHolidaysState, formData: FormD
   if (!result.ok) return { status: "error", error: result.error };
   refreshCalendar();
   return { status: "saved", added: result.added };
+}
+
+/** SUGGEST-3 */
+export async function saveMinAttendanceAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = minAttendanceInput.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+  await setMinAttendance(getDb(), await requireTeacherId(), parsed.data.minAttendance);
+  // The gradebooks, cuatrimestre grades and attendance tabs use it.
+  revalidatePath("/", "layout");
+  return { status: "saved" };
 }

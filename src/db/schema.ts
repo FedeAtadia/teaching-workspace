@@ -47,6 +47,8 @@ export const teacherSettings = pgTable("teacher_settings", {
   // How far the second cuatrimestre may move away from the first (TERM-2).
   maxTermIncrease: grade("max_term_increase").notNull().default(3),
   maxTermDecrease: grade("max_term_decrease").notNull().default(3),
+  // SUGGEST-3: below this attendance %, a suggestion shows as not passing. 0 turns it off.
+  minAttendance: integer("min_attendance").notNull().default(75),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }).enableRLS();
 
@@ -471,3 +473,44 @@ export const schoolDaysOff = pgTable("school_days_off", {
   kind: dayOffKind("kind").notNull(),
   name: text("name").notNull(),
 }).enableRLS();
+
+// ─── Attendance ─────────────────────────────────────────────────────────────
+
+export const sessionReason = pgEnum("session_reason", ["weather", "teacher_absent", "strike", "other"]);
+
+/** ATT-2, ATT-3: one date of a class with something recorded on it. */
+export const classSessions = pgTable(
+  "class_sessions",
+  {
+    id: id(),
+    teacherId: teacherId(),
+    classId: uuid("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    date: date("date").notNull(),
+    held: boolean("held").notNull().default(true),
+    // ATT-3: why it wasn't held; null when it was.
+    reason: sessionReason("reason"),
+    note: text("note"),
+    createdAt: createdAt(),
+  },
+  (t) => [unique().on(t.classId, t.date)],
+).enableRLS();
+
+export const attendanceStatus = pgEnum("attendance_status", ["present", "absent", "late", "excused"]);
+
+/** ATT-2: one student's mark on a day that was held. */
+export const attendance = pgTable(
+  "attendance",
+  {
+    teacherId: teacherId(),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => classSessions.id, { onDelete: "cascade" }),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => students.id, { onDelete: "cascade" }),
+    status: attendanceStatus("status").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.sessionId, t.studentId] })],
+).enableRLS();

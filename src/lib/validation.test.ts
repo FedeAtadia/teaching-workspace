@@ -9,6 +9,8 @@ import {
   examInput,
   groupEdit,
   groupInput,
+  minAttendanceInput,
+  noClassInput,
   outcomeInput,
   schoolInput,
   standardEdit,
@@ -452,5 +454,28 @@ describe("the school calendar (CAL-1, CAL-2)", () => {
   it("changes one with its id (CAL-2)", () => {
     expect(dayOffEdit.parse({ ...off, dayOffId: SCHOOL }).dayOffId).toBe(SCHOOL);
     expect(dayOffEdit.safeParse({ ...off, dayOffId: "x" }).success).toBe(false);
+  });
+});
+
+describe("a day that wasn't held (ATT-3)", () => {
+  const CLASS = "0b7f3c2e-4a1d-4c8e-9f6a-2d5b8e1c3a7f";
+  const day = { classId: CLASS, date: "2026-10-07", reason: "strike", note: "" };
+
+  it("takes one of the four reasons and an optional note of up to 500 characters", () => {
+    expect(noClassInput.parse(day)).toEqual({ ...day, note: null });
+    expect(noClassInput.parse({ ...day, note: " Paro CTERA " }).note).toBe("Paro CTERA");
+    expect(noClassInput.safeParse({ ...day, reason: "holiday" }).success).toBe(false);
+    expect(noClassInput.safeParse({ ...day, note: "x".repeat(501) }).success).toBe(false);
+    expect(noClassInput.safeParse({ ...day, date: "7/10" }).success).toBe(false);
+  });
+});
+
+describe("the minimum attendance (SUGGEST-3)", () => {
+  it("is a whole number from 0 to 100", () => {
+    expect(minAttendanceInput.parse({ minAttendance: "80" })).toEqual({ minAttendance: 80 });
+    expect(minAttendanceInput.parse({ minAttendance: "0" })).toEqual({ minAttendance: 0 });
+    expect(minAttendanceInput.safeParse({ minAttendance: "101" }).success).toBe(false);
+    expect(minAttendanceInput.safeParse({ minAttendance: "7,5" }).success).toBe(false);
+    expect(minAttendanceInput.safeParse({ minAttendance: "" }).success).toBe(false);
   });
 });

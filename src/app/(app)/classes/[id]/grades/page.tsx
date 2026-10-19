@@ -3,9 +3,12 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { AdaptedBadge } from "@/components/classes/Adaptation";
 import { GroupFilter } from "@/components/classes/GroupFilter";
 import { getAdaptations } from "@/db/queries/adaptations";
+import { getAttendanceRates } from "@/db/queries/attendance";
 import { listTerms } from "@/db/queries/classDetail";
 import { listGroups } from "@/db/queries/groups";
+import { getMinAttendance } from "@/db/queries/settings";
 import { getGradebook, listTasks } from "@/db/queries/tasks";
+import { belowMinimum } from "@/lib/attendance";
 import { formatGrade } from "@/lib/format";
 import { DEFAULT_RULES, isPassing } from "@/lib/grading";
 import { loadClass } from "../data";
@@ -34,7 +37,12 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
   const tTerm = await getTranslations("terms");
   const locale = await getLocale();
   const rules = { ...DEFAULT_RULES, passMark: cls.passMark ?? DEFAULT_RULES.passMark };
-  const book = term ? await getGradebook(db, teacherId, cls, term.id, groupId) : { tasks: [], rows: [] };
+  const [book, rates, minimum] = await Promise.all([
+    term ? getGradebook(db, teacherId, cls, term.id, groupId) : { tasks: [], rows: [] },
+    // SUGGEST-3
+    term ? getAttendanceRates(db, teacherId, cls, term.position) : new Map(),
+    getMinAttendance(db, teacherId),
+  ]);
   const tGroups = await getTranslations("groups");
 
   return (
@@ -86,7 +94,10 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
               </tr>
             </thead>
             <tbody>
-              {book.rows.map(({ student, cells, suggestion, termGrade }) => (
+              {book.rows.map(({ student, cells, suggestion, termGrade }) => {
+                const rate = rates.get(student.id)?.rate ?? null;
+                const lowAttendance = belowMinimum(rate, minimum);
+                return (
                 // NAV-2: the student's name link stretches over the row, to their history.
                 <tr key={student.id} className="relative border-b last:border-0 hover:bg-muted/60 has-[a:focus-visible]:bg-muted">
                   <td className="sticky left-0 bg-card px-4 py-2 font-bold whitespace-nowrap">
@@ -136,7 +147,11 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                       "—"
                     ) : (
                       <span
-                        className={isPassing(suggestion.average, rules) ? "font-medium" : "font-medium text-destructive"}
+                        className={
+                          isPassing(suggestion.average, rules) && !lowAttendance
+                            ? "font-medium"
+                            : "font-medium text-destructive"
+                        }
                       >
                         {formatGrade(suggestion.average, locale)}
                       </span>
@@ -145,6 +160,15 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                       <span className="ml-1 text-xs text-muted-foreground">
                         ({suggestion.missing} {t("missingShort")})
                       </span>
+                    )}
+                    {/* SUGGEST-3: shown as not passing; the number stays. */}
+                    {lowAttendance && (
+                      <abbr
+                        title={t("lowAttendance", { rate: rate! })}
+                        className="ml-1 block text-xs font-bold text-destructive no-underline"
+                      >
+                        {t("lowAttendanceShort", { rate: rate! })}
+                      </abbr>
                     )}
                   </td>
                   {/* TERM-7 */}
@@ -158,7 +182,8 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                     )}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

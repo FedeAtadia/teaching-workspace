@@ -108,7 +108,8 @@
       "tasks": "Tareas",
       "grades": "Calificaciones",
       "termGrades": "Notas de cuatrimestre",
-      "closing": "Cierre"
+      "closing": "Cierre",
+      "attendance": "Asistencia"
     },
     "errors": {
       "notFound": "No se encontró este curso. Volvé a la lista y probá de nuevo."
@@ -254,7 +255,9 @@
       "notAssessed": "No corresponde a su grupo",
       "notAssessedShort": "·",
       "adapted": "Nota sobre contenido adaptado",
-      "adaptedShort": "A"
+      "adaptedShort": "A",
+      "lowAttendance": "Asistencia insuficiente ({rate} %)",
+      "lowAttendanceShort": "Asist. {rate} %"
     },
     "termGrades": {
       "introFirst": "La nota de cada estudiante para el cuatrimestre. La sugerida es el promedio de sus tareas.",
@@ -333,7 +336,8 @@
       "graduated": "Egresó"
     },
     "exams": "Exámenes",
-    "absent": "ausente"
+    "absent": "ausente",
+    "attendance": "Asistencia {rate} %"
   },
   "closing": {
     "intro": "El resultado de cada estudiante en la materia, y si promociona o repite el año. La nota final es la del 2° cuatrimestre.",
@@ -435,6 +439,12 @@
       "duplicate": "Ya tenés otra escuela con ese nombre.",
       "notFound": "No se encontró esa escuela. Recargá la página.",
       "calendar": "Calendario {year}"
+    },
+    "attendance": {
+      "title": "Asistencia",
+      "minimum": "Asistencia mínima (%)",
+      "hint": "Debajo de este porcentaje en un cuatrimestre, el promedio sugerido se muestra como no aprobado, con «asistencia insuficiente». El número no cambia. Con 0 no se marca nada.",
+      "saved": "Guardado."
     }
   },
   "weekdays": {
@@ -499,6 +509,75 @@
     },
     "errors": {
       "notFound": "No se encontró. Recargá la página."
+    }
+  },
+  "attendance": {
+    "student": "Estudiante",
+    "rate": "Asistencia",
+    "noCalendar": "Para ver los días de clase, cargá el calendario escolar {year} de {school}.",
+    "openCalendar": "Abrir el calendario",
+    "noWeekdays": "Este curso todavía no tiene días de la semana. Elegilos en «Editar curso».",
+    "noDays": "Este cuatrimestre no tiene días de clase.",
+    "noStudents": "Este curso todavía no tiene estudiantes.",
+    "statuses": {
+      "present": "Presente",
+      "absent": "Ausente",
+      "late": "Tarde",
+      "excused": "Ausente justificado"
+    },
+    "short": {
+      "present": "P",
+      "absent": "A",
+      "late": "T",
+      "excused": "J",
+      "notExpected": "·"
+    },
+    "states": {
+      "off": "Sin clase",
+      "pending": "Sin tomar",
+      "taken": "Tomada",
+      "notHeld": "No hubo clase"
+    },
+    "notExpected": "No viene ese día",
+    "reasons": {
+      "weather": "Clima",
+      "teacher_absent": "Docente enfermo / licencia",
+      "strike": "Paro",
+      "other": "Otro / acto / salida"
+    },
+    "legend": "P: presente · A: ausente · T: tarde (media falta) · J: justificado (no cuenta) · ·: no viene ese día. Tocá una fecha para tomar asistencia.",
+    "chart": {
+      "title": "Asistencia por estudiante",
+      "minimum": "Mínimo {min} %",
+      "none": "Sin días tomados todavía.",
+      "below": "bajo el mínimo"
+    },
+    "otherDate": {
+      "label": "Otra fecha (clase de recuperación)",
+      "go": "Tomar asistencia"
+    },
+    "day": {
+      "back": "Asistencia",
+      "dayOff": "Sin clase: {name}",
+      "dayOffNote": "Si hubo clase igual, podés tomar asistencia.",
+      "notHeld": "No hubo clase: {reason}",
+      "outsideYear": "Esa fecha está fuera del ciclo lectivo de la escuela.",
+      "noStudents": "Nadie viene ese día.",
+      "save": "Guardar asistencia",
+      "saved": "Asistencia guardada.",
+      "failed": "No se pudo guardar. Recargá la página.",
+      "noClass": {
+        "title": "¿No hubo clase?",
+        "reason": "Motivo",
+        "note": "Nota (opcional)",
+        "save": "Guardar como «no hubo clase»",
+        "warning": "Se borran las marcas de ese día."
+      },
+      "clear": {
+        "button": "Borrar lo cargado",
+        "title": "¿Borrar lo cargado el {date}?",
+        "body": "El día vuelve a quedar sin tomar, sin marcas."
+      }
     }
   }
 }

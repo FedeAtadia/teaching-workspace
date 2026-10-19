@@ -69,6 +69,7 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
           { href: `${base}/units`, label: t("tabs.units"), icon: "units" },
           { href: `${base}/tasks`, label: t("tabs.tasks"), icon: "tasks" },
           { href: `${base}/grades`, label: t("tabs.grades"), icon: "grades" },
+          { href: `${base}/attendance`, label: t("tabs.attendance"), icon: "attendance" },
           { href: `${base}/term-grades`, label: t("tabs.termGrades"), icon: "termGrades" },
           { href: `${base}/closing`, label: t("tabs.closing"), icon: "closing" },
         ]}

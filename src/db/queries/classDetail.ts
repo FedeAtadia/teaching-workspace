@@ -29,6 +29,7 @@ export type ClassDetail = {
   name: string;
   courseId: string;
   academicYearId: string;
+  schoolId: string;
   year: number;
   division: string;
   shift: Shift;
@@ -49,6 +50,7 @@ export async function getClass(db: Db, teacherId: string, classId: string): Prom
       name: classes.name,
       courseId: courses.id,
       academicYearId: academicYears.id,
+      schoolId: schools.id,
       year: courses.year,
       division: courses.division,
       shift: courses.shift,
