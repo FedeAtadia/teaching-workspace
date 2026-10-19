@@ -83,7 +83,8 @@
       "division": "Division",
       "divisionPlaceholder": "A",
       "shift": "Shift",
-      "schoolYear": "School year"
+      "schoolYear": "School year",
+      "weekdays": "Days it meets"
     },
     "columns": {
       "subject": "Subject",
@@ -300,8 +301,10 @@
     "failed": "Couldn't save it.",
     "fields": {
       "name": "Name",
-      "days": "Days (optional)",
-      "daysPlaceholder": "Monday 8 to 10"
+      "days": "Schedule (optional)",
+      "daysPlaceholder": "Monday 8 to 10",
+      "weekdays": "The group's days (optional)",
+      "weekdaysHint": "With none ticked, the group comes on the class's days."
     },
     "errors": {
       "duplicate": "This class already has a group with that name.",
@@ -423,14 +426,79 @@
     },
     "schools": {
       "title": "Schools",
-      "intro": "They're created when you add a class. You can rename them here.",
+      "intro": "They're created when you add a class. Here you can rename them and set each year's school calendar.",
       "empty": "No schools yet: one is created with your first class.",
       "courses": "{count, plural, one {# course} other {# courses}}",
       "rename": "Rename",
       "renameTitle": "Rename “{name}”",
       "name": "School name",
       "duplicate": "You already have another school with that name.",
-      "notFound": "That school wasn't found. Reload the page."
+      "notFound": "That school wasn't found. Reload the page.",
+      "calendar": "{year} calendar"
+    }
+  },
+  "weekdays": {
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday"
+  },
+  "weekdaysShort": {
+    "1": "Mo",
+    "2": "Tu",
+    "3": "We",
+    "4": "Th",
+    "5": "Fr",
+    "6": "Sa"
+  },
+  "calendar": {
+    "title": "{year} school calendar",
+    "back": "Settings",
+    "dates": {
+      "title": "School year dates",
+      "startsOn": "Classes start",
+      "term2StartsOn": "2nd term starts",
+      "endsOn": "Classes end",
+      "set": "Set dates",
+      "edit": "Change dates",
+      "missing": "Set these dates to be able to add the days without class."
+    },
+    "daysOff": {
+      "title": "Days without class",
+      "intro": "Holidays, jornadas, breaks and any other day without class at this school. Every class at the school takes them on its own.",
+      "empty": "No days without class yet.",
+      "add": "Add a day without class",
+      "addTitle": "New day without class",
+      "edit": "Edit",
+      "editTitle": "Edit day without class",
+      "delete": "Delete",
+      "deleteTitle": "Delete “{name}”?",
+      "deleteBody": "Those days become class days again.",
+      "fields": {
+        "startsOn": "From",
+        "endsOn": "To (optional, for several days)",
+        "kind": "Kind",
+        "name": "Name",
+        "namePlaceholder": "Jornada institucional"
+      },
+      "kinds": {
+        "holiday": "Holiday",
+        "jornada": "Jornada",
+        "recess": "Break",
+        "other": "Other"
+      }
+    },
+    "holidays": {
+      "add": "Add national holidays",
+      "adding": "Adding…",
+      "added": "{count, plural, =0 {They were all there already.} one {Added # holiday.} other {Added # holidays.}}",
+      "noList": "The app doesn't have {year}'s holidays yet. Add them by hand.",
+      "failed": "Couldn't save."
+    },
+    "errors": {
+      "notFound": "Not found. Reload the page."
     }
   }
 }

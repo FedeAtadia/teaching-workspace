@@ -50,7 +50,7 @@ export async function createClass(
 
     const [created] = await tx
       .insert(classes)
-      .values({ teacherId, courseId, name: input.name })
+      .values({ teacherId, courseId, name: input.name, weekdays: input.weekdays ?? [] })
       .returning({ id: classes.id });
     return { ok: true, classId: created.id } as const;
   });
@@ -113,7 +113,10 @@ export async function updateClass(db: Db, teacherId: string, input: ClassEdit): 
       .update(courses)
       .set({ schoolId, academicYearId: yearId, year: input.year, division: input.division, shift: input.shift })
       .where(eq(courses.id, current.courseId));
-    await tx.update(classes).set({ name: input.name }).where(eq(classes.id, input.classId));
+    await tx
+      .update(classes)
+      .set({ name: input.name, ...(input.weekdays && { weekdays: input.weekdays }) })
+      .where(eq(classes.id, input.classId));
 
     if (yearId !== current.academicYearId) {
       // The course's work moves to the new year's cuatrimestre with the same number.
@@ -337,15 +340,29 @@ export async function listClasses(db: Db, teacherId: string): Promise<ClassRow[]
   return rows.sort((a, b) => compareCourses(a, b) || collator.compare(a.name, b.name));
 }
 
-export type SchoolRow = { id: string; name: string; courses: number };
+export type SchoolRow = {
+  id: string;
+  name: string;
+  courses: number;
+  /** The school years it has courses in, newest first: one calendar each (CAL-1). */
+  years: string[];
+};
 
-/** The teacher's schools, by name, with how many courses each has. */
+/** The teacher's schools, by name, with how many courses each has and in which school years. */
 export async function listSchools(db: Db, teacherId: string): Promise<SchoolRow[]> {
   const rows = await db
     .select({
       id: schools.id,
       name: schools.name,
-      courses: sql<number>`(select count(*)::int from ${courses} where ${courses.schoolId} = ${schools.id})`,
+      // Spelled out: drizzle writes ${schools.id} as a bare "id" here, which
+      // inside the subquery would be the course's own id.
+      courses: sql<number>`(select count(*)::int from ${courses} c where c.school_id = "schools"."id")`,
+      years: sql<string[]>`array(
+        select distinct ay.name from ${courses} c
+        join ${academicYears} ay on ay.id = c.academic_year_id
+        where c.school_id = "schools"."id"
+        order by ay.name desc
+      )`,
     })
     .from(schools)
     .where(eq(schools.teacherId, teacherId));

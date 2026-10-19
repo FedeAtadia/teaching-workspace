@@ -37,6 +37,9 @@ export type FieldSpec =
       options: { value: string; label: string }[];
       /** The values ticked when the form opens. */
       defaultValue?: string[];
+      /** Side by side, for short labels like the days of the week (CAL-4). */
+      inline?: boolean;
+      hint?: string;
     }
   /**
    * GROUP-3: one box per group, each with its own date. Sends `<name>` per
@@ -212,8 +215,9 @@ function DialogForm({
                 className="w-44"
               />
             )}
+            {f.kind === "checkboxes" && f.hint && <p className="text-xs text-muted-foreground">{f.hint}</p>}
             {f.kind === "checkboxes" && (
-              <div id={id} className="grid gap-1.5">
+              <div id={id} className={f.inline ? "flex flex-wrap gap-x-4 gap-y-1.5" : "grid gap-1.5"}>
                 {f.options.map((o) => (
                   <label key={o.value} className="flex items-start gap-2 text-sm">
                     <input
