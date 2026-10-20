@@ -4,11 +4,14 @@ import type { Db } from "@/db";
 import { courseStudents } from "@/db/schema";
 import { createTestDb, newTeacher } from "@/test/db";
 import type { ClassInput } from "@/lib/validation";
-import { createClass, listCourses } from "./classes";
+import { createClass, listCourses, listSchools } from "./classes";
 import { getClass, listClassStudents, listTerms } from "./classDetail";
 import { createStudent } from "./students";
 import { createTask, saveScores } from "./tasks";
-import { getHomeCards } from "./home";
+import { getHomeCards, getTodayClasses } from "./home";
+import { saveAttendance, saveNoClass } from "./attendance";
+import { addDayOff, getCalendar, saveCalendar } from "./calendar";
+import { createGroup } from "./groups";
 
 let db: Db;
 beforeAll(async () => {
@@ -104,5 +107,78 @@ describe("home cards (HOME)", () => {
     const teacher = newTeacher();
     await addClass(teacher, cls());
     expect(await getHomeCards(db, newTeacher())).toEqual({ stats: { classes: 0, students: 0, pending: 0, owed: 0 }, cards: [] });
+  });
+});
+
+describe("today's classes (HOME-4)", () => {
+  // Monday 19 October 2026; the school year runs from 2 March to 11 December.
+  const MONDAY = "2026-10-19";
+
+  async function setup() {
+    const teacher = newTeacher();
+    const lunes = await createClass(db, teacher, cls({ name: "Matemática", weekdays: [1, 3] }));
+    const martes = await createClass(db, teacher, cls({ name: "Física", weekdays: [2] }));
+    if (!lunes.ok || !martes.ok) throw new Error("setup failed");
+    const [school] = await listSchools(db, teacher);
+    await saveCalendar(db, teacher, {
+      schoolId: school.id,
+      schoolYear: 2026,
+      startsOn: "2026-03-02",
+      term2StartsOn: "2026-07-27",
+      endsOn: "2026-12-11",
+    });
+    const calendarId = (await getCalendar(db, teacher, school.id, "2026"))!.calendar!.id;
+    return { teacher, lunes: lunes.classId, martes: martes.classId, calendarId };
+  }
+
+  it("lists the classes that meet on today's weekday, still to take", async () => {
+    const s = await setup();
+    const today = await getTodayClasses(db, s.teacher, MONDAY);
+    expect(today.map((c) => [c.name, c.course, c.state])).toEqual([["Matemática", "4° A", "pending"]]);
+    expect(today[0].classId).toBe(s.lunes);
+    expect((await getTodayClasses(db, s.teacher, "2026-10-20")).map((c) => c.name)).toEqual(["Física"]);
+  });
+
+  it("counts a group's own days as the class's (CAL-4)", async () => {
+    const s = await setup();
+    await createGroup(db, s.teacher, { classId: s.martes, name: "Viernes", days: null, weekdays: [5] });
+    expect((await getTodayClasses(db, s.teacher, "2026-10-23")).map((c) => c.name)).toEqual(["Física"]);
+  });
+
+  it("lists nothing on a day without class, or outside the school year", async () => {
+    const s = await setup();
+    await addDayOff(db, s.teacher, {
+      calendarId: s.calendarId,
+      kind: "jornada",
+      name: "Jornada institucional",
+      startsOn: MONDAY,
+      endsOn: MONDAY,
+    });
+    expect(await getTodayClasses(db, s.teacher, MONDAY)).toEqual([]);
+    expect(await getTodayClasses(db, s.teacher, "2026-12-14")).toEqual([]);
+    expect(await getTodayClasses(db, s.teacher, "2026-02-23")).toEqual([]);
+  });
+
+  it("lists nothing for a class whose school has no calendar", async () => {
+    const teacher = newTeacher();
+    await createClass(db, teacher, cls({ weekdays: [1] }));
+    expect(await getTodayClasses(db, teacher, MONDAY)).toEqual([]);
+  });
+
+  it("says when today is taken or not held, even on a day off", async () => {
+    const s = await setup();
+    const mate = (await getClass(db, s.teacher, s.lunes))!;
+    await saveAttendance(db, s.teacher, mate, MONDAY, []);
+    expect((await getTodayClasses(db, s.teacher, MONDAY))[0].state).toBe("taken");
+    await saveNoClass(db, s.teacher, mate, { date: MONDAY, reason: "strike", note: null });
+    expect((await getTodayClasses(db, s.teacher, MONDAY))[0].state).toBe("notHeld");
+    // Recorded anyway on a day off: still listed, so it can be opened again.
+    await addDayOff(db, s.teacher, { calendarId: s.calendarId, kind: "other", name: "Acto", startsOn: MONDAY, endsOn: MONDAY });
+    expect((await getTodayClasses(db, s.teacher, MONDAY)).map((c) => c.state)).toEqual(["notHeld"]);
+  });
+
+  it("only lists the teacher's own classes (OWNER-1)", async () => {
+    await setup();
+    expect(await getTodayClasses(db, newTeacher(), MONDAY)).toEqual([]);
   });
 });

@@ -59,7 +59,7 @@ export default async function TaskPage({ params, searchParams }: PageProps<"/cla
     <>
       <BackLink href={`/classes/${id}/tasks`} label={t("back")} />
       <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
-        <h2 className="text-2xl font-extrabold">{task.title}</h2>
+        <h2 className="text-2xl font-bold">{task.title}</h2>
         <div className="flex flex-wrap gap-2">
           <FormDialog
             wide
@@ -131,7 +131,7 @@ export default async function TaskPage({ params, searchParams }: PageProps<"/cla
       {showAdapted && (
         // ADAPT-3: the adapted version, for students with an adaptation.
         <section className="mt-4 rounded-2xl bg-primary/5 p-4 ring-1 ring-primary/30">
-          <h3 className="mb-2 text-sm font-extrabold text-chalk">{t("adapted.title")}</h3>
+          <h3 className="mb-2 text-sm font-bold text-highlight">{t("adapted.title")}</h3>
           {!task.adaptedDescription && !task.adaptedCriteria && (
             <p className="mb-2 text-sm text-muted-foreground">{t("adapted.empty")}</p>
           )}

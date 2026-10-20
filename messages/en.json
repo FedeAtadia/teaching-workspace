@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Teaching workspace",
+    "name": "STACK",
     "setupBanner": "Supabase isn't configured yet, so sign-in is off. See README.md."
   },
   "nav": {
@@ -11,7 +11,8 @@
     "settings": "Settings",
     "menu": "Main menu",
     "collapse": "Collapse menu",
-    "expand": "Expand menu"
+    "expand": "Expand menu",
+    "settingsShort": "Settings"
   },
   "common": {
     "cancel": "Cancel",
@@ -63,6 +64,12 @@
       "nextUndated": "Next: {title}",
       "allScored": "All scored",
       "noTasks": "No tasks yet"
+    },
+    "today": {
+      "title": "Today",
+      "pending": "Take today's attendance",
+      "taken": "Attendance taken",
+      "notHeld": "Class didn't happen"
     }
   },
   "classes": {
@@ -109,7 +116,8 @@
       "grades": "Grades",
       "termGrades": "Term grades",
       "closing": "Year end",
-      "attendance": "Attendance"
+      "attendance": "Attendance",
+      "title": "Class sections"
     },
     "errors": {
       "notFound": "This class wasn't found. Go back to the list and try again."

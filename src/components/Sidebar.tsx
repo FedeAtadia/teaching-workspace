@@ -4,7 +4,6 @@ import {
   BookOpen,
   ClipboardCheck,
   House,
-  Menu,
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
@@ -15,7 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "cn";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Logo, LogoMark } from "@/components/Logo";
 import { setSidebar } from "@/i18n/actions";
 import type { SidebarState } from "@/lib/theme";
 
@@ -29,6 +28,8 @@ type Labels = {
   students: string;
   exams: string;
   settings: string;
+  /** "Configuración" doesn't fit under an icon in the phone's bar. */
+  settingsShort: string;
 };
 
 const ITEMS: { href: string; key: keyof Labels; icon: LucideIcon }[] = [
@@ -38,11 +39,13 @@ const ITEMS: { href: string; key: keyof Labels; icon: LucideIcon }[] = [
   { href: "/exams", key: "exams", icon: ClipboardCheck },
 ];
 
-/** NAV-1: a side menu that collapses to its icons; on a phone, a menu button and a sheet. */
+/**
+ * NAV-1: a side menu that collapses to its icons; on a phone, a bar at the
+ * bottom of the screen, within reach of the thumb.
+ */
 export function Sidebar({ initial, labels }: { initial: SidebarState; labels: Labels }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(initial === "collapsed");
-  const [sheetOpen, setSheetOpen] = useState(false);
 
   function toggle() {
     const next = !collapsed;
@@ -52,74 +55,75 @@ export function Sidebar({ initial, labels }: { initial: SidebarState; labels: La
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
-  const links = (compact: boolean, onNavigate?: () => void) => (
-    <>
-      {ITEMS.map((item) => (
-        <NavLink
-          key={item.href}
-          href={item.href}
-          label={labels[item.key]}
-          icon={item.icon}
-          active={isActive(item.href)}
-          compact={compact}
-          onNavigate={onNavigate}
-        />
-      ))}
-      <div className="flex-grow" />
-      <NavLink
-        href="/settings"
-        label={labels.settings}
-        icon={Settings}
-        active={isActive("/settings")}
-        compact={compact}
-        onNavigate={onNavigate}
-      />
-    </>
-  );
-
   return (
     <>
-      {/* Phones and small tablets: a top bar and a sheet. */}
-      <header className="flex items-center gap-2 border-b border-sidebar-border bg-sidebar px-3 py-2 md:hidden">
-        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-          <SheetTrigger
-            aria-label={labels.menu}
-            className="flex size-11 items-center justify-center rounded-xl text-sidebar-foreground hover:bg-sidebar-accent"
-          >
-            <Menu className="size-5" aria-hidden />
-          </SheetTrigger>
-          <SheetContent side="left" className="w-72 gap-1 bg-sidebar p-4">
-            <SheetTitle className="mb-4 px-2 font-chalk text-4xl font-bold text-foreground">{labels.appName}</SheetTitle>
-            <nav aria-label={labels.menu} className="flex flex-1 flex-col gap-1">
-              {links(false, () => setSheetOpen(false))}
-            </nav>
-          </SheetContent>
-        </Sheet>
-        <span className="font-chalk text-3xl leading-none font-bold">{labels.appName}</span>
+      {/* Phones and small tablets: the name on top, the menu at the bottom. */}
+      <header className="flex h-14 items-center border-b border-sidebar-border bg-sidebar px-4 md:hidden">
+        <Logo name={labels.appName} />
       </header>
+      <nav
+        aria-label={labels.menu}
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-sidebar-border bg-sidebar px-1 pt-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] md:hidden"
+      >
+        {[...ITEMS, { href: "/settings", key: "settingsShort" as const, icon: Settings }].map((item) => {
+          const active = isActive(item.href);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-bold transition-colors",
+                active ? "text-highlight" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Icon className="size-[22px]" aria-hidden />
+              {labels[item.key]}
+            </Link>
+          );
+        })}
+      </nav>
 
       {/* Tablets and up: the side menu. */}
       <aside
         className={cn(
-          "sticky top-0 hidden h-dvh shrink-0 flex-col gap-1 bg-sidebar p-3 transition-[width] duration-150 md:flex",
+          "sticky top-0 hidden h-dvh shrink-0 flex-col gap-1 border-r border-sidebar-border bg-sidebar p-3 transition-[width] duration-150 md:flex",
           collapsed ? "w-20" : "w-64",
         )}
       >
-        <div className={cn("mb-4 flex items-center gap-2", collapsed ? "justify-center" : "justify-between pl-3")}>
-          {!collapsed && <span className="font-chalk text-3xl leading-none font-bold">{labels.appName}</span>}
+        <div className={cn("mb-4 flex items-center gap-2", collapsed ? "flex-col" : "justify-between pl-3")}>
+          {collapsed ? <LogoMark className="mt-2" /> : <Logo name={labels.appName} />}
           <button
             type="button"
             onClick={toggle}
             aria-label={collapsed ? labels.expand : labels.collapse}
             title={collapsed ? labels.expand : labels.collapse}
             aria-expanded={!collapsed}
-            className="flex size-11 shrink-0 items-center justify-center rounded-xl text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
             {collapsed ? <PanelLeftOpen className="size-5" aria-hidden /> : <PanelLeftClose className="size-5" aria-hidden />}
           </button>
         </div>
         <nav aria-label={labels.menu} className="flex flex-1 flex-col gap-1">
-          {links(collapsed)}
+          {ITEMS.map((item) => (
+            <NavLink
+              key={item.href}
+              href={item.href}
+              label={labels[item.key]}
+              icon={item.icon}
+              active={isActive(item.href)}
+              compact={collapsed}
+            />
+          ))}
+          <div className="flex-grow" />
+          <NavLink
+            href="/settings"
+            label={labels.settings}
+            icon={Settings}
+            active={isActive("/settings")}
+            compact={collapsed}
+          />
         </nav>
       </aside>
     </>
@@ -132,19 +136,16 @@ function NavLink({
   icon: Icon,
   active,
   compact,
-  onNavigate,
 }: {
   href: string;
   label: string;
   icon: LucideIcon;
   active: boolean;
   compact: boolean;
-  onNavigate?: () => void;
 }) {
   return (
     <Link
       href={href}
-      onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       title={compact ? label : undefined}
       aria-label={compact ? label : undefined}
@@ -152,8 +153,8 @@ function NavLink({
         "flex h-12 items-center gap-3 rounded-xl text-[15px] font-bold transition-colors",
         compact ? "justify-center" : "px-4",
         active
-          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]"
-          : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+          : "text-sidebar-foreground hover:bg-muted",
       )}
     >
       <Icon className="size-5 shrink-0" aria-hidden />

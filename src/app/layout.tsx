@@ -1,5 +1,5 @@
-import "@fontsource-variable/nunito";
-import "@fontsource/caveat/700.css";
+import "@fontsource-variable/league-spartan";
+import "@fontsource-variable/outfit";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
@@ -9,7 +9,7 @@ import { htmlThemeClass, resolveTheme, THEME_COOKIE } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Teaching workspace",
+  title: "STACK",
   description: "Classes, students, tasks and grades in one place.",
 };
 

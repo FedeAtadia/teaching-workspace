@@ -24,7 +24,7 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <h1 className="mb-6 text-3xl font-extrabold">{t("title")}</h1>
+      <h1 className="mb-6 text-3xl font-bold">{t("title")}</h1>
       <div className="grid max-w-xl gap-10">
         <section className="grid gap-6 rounded-2xl bg-card p-5 ring-1 ring-border">
           <div className="grid gap-2">

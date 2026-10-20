@@ -107,83 +107,152 @@ export default async function AttendancePage({ params, searchParams }: PageProps
       ) : sheet.days.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("noDays")}</p>
       ) : (
-        <div className="overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
-          <table className="text-sm">
-            <thead>
-              <tr className="border-b bg-muted">
-                <th className="sticky left-0 z-10 bg-muted px-4 py-3 text-left font-bold">{t("student")}</th>
-                {sheet.days.map((d) => (
-                  <th key={d.date} className="px-0.5 py-1.5 font-medium">
+        <>
+          {/* On a phone: the days as a strip to tap, then one card per student. */}
+          <div className="md:hidden">
+            <ul className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1">
+              {sheet.days.map((d) => {
+                const blank = d.state === "off" || d.state === "notHeld";
+                return (
+                  <li key={d.date} className="shrink-0">
                     <Link
                       href={dayHref(d.date)}
                       title={dayTitle(d)}
                       aria-current={d.date === today ? "date" : undefined}
-                      className={`flex min-w-9 flex-col items-center rounded-lg px-1 py-0.5 leading-tight hover:bg-background aria-[current=date]:ring-2 aria-[current=date]:ring-primary ${
-                        d.state === "off" || d.state === "notHeld"
-                          ? "text-muted-foreground/70 line-through decoration-1"
-                          : d.state === "pending" && d.date <= today
-                            ? "text-foreground"
-                            : d.state === "pending"
-                              ? "text-muted-foreground"
-                              : "text-foreground"
+                      className={`flex h-14 w-12 flex-col items-center justify-center rounded-xl text-sm font-bold ring-1 aria-[current=date]:ring-2 aria-[current=date]:ring-primary ${
+                        blank
+                          ? "bg-muted text-muted-foreground line-through ring-border"
+                          : d.state === "taken"
+                            ? "bg-highlight-soft text-accent-foreground ring-transparent"
+                            : "bg-card ring-border"
                       }`}
                     >
-                      <span className="text-[0.7rem] text-muted-foreground no-underline">
-                        {tDay(String(weekdayOf(d.date)))}
-                      </span>
+                      <span className="text-[0.7rem] font-medium">{tDay(String(weekdayOf(d.date)))}</span>
                       <span className="tabular-nums">{formatShortDate(d.date, locale)}</span>
                     </Link>
-                  </th>
-                ))}
-                <th className="border-l px-3 py-2 font-medium">{t("rate")}</th>
-                {(["present", "absent", "late", "excused"] as const).map((s) => (
-                  <th key={s} className="px-2 py-2 font-medium">
-                    <abbr title={t(`statuses.${s}`)} className="no-underline">
-                      {t(`short.${s}`)}
-                    </abbr>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sheet.rows.map(({ student, cells, counts }) => (
-                <tr key={student.id} className="border-b last:border-0 hover:bg-muted/60">
-                  <td className="sticky left-0 bg-card px-4 py-2 font-bold whitespace-nowrap">
-                    <Link href={`/students/${student.id}`} className="hover:underline">
-                      {student.lastName}, <span className="font-normal">{student.firstName}</span>
-                    </Link>
-                  </td>
-                  {cells.map((c, i) => {
-                    const d = sheet.days[i];
-                    const blank = d.state === "off" || d.state === "notHeld";
-                    return (
-                      <td
-                        key={d.date}
-                        className={`px-0.5 py-1.5 text-center ${blank ? "bg-muted/50" : ""}`}
-                      >
-                        {cell(c)}
-                      </td>
-                    );
-                  })}
-                  <td className="border-l px-3 py-1.5 text-center font-bold whitespace-nowrap tabular-nums">
-                    {counts.rate === null ? (
-                      "—"
-                    ) : (
-                      <span className={belowMinimum(counts.rate, minimum) ? "text-destructive" : ""}>
-                        {counts.rate} %
+                  </li>
+                );
+              })}
+            </ul>
+            <ul className="grid gap-2">
+              {sheet.rows.map(({ student, counts }) => {
+                const low = belowMinimum(counts.rate, minimum);
+                return (
+                  <li key={student.id} className="rounded-2xl bg-card p-4 ring-1 ring-border">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <Link href={`/students/${student.id}`} className="font-bold">
+                        {student.lastName}, <span className="font-normal">{student.firstName}</span>
+                      </Link>
+                      <span className={`font-heading text-xl font-bold tabular-nums ${low ? "text-destructive" : ""}`}>
+                        {counts.rate === null ? "—" : `${counts.rate} %`}
                       </span>
-                    )}
-                  </td>
+                    </div>
+                    <div className="relative mt-2 h-2 rounded-full bg-muted">
+                      {counts.rate !== null && (
+                        <div
+                          className={`absolute inset-y-0 left-0 rounded-r-[4px] ${low ? "bg-alert" : "bg-primary"}`}
+                          style={{ width: `${Math.max(counts.rate, 1)}%` }}
+                        />
+                      )}
+                      {minimum > 0 && (
+                        <div
+                          className="absolute -inset-y-1 border-l-2 border-dashed border-muted-foreground"
+                          style={{ left: `${minimum}%` }}
+                          aria-hidden
+                        />
+                      )}
+                    </div>
+                    <div className="mt-2 flex justify-between gap-2 text-sm text-muted-foreground">
+                      <span className="tabular-nums">
+                        {(["present", "absent", "late", "excused"] as const)
+                          .map((s) => `${t(`short.${s}`)} ${counts[s]}`)
+                          .join(" · ")}
+                      </span>
+                      {low && <span className="font-bold text-destructive">{t("chart.below")}</span>}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+          <div className="hidden overflow-x-auto rounded-2xl bg-card ring-1 ring-border md:block">
+            <table className="text-sm">
+              <thead>
+                <tr className="border-b bg-muted">
+                  <th className="sticky left-0 z-10 bg-muted px-4 py-3 text-left font-bold">{t("student")}</th>
+                  {sheet.days.map((d) => (
+                    <th key={d.date} className="px-0.5 py-1.5 font-medium">
+                      <Link
+                        href={dayHref(d.date)}
+                        title={dayTitle(d)}
+                        aria-current={d.date === today ? "date" : undefined}
+                        className={`flex min-w-9 flex-col items-center rounded-lg px-1 py-0.5 leading-tight hover:bg-background aria-[current=date]:ring-2 aria-[current=date]:ring-primary ${
+                          d.state === "off" || d.state === "notHeld"
+                            ? "text-muted-foreground/70 line-through decoration-1"
+                            : d.state === "pending" && d.date <= today
+                              ? "text-foreground"
+                              : d.state === "pending"
+                                ? "text-muted-foreground"
+                                : "text-foreground"
+                        }`}
+                      >
+                        <span className="text-[0.7rem] text-muted-foreground no-underline">
+                          {tDay(String(weekdayOf(d.date)))}
+                        </span>
+                        <span className="tabular-nums">{formatShortDate(d.date, locale)}</span>
+                      </Link>
+                    </th>
+                  ))}
+                  <th className="border-l px-3 py-2 font-medium">{t("rate")}</th>
                   {(["present", "absent", "late", "excused"] as const).map((s) => (
-                    <td key={s} className="px-2 py-1.5 text-center text-muted-foreground tabular-nums">
-                      {counts[s]}
-                    </td>
+                    <th key={s} className="px-2 py-2 font-medium">
+                      <abbr title={t(`statuses.${s}`)} className="no-underline">
+                        {t(`short.${s}`)}
+                      </abbr>
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {sheet.rows.map(({ student, cells, counts }) => (
+                  <tr key={student.id} className="border-b last:border-0 hover:bg-muted/60">
+                    <td className="sticky left-0 bg-card px-4 py-2 font-bold whitespace-nowrap">
+                      <Link href={`/students/${student.id}`} className="hover:underline">
+                        {student.lastName}, <span className="font-normal">{student.firstName}</span>
+                      </Link>
+                    </td>
+                    {cells.map((c, i) => {
+                      const d = sheet.days[i];
+                      const blank = d.state === "off" || d.state === "notHeld";
+                      return (
+                        <td
+                          key={d.date}
+                          className={`px-0.5 py-1.5 text-center ${blank ? "bg-muted/50" : ""}`}
+                        >
+                          {cell(c)}
+                        </td>
+                      );
+                    })}
+                    <td className="border-l px-3 py-1.5 text-center font-bold whitespace-nowrap tabular-nums">
+                      {counts.rate === null ? (
+                        "—"
+                      ) : (
+                        <span className={belowMinimum(counts.rate, minimum) ? "text-destructive" : ""}>
+                          {counts.rate} %
+                        </span>
+                      )}
+                    </td>
+                    {(["present", "absent", "late", "excused"] as const).map((s) => (
+                      <td key={s} className="px-2 py-1.5 text-center text-muted-foreground tabular-nums">
+                        {counts[s]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
       {sheet.rows.length > 0 && sheet.days.length > 0 && (
         <p className="mt-3 text-xs text-muted-foreground">{t("legend")}</p>
@@ -199,23 +268,26 @@ export default async function AttendancePage({ params, searchParams }: PageProps
         go={t("otherDate.go")}
       />
 
+      {/* The phone's cards above already show each one's percentage against the minimum. */}
       {sheet.rows.length > 0 && (
-        <AttendanceChart
-          title={t("chart.title")}
-          minimum={minimum}
-          minimumLabel={t("chart.minimum", { min: minimum })}
-          emptyLabel={t("chart.none")}
-          belowLabel={t("chart.below")}
-          rows={sheet.rows.map(({ student, counts }) => ({
-            id: student.id,
-            name: `${student.lastName}, ${student.firstName}`,
-            rate: counts.rate,
-            below: belowMinimum(counts.rate, minimum),
-            detail: (["present", "absent", "late", "excused"] as const)
-              .map((s) => `${t(`short.${s}`)} ${counts[s]}`)
-              .join(" · "),
-          }))}
-        />
+        <div className="hidden md:block">
+          <AttendanceChart
+            title={t("chart.title")}
+            minimum={minimum}
+            minimumLabel={t("chart.minimum", { min: minimum })}
+            emptyLabel={t("chart.none")}
+            belowLabel={t("chart.below")}
+            rows={sheet.rows.map(({ student, counts }) => ({
+              id: student.id,
+              name: `${student.lastName}, ${student.firstName}`,
+              rate: counts.rate,
+              below: belowMinimum(counts.rate, minimum),
+              detail: (["present", "absent", "late", "excused"] as const)
+                .map((s) => `${t(`short.${s}`)} ${counts[s]}`)
+                .join(" · "),
+            }))}
+          />
+        </div>
       )}
     </>
   );

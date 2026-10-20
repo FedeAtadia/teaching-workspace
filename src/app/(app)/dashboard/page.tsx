@@ -1,15 +1,18 @@
+import { CalendarCheck, Check, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { cn } from "cn";
 import { getTranslations } from "next-intl/server";
 import { AddClassDialog } from "@/components/classes/AddClassDialog";
 import { ClassCard } from "@/components/classes/ClassCard";
 import { getDb } from "@/db";
 import { listSchools } from "@/db/queries/classes";
-import { getHomeCards } from "@/db/queries/home";
+import { getHomeCards, getTodayClasses, type TodayClass } from "@/db/queries/home";
 import { requireTeacherId } from "@/lib/auth";
+import { todayInArgentina } from "@/lib/calendar";
 import { classCardProps } from "@/lib/classCards";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-/** HOME-1..3, EXAM-4 */
+/** HOME-1..4, EXAM-4 */
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
   const tCommon = await getTranslations("common");
@@ -17,7 +20,7 @@ export default async function DashboardPage() {
   if (!isSupabaseConfigured()) {
     return (
       <>
-        <h1 className="mb-2 text-3xl font-extrabold">{t("greeting")}</h1>
+        <h1 className="mb-2 text-3xl font-bold">{t("greeting")}</h1>
         <p className="text-muted-foreground">{tCommon("notConfigured")}</p>
       </>
     );
@@ -25,26 +28,42 @@ export default async function DashboardPage() {
 
   const db = getDb();
   const teacherId = await requireTeacherId();
-  const [home, schools, cardProps] = await Promise.all([
+  const today = todayInArgentina();
+  const [home, schools, cardProps, todayClasses] = await Promise.all([
     getHomeCards(db, teacherId),
     listSchools(db, teacherId),
     classCardProps(),
+    getTodayClasses(db, teacherId, today),
   ]);
   const severalSchools = schools.length > 1;
 
   return (
     <div className="grid gap-8">
       <div>
-        <h1 className="text-3xl font-extrabold sm:text-4xl">{t("greeting")}</h1>
+        <h1 className="text-3xl font-bold sm:text-4xl">{t("greeting")}</h1>
         <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <Stat value={home.stats.classes} label={t("stats.classes", { count: home.stats.classes })} />
         <Stat value={home.stats.students} label={t("stats.students", { count: home.stats.students })} />
-        <Stat value={home.stats.pending} label={t("stats.pending", { count: home.stats.pending })} chalk />
+        <Stat value={home.stats.pending} label={t("stats.pending", { count: home.stats.pending })} highlight />
         <Stat value={home.stats.owed} label={t("stats.owed", { count: home.stats.owed })} href="/exams" />
       </dl>
+
+      {/* HOME-4 */}
+      {todayClasses.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-bold text-muted-foreground">{t("today.title")}</h2>
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {todayClasses.map((c) => (
+              <li key={c.classId}>
+                <TodayLink c={c} href={`/classes/${c.classId}/attendance/${today}`} label={t(`today.${c.state}`)} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section>
         <h2 className="mb-3 text-lg font-bold text-muted-foreground">{t("myClasses")}</h2>
@@ -64,21 +83,56 @@ export default async function DashboardPage() {
   );
 }
 
+/** HOME-4: the accent button while today is still to take; a quiet card once it's saved. */
+function TodayLink({ c, href, label }: { c: TodayClass; href: string; label: string }) {
+  const pending = c.state === "pending";
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        pending
+          ? "bg-primary text-primary-foreground hover:brightness-95"
+          : "bg-card text-card-foreground ring-1 ring-border hover:ring-primary",
+      )}
+    >
+      {pending ? (
+        <CalendarCheck className="size-6 shrink-0" aria-hidden />
+      ) : (
+        <Check className="size-6 shrink-0 text-highlight" aria-hidden />
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="block font-bold">{label}</span>
+        <span className={cn("block truncate text-sm", pending ? "font-semibold" : "text-muted-foreground")}>
+          {c.name} · {c.course}
+        </span>
+      </span>
+      <ChevronRight className="size-5 shrink-0" aria-hidden />
+    </Link>
+  );
+}
+
 function Stat({
   value,
   label,
-  chalk = false,
+  highlight = false,
   href,
 }: {
   value: number;
   label: string;
-  chalk?: boolean;
+  /** The tile to look at: tinted in the accent. */
+  highlight?: boolean;
   /** The whole tile opens this page (NAV-2). */
   href?: string;
 }) {
   return (
-    <div className="relative flex flex-col-reverse rounded-2xl bg-card px-4 py-3 ring-1 ring-border transition has-[a:hover]:ring-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring sm:px-5 sm:py-4">
-      <dt className="text-xs text-muted-foreground sm:text-sm">
+    <div
+      className={cn(
+        "relative flex flex-col-reverse rounded-2xl px-4 py-3 ring-1 transition has-[a:hover]:ring-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring sm:px-5 sm:py-4",
+        highlight ? "bg-highlight-soft text-accent-foreground ring-primary" : "bg-card ring-border",
+      )}
+    >
+      <dt className={cn("text-xs sm:text-sm", highlight ? "" : "text-muted-foreground")}>
         {href ? (
           <Link href={href} className="outline-none after:absolute after:inset-0 after:content-['']">
             {label}
@@ -87,7 +141,7 @@ function Stat({
           label
         )}
       </dt>
-      <dd className={chalk ? "text-2xl font-extrabold text-chalk sm:text-3xl" : "text-2xl font-extrabold sm:text-3xl"}>
+      <dd className="font-heading text-2xl font-bold sm:text-3xl">
         {value}
       </dd>
     </div>

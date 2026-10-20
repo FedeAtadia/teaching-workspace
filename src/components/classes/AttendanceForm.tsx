@@ -17,7 +17,7 @@ export type AttendanceFormRow = { studentId: string; name: string; status: Atten
 /** The checked pill of each mark. */
 const CHECKED: Record<AttendanceStatus, string> = {
   present: "peer-checked:bg-primary peer-checked:text-primary-foreground",
-  absent: "peer-checked:bg-destructive peer-checked:text-white",
+  absent: "peer-checked:bg-destructive peer-checked:text-background",
   late: "peer-checked:bg-foreground peer-checked:text-background",
   excused: "peer-checked:bg-muted-foreground peer-checked:text-background",
 };
@@ -97,7 +97,7 @@ export function NoClassForm({
     <form action={formAction} className="grid gap-3 rounded-2xl bg-card p-4 ring-1 ring-border">
       <input type="hidden" name="classId" value={classId} />
       <input type="hidden" name="date" value={date} />
-      <h2 className="font-extrabold">{t("day.noClass.title")}</h2>
+      <h2 className="font-bold">{t("day.noClass.title")}</h2>
       <Field id="no-class-reason" label={t("day.noClass.reason")}>
         <NativeSelect
           id="no-class-reason"

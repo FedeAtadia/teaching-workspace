@@ -78,7 +78,7 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
   const groupsSection = (
     <section className="mb-5 rounded-2xl bg-card p-4 ring-1 ring-border">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-extrabold">{tGroups("title")}</h2>
+        <h2 className="font-bold">{tGroups("title")}</h2>
         <FormDialog
           trigger="addSmall"
           triggerLabel={tGroups("add")}
@@ -159,7 +159,7 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
               key={s.id}
               className="group relative flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-2xl bg-card p-3 ring-1 ring-border transition hover:ring-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring"
             >
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-sm font-extrabold text-chalk tabular-nums">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-sm font-extrabold text-highlight tabular-nums">
                 {i + 1}
               </span>
               <Link

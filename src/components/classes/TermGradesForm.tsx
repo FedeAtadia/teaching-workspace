@@ -193,7 +193,7 @@ function GradeRow({
         </div>
         {outside && (
           <div className="mt-2 grid gap-1">
-            <label htmlFor={`reason-${id}`} className="text-xs font-medium text-chalk">
+            <label htmlFor={`reason-${id}`} className="text-xs font-medium text-highlight">
               {t(check === "above" ? "above" : "below")}
             </label>
             <Input

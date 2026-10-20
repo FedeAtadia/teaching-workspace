@@ -496,8 +496,9 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 
 ## HOME — The home page
 
-*Enforced by `src/db/queries/home.ts`, `src/lib/courses.ts`. Covered by
-`src/db/queries/home.test.ts`, `src/lib/courses.test.ts`.*
+*Enforced by `src/db/queries/home.ts`, `src/lib/courses.ts`,
+`src/lib/attendance.ts`. Covered by `src/db/queries/home.test.ts`,
+`src/lib/courses.test.ts`.*
 
 - **HOME-1** Home shows how many classes and students the teacher has and how
   many scores are still to enter, then one card per class (COURSE-3 order)
@@ -509,6 +510,12 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 - **HOME-3** Each card names the class's next pending task: the earliest
   dated one that some active student has no score or mark for (tasks without
   a date after all dated ones), or says that everything is scored.
+- **HOME-4** Home lists the classes that meet today: today is one of the
+  class's days or one of its groups' days (CAL-4), within its school's
+  school year (CAL-1), and no day without class covers it unless something
+  was already saved for today. Each opens today's attendance (ATT-2) and says
+  whether it is taken, not held or still to take. With no class today the
+  list doesn't show.
 
 ## THEME — Light and dark
 
@@ -523,15 +530,18 @@ Covered by `src/lib/theme.test.ts`.*
 
 ## NAV — Getting around
 
-*Enforced by `src/components/Sidebar.tsx`, `src/lib/theme.ts`. Covered by
+*Enforced by `src/components/Sidebar.tsx`, `src/components/classes/ClassTabs.tsx`,
+`src/lib/theme.ts`. Covered by
 `src/lib/theme.test.ts`; the rest by hand (Known gaps).*
 
 - **NAV-1** The side menu can be collapsed to its icons and expanded again;
   the choice is remembered and applied as the page is served. On a phone the
-  menu opens from a button instead.
+  menu is a bar at the bottom of the screen instead.
 - **NAV-2** Anything that opens a page — a class card, a student's row, a task
   — does so from anywhere on it, not only from its name, and is still a single
   link for the keyboard and screen readers.
+- **NAV-3** On a phone, a class's sections open from one button that names
+  the current one; elsewhere they are a row of tabs.
 
 ## OWNER — Each teacher's data
 
@@ -553,9 +563,9 @@ Covered by `src/lib/theme.test.ts`.*
   Supabase project to run against. The forms that call the queries above
   (the add-class and add-student dialogs) are checked by hand for the same
   reason: every page behind them needs a signed-in teacher.
-- **NAV-1**'s collapsing and phone menu and **NAV-2**'s whole-row links are
-  interface behaviour, checked by hand in the browser; there are no component
-  tests yet.
+- **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and
+  **NAV-3**'s section button are interface behaviour, checked by hand in the
+  browser; there are no component tests yet.
 - **FILE-2**'s folder rules and **FILE-3**'s upload, removal and one-minute
   link run in Supabase Storage, which the in-memory test database doesn't
   have. The rules are in `supabase/storage.sql` and were checked by hand:

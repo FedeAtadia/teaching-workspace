@@ -64,13 +64,13 @@ export default async function CalendarPage({ params }: PageProps<"/settings/scho
   return (
     <>
       <BackLink href="/settings" label={t("back")} />
-      <h1 className="mt-3 text-3xl font-extrabold">{t("title", { year: data.schoolYear })}</h1>
+      <h1 className="mt-3 text-3xl font-bold">{t("title", { year: data.schoolYear })}</h1>
       <p className="mt-1 mb-6 text-muted-foreground">{data.school}</p>
 
       <div className="grid max-w-2xl gap-8">
         <section className="rounded-2xl bg-card p-5 ring-1 ring-border">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-extrabold">{t("dates.title")}</h2>
+            <h2 className="font-bold">{t("dates.title")}</h2>
             <FormDialog
               trigger={calendar ? "edit" : "addSmall"}
               triggerLabel={calendar ? t("dates.edit") : t("dates.set")}
