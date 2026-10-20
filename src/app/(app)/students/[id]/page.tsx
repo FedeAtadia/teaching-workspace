@@ -29,7 +29,7 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
   return (
     <>
       <BackLink href="/students" label={t("back")} />
-      <h1 className="mt-3 mb-6 text-3xl font-extrabold">
+      <h1 className="mt-3 mb-6 text-3xl font-bold">
         {student.lastName}, {student.firstName}
       </h1>
 
@@ -45,7 +45,7 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                 <span className="text-sm font-normal text-muted-foreground">{t("left")}</span>
               )}
               {course.outcome && (
-                <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-bold text-chalk">
+                <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-bold text-highlight">
                   {t(`outcomes.${course.outcome}`)}
                 </span>
               )}
@@ -59,7 +59,7 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                 return (
                   <article key={cls.id} className="rounded-2xl bg-card p-5 ring-1 ring-border">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <h3 className="text-lg font-extrabold">
+                      <h3 className="text-lg font-bold">
                         <Link href={`/classes/${cls.id}`} className="underline-offset-4 hover:underline">
                           {cls.name}
                         </Link>
@@ -232,7 +232,7 @@ function ScoreCell({
       {formatGrade(score.value, locale)}
       {/* ADAPT-4 */}
       {score.adapted && (
-        <abbr title={labels.adapted} className="ml-0.5 align-super text-[0.65rem] text-chalk no-underline">
+        <abbr title={labels.adapted} className="ml-0.5 align-super text-[0.65rem] text-highlight no-underline">
           {labels.adaptedShort}
         </abbr>
       )}

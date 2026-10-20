@@ -36,7 +36,7 @@ export default async function AttendanceDayPage({ params, searchParams }: PagePr
     return (
       <>
         <BackLink href={back} label={t("day.back")} />
-        <h2 className="mt-3 mb-2 text-xl font-extrabold">{title}</h2>
+        <h2 className="mt-3 mb-2 text-xl font-bold">{title}</h2>
         <p className="text-sm text-muted-foreground">
           {day.error === "outsideYear" ? t("day.outsideYear") : t("noCalendar", { year: cls.schoolYear, school: cls.school })}
         </p>
@@ -60,7 +60,7 @@ export default async function AttendanceDayPage({ params, searchParams }: PagePr
     <>
       <BackLink href={back} label={t("day.back")} />
       <div className="mt-3 mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-extrabold">{title}</h2>
+        <h2 className="text-xl font-bold">{title}</h2>
         {session && (
           <ConfirmDeleteButton
             label={t("day.clear.button")}

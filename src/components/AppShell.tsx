@@ -24,13 +24,15 @@ export async function AppShell({ children }: { children: ReactNode }) {
           students: t("nav.students"),
           exams: t("nav.exams"),
           settings: t("nav.settings"),
+          settingsShort: t("nav.settingsShort"),
         }}
       />
       <div className="flex min-w-0 flex-1 flex-col">
         {!isSupabaseConfigured() && (
           <p className="bg-primary px-4 py-2 text-sm text-primary-foreground">{t("app.setupBanner")}</p>
         )}
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-8 sm:py-8">{children}</main>
+        {/* On a phone, room at the bottom for the menu bar (NAV-1). */}
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-28 sm:px-8 sm:pt-8 md:pb-8">{children}</main>
       </div>
     </div>
   );

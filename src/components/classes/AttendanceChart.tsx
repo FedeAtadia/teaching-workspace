@@ -22,7 +22,7 @@ export function AttendanceChart({
   const withRate = rows.filter((r) => r.rate !== null);
   return (
     <section className="mt-8 max-w-3xl">
-      <h2 className="mb-1 font-extrabold">{title}</h2>
+      <h2 className="mb-1 font-bold">{title}</h2>
       {withRate.length === 0 ? (
         <p className="text-sm text-muted-foreground">{emptyLabel}</p>
       ) : (

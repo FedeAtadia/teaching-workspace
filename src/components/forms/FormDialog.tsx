@@ -99,7 +99,7 @@ export function FormDialog({
         </DialogTrigger>
       )}
       {trigger === "badge" && (
-        <DialogTrigger className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-bold text-chalk hover:bg-primary/25">
+        <DialogTrigger className="rounded-full bg-highlight-soft px-2.5 py-0.5 text-xs font-bold text-highlight ring-primary hover:ring-1">
           {triggerLabel}
         </DialogTrigger>
       )}

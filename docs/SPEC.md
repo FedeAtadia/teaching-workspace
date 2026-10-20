@@ -523,15 +523,18 @@ Covered by `src/lib/theme.test.ts`.*
 
 ## NAV — Getting around
 
-*Enforced by `src/components/Sidebar.tsx`, `src/lib/theme.ts`. Covered by
+*Enforced by `src/components/Sidebar.tsx`, `src/components/classes/ClassTabs.tsx`,
+`src/lib/theme.ts`. Covered by
 `src/lib/theme.test.ts`; the rest by hand (Known gaps).*
 
 - **NAV-1** The side menu can be collapsed to its icons and expanded again;
   the choice is remembered and applied as the page is served. On a phone the
-  menu opens from a button instead.
+  menu is a bar at the bottom of the screen instead.
 - **NAV-2** Anything that opens a page — a class card, a student's row, a task
   — does so from anywhere on it, not only from its name, and is still a single
   link for the keyboard and screen readers.
+- **NAV-3** On a phone, a class's sections open from one button that names
+  the current one; elsewhere they are a row of tabs.
 
 ## OWNER — Each teacher's data
 
@@ -553,9 +556,9 @@ Covered by `src/lib/theme.test.ts`.*
   Supabase project to run against. The forms that call the queries above
   (the add-class and add-student dialogs) are checked by hand for the same
   reason: every page behind them needs a signed-in teacher.
-- **NAV-1**'s collapsing and phone menu and **NAV-2**'s whole-row links are
-  interface behaviour, checked by hand in the browser; there are no component
-  tests yet.
+- **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and
+  **NAV-3**'s section button are interface behaviour, checked by hand in the
+  browser; there are no component tests yet.
 - **FILE-2**'s folder rules and **FILE-3**'s upload, removal and one-minute
   link run in Supabase Storage, which the in-memory test database doesn't
   have. The rules are in `supabase/storage.sql` and were checked by hand:
