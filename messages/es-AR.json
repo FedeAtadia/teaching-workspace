@@ -64,6 +64,12 @@
       "nextUndated": "Próxima: {title}",
       "allScored": "Todo calificado",
       "noTasks": "Todavía sin tareas"
+    },
+    "today": {
+      "title": "Hoy",
+      "pending": "Tomar asistencia de hoy",
+      "taken": "Asistencia tomada",
+      "notHeld": "No hubo clase"
     }
   },
   "classes": {

@@ -1,3 +1,4 @@
+import { CalendarCheck, Check, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "cn";
 import { getTranslations } from "next-intl/server";
@@ -5,12 +6,13 @@ import { AddClassDialog } from "@/components/classes/AddClassDialog";
 import { ClassCard } from "@/components/classes/ClassCard";
 import { getDb } from "@/db";
 import { listSchools } from "@/db/queries/classes";
-import { getHomeCards } from "@/db/queries/home";
+import { getHomeCards, getTodayClasses, type TodayClass } from "@/db/queries/home";
 import { requireTeacherId } from "@/lib/auth";
+import { todayInArgentina } from "@/lib/calendar";
 import { classCardProps } from "@/lib/classCards";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-/** HOME-1..3, EXAM-4 */
+/** HOME-1..4, EXAM-4 */
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
   const tCommon = await getTranslations("common");
@@ -26,10 +28,12 @@ export default async function DashboardPage() {
 
   const db = getDb();
   const teacherId = await requireTeacherId();
-  const [home, schools, cardProps] = await Promise.all([
+  const today = todayInArgentina();
+  const [home, schools, cardProps, todayClasses] = await Promise.all([
     getHomeCards(db, teacherId),
     listSchools(db, teacherId),
     classCardProps(),
+    getTodayClasses(db, teacherId, today),
   ]);
   const severalSchools = schools.length > 1;
 
@@ -47,6 +51,20 @@ export default async function DashboardPage() {
         <Stat value={home.stats.owed} label={t("stats.owed", { count: home.stats.owed })} href="/exams" />
       </dl>
 
+      {/* HOME-4 */}
+      {todayClasses.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-bold text-muted-foreground">{t("today.title")}</h2>
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {todayClasses.map((c) => (
+              <li key={c.classId}>
+                <TodayLink c={c} href={`/classes/${c.classId}/attendance/${today}`} label={t(`today.${c.state}`)} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section>
         <h2 className="mb-3 text-lg font-bold text-muted-foreground">{t("myClasses")}</h2>
         {home.cards.length === 0 && <p className="mb-4 text-muted-foreground">{t("empty")}</p>}
@@ -62,6 +80,35 @@ export default async function DashboardPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+/** HOME-4: the accent button while today is still to take; a quiet card once it's saved. */
+function TodayLink({ c, href, label }: { c: TodayClass; href: string; label: string }) {
+  const pending = c.state === "pending";
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        pending
+          ? "bg-primary text-primary-foreground hover:brightness-95"
+          : "bg-card text-card-foreground ring-1 ring-border hover:ring-primary",
+      )}
+    >
+      {pending ? (
+        <CalendarCheck className="size-6 shrink-0" aria-hidden />
+      ) : (
+        <Check className="size-6 shrink-0 text-highlight" aria-hidden />
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="block font-bold">{label}</span>
+        <span className={cn("block truncate text-sm", pending ? "font-semibold" : "text-muted-foreground")}>
+          {c.name} · {c.course}
+        </span>
+      </span>
+      <ChevronRight className="size-5 shrink-0" aria-hidden />
+    </Link>
   );
 }
 
