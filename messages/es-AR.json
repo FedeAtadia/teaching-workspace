@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Espacio docente",
+    "name": "STACK",
     "setupBanner": "Supabase todavía no está configurado: el inicio de sesión está desactivado. Ver README.md."
   },
   "nav": {
@@ -11,7 +11,8 @@
     "settings": "Configuración",
     "menu": "Menú principal",
     "collapse": "Contraer menú",
-    "expand": "Expandir menú"
+    "expand": "Expandir menú",
+    "settingsShort": "Ajustes"
   },
   "common": {
     "cancel": "Cancelar",
@@ -109,7 +110,8 @@
       "grades": "Calificaciones",
       "termGrades": "Notas de cuatrimestre",
       "closing": "Cierre",
-      "attendance": "Asistencia"
+      "attendance": "Asistencia",
+      "title": "Secciones del curso"
     },
     "errors": {
       "notFound": "No se encontró este curso. Volvé a la lista y probá de nuevo."

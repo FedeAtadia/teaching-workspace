@@ -116,7 +116,7 @@ function ScoreRowFields({
         {row.adaptation && (
           <span
             title={row.adaptation}
-            className="ml-1.5 inline-block rounded-full bg-primary/15 px-2 py-0.5 align-middle text-[0.7rem] font-bold text-chalk"
+            className="ml-1.5 inline-block rounded-full bg-highlight-soft px-2 py-0.5 align-middle text-[0.7rem] font-bold text-highlight"
           >
             {tAdapt("badge")}
           </span>

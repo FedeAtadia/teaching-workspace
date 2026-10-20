@@ -65,9 +65,9 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
                         className="group flex h-full flex-col gap-3 rounded-2xl bg-card p-5 ring-1 ring-border transition hover:-translate-y-0.5 hover:ring-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <h3 className="text-lg leading-tight font-extrabold">{task.title}</h3>
+                          <h3 className="text-lg leading-tight font-bold">{task.title}</h3>
                           {task.hasFile && (
-                            <span className="flex shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-chalk">
+                            <span className="flex shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-highlight">
                               <Paperclip className="size-3.5" aria-hidden />
                               {t("file")}
                             </span>

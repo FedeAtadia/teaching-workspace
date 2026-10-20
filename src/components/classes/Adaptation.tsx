@@ -39,7 +39,7 @@ export async function AdaptedBadge({ notes }: { notes: string }) {
   return (
     <span
       title={notes}
-      className="relative z-10 ml-1.5 inline-block rounded-full bg-primary/15 px-2 py-0.5 align-middle text-[0.7rem] font-bold text-chalk"
+      className="relative z-10 ml-1.5 inline-block rounded-full bg-highlight-soft px-2 py-0.5 align-middle text-[0.7rem] font-bold text-highlight"
     >
       {t("badge")}
     </span>

@@ -1,7 +1,8 @@
-# Teaching workspace
+# STACK
 
-Everything about the classes I teach in one place: classes, students, tasks,
-scores with notes, term grades, and exports. Replaces a Google Drive full of
+STACK (the repository is still `teaching-workspace`) keeps everything about
+the classes I teach in one place: classes, students, tasks, scores with notes,
+term grades, attendance and exports. Replaces a Google Drive full of
 spreadsheets.
 
 Next.js 16 (App Router) · Tailwind CSS 4 · PostgreSQL on Supabase · Drizzle ORM ·

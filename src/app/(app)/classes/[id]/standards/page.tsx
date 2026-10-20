@@ -104,9 +104,9 @@ export default async function StandardsPage({ params }: PageProps<"/classes/[id]
         return (
           <section key={student.id} className="mt-8">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-extrabold">
+              <h2 className="font-bold">
                 {t("ownTitle", { name })}
-                <span className="ml-2 rounded-full bg-primary/15 px-2 py-0.5 align-middle text-[0.7rem] font-bold text-chalk">
+                <span className="ml-2 rounded-full bg-highlight-soft px-2 py-0.5 align-middle text-[0.7rem] font-bold text-highlight">
                   {t("ownBadge")}
                 </span>
               </h2>

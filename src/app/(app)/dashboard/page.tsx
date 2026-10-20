@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "cn";
 import { getTranslations } from "next-intl/server";
 import { AddClassDialog } from "@/components/classes/AddClassDialog";
 import { ClassCard } from "@/components/classes/ClassCard";
@@ -17,7 +18,7 @@ export default async function DashboardPage() {
   if (!isSupabaseConfigured()) {
     return (
       <>
-        <h1 className="mb-2 text-3xl font-extrabold">{t("greeting")}</h1>
+        <h1 className="mb-2 text-3xl font-bold">{t("greeting")}</h1>
         <p className="text-muted-foreground">{tCommon("notConfigured")}</p>
       </>
     );
@@ -35,14 +36,14 @@ export default async function DashboardPage() {
   return (
     <div className="grid gap-8">
       <div>
-        <h1 className="text-3xl font-extrabold sm:text-4xl">{t("greeting")}</h1>
+        <h1 className="text-3xl font-bold sm:text-4xl">{t("greeting")}</h1>
         <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <Stat value={home.stats.classes} label={t("stats.classes", { count: home.stats.classes })} />
         <Stat value={home.stats.students} label={t("stats.students", { count: home.stats.students })} />
-        <Stat value={home.stats.pending} label={t("stats.pending", { count: home.stats.pending })} chalk />
+        <Stat value={home.stats.pending} label={t("stats.pending", { count: home.stats.pending })} highlight />
         <Stat value={home.stats.owed} label={t("stats.owed", { count: home.stats.owed })} href="/exams" />
       </dl>
 
@@ -67,18 +68,24 @@ export default async function DashboardPage() {
 function Stat({
   value,
   label,
-  chalk = false,
+  highlight = false,
   href,
 }: {
   value: number;
   label: string;
-  chalk?: boolean;
+  /** The tile to look at: tinted in the accent. */
+  highlight?: boolean;
   /** The whole tile opens this page (NAV-2). */
   href?: string;
 }) {
   return (
-    <div className="relative flex flex-col-reverse rounded-2xl bg-card px-4 py-3 ring-1 ring-border transition has-[a:hover]:ring-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring sm:px-5 sm:py-4">
-      <dt className="text-xs text-muted-foreground sm:text-sm">
+    <div
+      className={cn(
+        "relative flex flex-col-reverse rounded-2xl px-4 py-3 ring-1 transition has-[a:hover]:ring-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring sm:px-5 sm:py-4",
+        highlight ? "bg-highlight-soft text-accent-foreground ring-primary" : "bg-card ring-border",
+      )}
+    >
+      <dt className={cn("text-xs sm:text-sm", highlight ? "" : "text-muted-foreground")}>
         {href ? (
           <Link href={href} className="outline-none after:absolute after:inset-0 after:content-['']">
             {label}
@@ -87,7 +94,7 @@ function Stat({
           label
         )}
       </dt>
-      <dd className={chalk ? "text-2xl font-extrabold text-chalk sm:text-3xl" : "text-2xl font-extrabold sm:text-3xl"}>
+      <dd className="font-heading text-2xl font-bold sm:text-3xl">
         {value}
       </dd>
     </div>

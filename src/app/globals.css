@@ -3,11 +3,15 @@
 @import "shadcn/tailwind.css";
 
 /*
- * Tiza: chalkboard charcoal in the dark, warm paper in the light, chalk-yellow
- * accent in both. Every colour is written once with light-dark(); which side
- * applies comes from `color-scheme` (THEME-1, THEME-2):
+ * STACK: cool grey and white in the light, deep navy in the dark, one bright
+ * blue accent and a red for alerts. Every colour is written once with
+ * light-dark(); which side applies comes from `color-scheme` (THEME-1, THEME-2):
  *   - no class on <html>  → the device's setting ("Sistema")
  *   - <html class="dark"> / <html class="light"> → the teacher's choice
+ *
+ * Text pairs are at least 4.5:1. That is why buttons put dark text on the blue
+ * (white on #0496FF is 3.1:1), and why red and blue *text* use deeper shades
+ * (#D6004A, #1272B5) than the fills (#FF0054, #157CC5).
  */
 :root {
   color-scheme: light dark;
@@ -35,10 +39,12 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   /* Self-hosted (@fontsource), so builds work offline. */
-  --font-sans: "Nunito Variable", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-  --font-heading: var(--font-sans);
-  --font-chalk: "Caveat", "Segoe Print", cursive;
-  --color-chalk: var(--chalk);
+  --font-sans: "Outfit Variable", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-heading: "League Spartan Variable", "Outfit Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-highlight: var(--highlight);
+  --color-highlight-soft: var(--highlight-soft);
+  --color-alert: var(--alert);
+  --color-accent-deep: var(--accent-deep);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -78,42 +84,46 @@
 }
 
 :root {
-  /*                        light "papel"   dark "pizarrón" */
-  --background: light-dark(#f4f1ea, #2a2c2e);
-  --foreground: light-dark(#2a2c2e, #ece8df);
-  --card: light-dark(#fffdf8, #34373a);
-  --card-foreground: light-dark(#2a2c2e, #ece8df);
-  --popover: light-dark(#fffdf8, #34373a);
-  --popover-foreground: light-dark(#2a2c2e, #ece8df);
-  /* Chalk yellow with charcoal text reads in both themes (≈11:1). */
-  --primary: #f2d479;
-  --primary-foreground: #2a2c2e;
-  --secondary: light-dark(#ebe6db, #3a3d40);
-  --secondary-foreground: light-dark(#2a2c2e, #ece8df);
-  --muted: light-dark(#ebe6db, #313436);
-  --muted-foreground: light-dark(#5f5a52, #b9b4aa);
-  --accent: light-dark(#e7e1d4, #3a3d40);
-  --accent-foreground: light-dark(#2a2c2e, #fffdf8);
-  --destructive: light-dark(#b3261e, #f28b82);
-  --border: light-dark(#e2dccf, #45494d);
-  --input: light-dark(#d6cfbf, #4a4e52);
-  --ring: light-dark(#c9a93c, #f2d479);
-  /* Chalk-coloured text and figures: ochre on paper, yellow on the board. */
-  --chalk: light-dark(#8a6512, #f2d479);
-  --chart-1: #f2d479;
-  --chart-2: light-dark(#8a6512, #f7e3a8);
-  --chart-3: light-dark(#5f5a52, #b9b4aa);
-  --chart-4: light-dark(#b3261e, #f28b82);
-  --chart-5: light-dark(#2a2c2e, #ece8df);
-  --radius: 1rem;
-  --sidebar: light-dark(#ebe6db, #232527);
-  --sidebar-foreground: light-dark(#4a463f, #b9b4aa);
-  --sidebar-primary: #f2d479;
-  --sidebar-primary-foreground: #2a2c2e;
-  --sidebar-accent: light-dark(#fffdf8, #3a3d40);
-  --sidebar-accent-foreground: light-dark(#2a2c2e, #fffdf8);
-  --sidebar-border: light-dark(#e2dccf, #2f3234);
-  --sidebar-ring: light-dark(#c9a93c, #f2d479);
+  /*                        light            dark */
+  --background: light-dark(#eef0f4, #12151c);
+  --foreground: light-dark(#1b1f2a, #eef0f4);
+  --card: light-dark(#ffffff, #1b1f2a);
+  --card-foreground: light-dark(#1b1f2a, #eef0f4);
+  --popover: light-dark(#ffffff, #1b1f2a);
+  --popover-foreground: light-dark(#1b1f2a, #eef0f4);
+  /* The accent, with dark text on it in both themes (5.3:1 and 5.9:1). */
+  --primary: #0496ff;
+  --primary-foreground: light-dark(#1b1f2a, #12151c);
+  --secondary: light-dark(#f3f4f7, #242938);
+  --secondary-foreground: light-dark(#1b1f2a, #eef0f4);
+  --muted: light-dark(#f3f4f7, #242938);
+  --muted-foreground: light-dark(#5a6275, #9aa3b5);
+  --accent: light-dark(#e6f4ff, #0f2a44);
+  --accent-foreground: light-dark(#0f6bae, #7cc6ff);
+  /* Red as text and outlines; --alert is the fill (bars, the logo). */
+  --destructive: light-dark(#d6004a, #ff4d85);
+  --alert: #ff0054;
+  --accent-deep: #157cc5;
+  --border: light-dark(#dde1ea, #2f3546);
+  --input: light-dark(#cfd4de, #3a4153);
+  --ring: #0496ff;
+  /* Blue text and figures (links, counts), and the tint badges sit on. */
+  --highlight: light-dark(#1272b5, #4db2ff);
+  --highlight-soft: light-dark(#e6f4ff, #0f2a44);
+  --chart-1: #0496ff;
+  --chart-2: #157cc5;
+  --chart-3: #ff0054;
+  --chart-4: light-dark(#5a6275, #9aa3b5);
+  --chart-5: light-dark(#1b1f2a, #eef0f4);
+  --radius: 0.75rem;
+  --sidebar: light-dark(#ffffff, #1b1f2a);
+  --sidebar-foreground: light-dark(#1b1f2a, #eef0f4);
+  --sidebar-primary: #0496ff;
+  --sidebar-primary-foreground: light-dark(#1b1f2a, #12151c);
+  --sidebar-accent: light-dark(#e6f4ff, #0f2a44);
+  --sidebar-accent-foreground: light-dark(#0f6bae, #7cc6ff);
+  --sidebar-border: light-dark(#dde1ea, #2f3546);
+  --sidebar-ring: #0496ff;
 }
 
 @layer base {
@@ -125,5 +135,15 @@
   }
   html {
     @apply font-sans;
+  }
+  /* League Spartan for headings; Outfit for everything else. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+  }
+  /* Grades and counts line up in columns. */
+  table {
+    font-variant-numeric: tabular-nums;
   }
 }
