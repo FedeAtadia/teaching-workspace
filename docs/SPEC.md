@@ -496,8 +496,9 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 
 ## HOME — The home page
 
-*Enforced by `src/db/queries/home.ts`, `src/lib/courses.ts`. Covered by
-`src/db/queries/home.test.ts`, `src/lib/courses.test.ts`.*
+*Enforced by `src/db/queries/home.ts`, `src/lib/courses.ts`,
+`src/lib/attendance.ts`. Covered by `src/db/queries/home.test.ts`,
+`src/lib/courses.test.ts`.*
 
 - **HOME-1** Home shows how many classes and students the teacher has and how
   many scores are still to enter, then one card per class (COURSE-3 order)
@@ -509,6 +510,12 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 - **HOME-3** Each card names the class's next pending task: the earliest
   dated one that some active student has no score or mark for (tasks without
   a date after all dated ones), or says that everything is scored.
+- **HOME-4** Home lists the classes that meet today: today is one of the
+  class's days or one of its groups' days (CAL-4), within its school's
+  school year (CAL-1), and no day without class covers it unless something
+  was already saved for today. Each opens today's attendance (ATT-2) and says
+  whether it is taken, not held or still to take. With no class today the
+  list doesn't show.
 
 ## THEME — Light and dark
 

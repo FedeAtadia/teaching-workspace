@@ -2,10 +2,22 @@
 // teacher (OWNER-1). Five queries, all at once: about one round trip's wait
 // (the owed classes take two).
 
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import type { Db } from "@/db";
-import { classes, courseStudents, scores, tasks } from "@/db/schema";
-import { progress } from "@/lib/courses";
+import {
+  classGroups,
+  classSessions,
+  classes,
+  courseStudents,
+  courses,
+  schoolCalendars,
+  schoolDaysOff,
+  scores,
+  tasks,
+} from "@/db/schema";
+import { allWeekdays } from "@/lib/attendance";
+import { weekdayOf } from "@/lib/calendar";
+import { SHIFTS, formatCourse, progress } from "@/lib/courses";
 import { listClasses, type ClassRow } from "./classes";
 import { assessedSql } from "./groups";
 import { listOwed } from "./yearEnd";
@@ -99,4 +111,104 @@ export async function getHomeCards(db: Db, teacherId: string): Promise<Home> {
   });
 
   return { stats: { classes: classRows.length, students, pending, owed }, cards };
+}
+
+export type TodayClass = {
+  classId: string;
+  name: string;
+  /** "4° A" (COURSE-2). */
+  course: string;
+  /** ATT-1: what is saved for today, if anything. */
+  state: "pending" | "taken" | "notHeld";
+};
+
+/**
+ * HOME-4: the classes that meet on `today` (an ISO date in Argentina), within
+ * their school's school year and not on a day without class, unless today was
+ * already recorded. Two round trips: the classes with their calendars, then
+ * their groups' days, today's days off and today's sessions together.
+ */
+export async function getTodayClasses(db: Db, teacherId: string, today: string): Promise<TodayClass[]> {
+  const rows = await db
+    .select({
+      classId: classes.id,
+      name: classes.name,
+      weekdays: classes.weekdays,
+      calendarId: schoolCalendars.id,
+      year: courses.year,
+      division: courses.division,
+      shift: courses.shift,
+    })
+    .from(classes)
+    .innerJoin(courses, eq(classes.courseId, courses.id))
+    .innerJoin(
+      schoolCalendars,
+      and(
+        eq(schoolCalendars.schoolId, courses.schoolId),
+        eq(schoolCalendars.academicYearId, courses.academicYearId),
+        eq(schoolCalendars.teacherId, teacherId),
+      ),
+    )
+    .where(
+      and(eq(classes.teacherId, teacherId), lte(schoolCalendars.startsOn, today), gte(schoolCalendars.endsOn, today)),
+    );
+  if (rows.length === 0) return [];
+
+  const classIds = rows.map((r) => r.classId);
+  const [groups, daysOff, sessions] = await Promise.all([
+    db
+      .select({ classId: classGroups.classId, weekdays: classGroups.weekdays })
+      .from(classGroups)
+      .where(and(inArray(classGroups.classId, classIds), eq(classGroups.teacherId, teacherId))),
+    db
+      .select({ calendarId: schoolDaysOff.calendarId })
+      .from(schoolDaysOff)
+      .where(
+        and(
+          inArray(schoolDaysOff.calendarId, [...new Set(rows.map((r) => r.calendarId))]),
+          eq(schoolDaysOff.teacherId, teacherId),
+          lte(schoolDaysOff.startsOn, today),
+          gte(schoolDaysOff.endsOn, today),
+        ),
+      ),
+    db
+      .select({ classId: classSessions.classId, held: classSessions.held })
+      .from(classSessions)
+      .where(
+        and(
+          inArray(classSessions.classId, classIds),
+          eq(classSessions.teacherId, teacherId),
+          eq(classSessions.date, today),
+        ),
+      ),
+  ]);
+
+  const day = weekdayOf(today);
+  const offCalendars = new Set(daysOff.map((d) => d.calendarId));
+  const sessionOf = new Map(sessions.map((x) => [x.classId, x]));
+  return rows
+    .filter((r) => {
+      const meets = allWeekdays(
+        r.weekdays,
+        groups.filter((g) => g.classId === r.classId).map((g) => g.weekdays),
+      ).includes(day);
+      return meets && (!offCalendars.has(r.calendarId) || sessionOf.has(r.classId));
+    })
+    // All of one school year, so by course (COURSE-3, without the year and school) and subject.
+    .sort(
+      (a, b) =>
+        a.year - b.year ||
+        a.division.localeCompare(b.division, "es") ||
+        SHIFTS.indexOf(a.shift) - SHIFTS.indexOf(b.shift) ||
+        a.name.localeCompare(b.name, "es"),
+    )
+    .map((r) => {
+      const session = sessionOf.get(r.classId);
+      return {
+        classId: r.classId,
+        name: r.name,
+        course: formatCourse(r.year, r.division),
+        state: !session ? "pending" : session.held ? "taken" : "notHeld",
+      } as const;
+    });
 }

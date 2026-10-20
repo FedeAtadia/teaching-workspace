@@ -64,6 +64,12 @@
       "nextUndated": "Next: {title}",
       "allScored": "All scored",
       "noTasks": "No tasks yet"
+    },
+    "today": {
+      "title": "Today",
+      "pending": "Take today's attendance",
+      "taken": "Attendance taken",
+      "notHeld": "Class didn't happen"
     }
   },
   "classes": {
