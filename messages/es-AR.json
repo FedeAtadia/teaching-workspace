@@ -24,7 +24,11 @@
     "delete": "Eliminar",
     "deleting": "Eliminando…",
     "cannotUndo": "No se puede deshacer.",
-    "deleteFailed": "No se pudo eliminar. Recargá la página y probá de nuevo."
+    "deleteFailed": "No se pudo eliminar. Recargá la página y probá de nuevo.",
+    "date": {
+      "placeholder": "DD/MM/AAAA",
+      "pick": "Elegir en el calendario"
+    }
   },
   "shifts": {
     "morning": "Mañana",

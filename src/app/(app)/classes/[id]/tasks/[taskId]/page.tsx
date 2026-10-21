@@ -86,8 +86,8 @@ export default async function TaskPage({ params, searchParams }: PageProps<"/cla
           tTerm(String(task.termPosition)),
           // GROUP-3: each group's own date, or the task's.
           ...(task.groups.length > 0
-            ? task.groups.map((g) => (g.dueOn ? `${g.name} ${formatDate(g.dueOn, locale)}` : g.name))
-            : [task.dueOn && formatDate(task.dueOn, locale)]),
+            ? task.groups.map((g) => (g.dueOn ? `${g.name} ${formatDate(g.dueOn)}` : g.name))
+            : [task.dueOn && formatDate(task.dueOn)]),
           task.unitTitle,
         ]
           .filter(Boolean)

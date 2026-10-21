@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { DateField } from "@/components/forms/DateField";
 
 /** ATT-1: open any date of the school year, e.g. for a make-up class. */
 export function GoToDate({
@@ -33,18 +34,12 @@ export function GoToDate({
         if (date) router.push(`${basePath}/${date}${query}`);
       }}
     >
-      <label className="grid gap-1.5 text-sm font-bold">
-        {label}
-        <input
-          type="date"
-          required
-          min={min}
-          max={max}
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm font-normal dark:bg-input/30"
-        />
-      </label>
+      <div className="grid gap-1.5">
+        <label htmlFor="go-to-date" className="text-sm font-bold">
+          {label}
+        </label>
+        <DateField id="go-to-date" defaultValue={initial} min={min} max={max} onChange={(iso) => setDate(iso ?? "")} />
+      </div>
       <button
         type="submit"
         className="h-9 rounded-full bg-muted px-4 text-sm font-bold text-muted-foreground hover:text-foreground"

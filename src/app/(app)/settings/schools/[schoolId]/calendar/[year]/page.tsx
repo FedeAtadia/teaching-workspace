@@ -1,4 +1,4 @@
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { BackLink } from "@/components/BackLink";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
@@ -20,7 +20,6 @@ export default async function CalendarPage({ params }: PageProps<"/settings/scho
   if (!data) notFound();
 
   const t = await getTranslations("calendar");
-  const locale = await getLocale();
   const { calendar, daysOff } = data;
   const errors = { notFound: t("errors.notFound") };
 
@@ -58,8 +57,8 @@ export default async function CalendarPage({ params }: PageProps<"/settings/scho
 
   const when = (d: DayOff) =>
     d.startsOn === d.endsOn
-      ? formatDate(d.startsOn, locale)
-      : `${formatDate(d.startsOn, locale)} – ${formatDate(d.endsOn, locale)}`;
+      ? formatDate(d.startsOn)
+      : `${formatDate(d.startsOn)} – ${formatDate(d.endsOn)}`;
 
   return (
     <>
@@ -86,7 +85,7 @@ export default async function CalendarPage({ params }: PageProps<"/settings/scho
               {(["startsOn", "term2StartsOn", "endsOn"] as const).map((name) => (
                 <div key={name}>
                   <dt className="text-muted-foreground">{t(`dates.${name}`)}</dt>
-                  <dd className="font-bold">{formatDate(calendar[name], locale)}</dd>
+                  <dd className="font-bold">{formatDate(calendar[name])}</dd>
                 </div>
               ))}
             </dl>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { BackLink } from "@/components/BackLink";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
@@ -26,10 +26,9 @@ export default async function AttendanceDayPage({ params, searchParams }: PagePr
   const tGroups = await getTranslations("groups");
   const tDay = await getTranslations("weekdays");
   const tKind = await getTranslations("calendar.daysOff.kinds");
-  const locale = await getLocale();
   const groupId = typeof group === "string" && groups.some((g) => g.id === group) ? group : undefined;
   const withGroup = groupId ? `group=${groupId}` : "";
-  const title = `${tDay(String(weekdayOf(date)))} ${formatDate(date, locale)}`;
+  const title = `${tDay(String(weekdayOf(date)))} ${formatDate(date)}`;
   const back = `/classes/${id}/attendance${day.ok ? `?term=${day.term}${withGroup && `&${withGroup}`}` : ""}`;
 
   if (!day.ok) {
@@ -64,7 +63,7 @@ export default async function AttendanceDayPage({ params, searchParams }: PagePr
         {session && (
           <ConfirmDeleteButton
             label={t("day.clear.button")}
-            title={t("day.clear.title", { date: formatDate(date, locale) })}
+            title={t("day.clear.title", { date: formatDate(date) })}
             body={t("day.clear.body")}
             action={clearDayAction.bind(null, { classId: id, date })}
           />
