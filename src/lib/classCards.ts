@@ -1,5 +1,5 @@
 import "server-only";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import type { HomeCard } from "@/db/queries/home";
 import { formatCourse } from "@/lib/courses";
 import { formatDate } from "@/lib/format";
@@ -8,7 +8,6 @@ import { formatDate } from "@/lib/format";
 export async function classCardProps() {
   const t = await getTranslations("dashboard.card");
   const tShift = await getTranslations("shifts");
-  const locale = await getLocale();
   return (c: HomeCard, withSchool: boolean) => ({
     href: `/classes/${c.id}`,
     name: c.name,
@@ -19,7 +18,7 @@ export async function classCardProps() {
     progressText: t("progress", { progress: c.progress }),
     nextText: c.next
       ? c.next.dueOn
-        ? t("next", { title: c.next.title, date: formatDate(c.next.dueOn, locale) })
+        ? t("next", { title: c.next.title, date: formatDate(c.next.dueOn) })
         : t("nextUndated", { title: c.next.title })
       : c.tasks === 0
         ? t("noTasks")

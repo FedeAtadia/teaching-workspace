@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { AttendanceChart } from "@/components/classes/AttendanceChart";
 import { GoToDate } from "@/components/classes/GoToDate";
 import { GroupFilter } from "@/components/classes/GroupFilter";
@@ -29,7 +29,6 @@ export default async function AttendancePage({ params, searchParams }: PageProps
   const tGroups = await getTranslations("groups");
   const tDay = await getTranslations("weekdaysShort");
   const tKind = await getTranslations("calendar.daysOff.kinds");
-  const locale = await getLocale();
 
   // ATT-6
   if (!sheet.ok) {
@@ -128,7 +127,7 @@ export default async function AttendancePage({ params, searchParams }: PageProps
                       }`}
                     >
                       <span className="text-[0.7rem] font-medium">{tDay(String(weekdayOf(d.date)))}</span>
-                      <span className="tabular-nums">{formatShortDate(d.date, locale)}</span>
+                      <span className="tabular-nums">{formatShortDate(d.date)}</span>
                     </Link>
                   </li>
                 );
@@ -199,7 +198,7 @@ export default async function AttendancePage({ params, searchParams }: PageProps
                         <span className="text-[0.7rem] text-muted-foreground no-underline">
                           {tDay(String(weekdayOf(d.date)))}
                         </span>
-                        <span className="tabular-nums">{formatShortDate(d.date, locale)}</span>
+                        <span className="tabular-nums">{formatShortDate(d.date)}</span>
                       </Link>
                     </th>
                   ))}

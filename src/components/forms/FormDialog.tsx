@@ -3,6 +3,7 @@
 import { Pencil, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
+import { DateField } from "@/components/forms/DateField";
 import { Field } from "@/components/forms/Field";
 import { Button } from "@/components/ui/button";
 import {
@@ -206,14 +207,7 @@ function DialogForm({
               />
             )}
             {f.kind === "date" && (
-              <Input
-                id={id}
-                name={f.name}
-                type="date"
-                defaultValue={v[f.name] ?? f.defaultValue}
-                aria-invalid={invalid}
-                className="w-44"
-              />
+              <DateField id={id} name={f.name} defaultValue={v[f.name] ?? f.defaultValue} invalid={invalid} />
             )}
             {f.kind === "checkboxes" && f.hint && <p className="text-xs text-muted-foreground">{f.hint}</p>}
             {f.kind === "checkboxes" && (
@@ -256,12 +250,10 @@ function DialogForm({
                         />
                         {o.label}
                       </label>
-                      <Input
-                        type="date"
+                      <DateField
                         name={`groupDue.${o.value}`}
                         defaultValue={v[`groupDue.${o.value}`] ?? saved?.dueOn ?? ""}
-                        aria-label={o.label}
-                        className="w-44"
+                        label={o.label}
                       />
                     </div>
                   );
