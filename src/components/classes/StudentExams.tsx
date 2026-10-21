@@ -19,7 +19,7 @@ export async function ResultLabel({ result }: { result: ClassResult }) {
       return (
         <span className="font-bold">
           {t("passedByExam", {
-            date: formatDate(result.exam.takenOn, locale),
+            date: formatDate(result.exam.takenOn),
             grade: formatGrade(result.exam.value, locale),
           })}
         </span>
@@ -59,12 +59,12 @@ export async function StudentExams({
           title={e.notes ?? undefined}
           className="inline-flex items-center gap-1 rounded-full bg-muted py-0.5 pr-0.5 pl-3 tabular-nums"
         >
-          {formatDate(e.takenOn, locale)} ·{" "}
+          {formatDate(e.takenOn)} ·{" "}
           {e.status === "absent" || e.value === null ? t("absent") : formatGrade(e.value, locale)}
           <ConfirmDeleteButton
             iconOnly
             label={t("delete")}
-            title={t("deleteTitle", { date: formatDate(e.takenOn, locale), name: studentName })}
+            title={t("deleteTitle", { date: formatDate(e.takenOn), name: studentName })}
             body={t("deleteBody")}
             action={removeExam.bind(null, { classId, examId: e.id })}
           />

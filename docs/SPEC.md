@@ -84,15 +84,21 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   on the cuatrimestre grades page (TERM-5). The suggested number itself does
   not change, and without a percentage nothing is shown.
 
-## INPUT — Typing a grade
+## INPUT — Typing a grade or a date
 
-*Enforced by `src/lib/grading.ts`. Covered by `src/lib/grading.test.ts`.*
+*Enforced by `src/lib/grading.ts`, `src/lib/format.ts`. Covered by
+`src/lib/grading.test.ts`, `src/lib/format.test.ts`.*
 
 - **INPUT-1** A grade may be typed with a decimal comma (`7,5`) or a decimal
   point (`7.5`); surrounding spaces are ignored.
 - **INPUT-2** A grade outside the scale is rejected.
 - **INPUT-3** Anything that is not a plain number with at most two decimals is
   rejected.
+- **INPUT-4** A date is typed as DD/MM/YYYY in every language, whatever the
+  browser's language: the slashes are added while typing digits, `-` or `.`
+  also separate, and the day and month may have one digit (`5/3/2026`).
+  A date that doesn't exist (31/02/2026) or with a year of other than four
+  digits is rejected. It can also be picked from a calendar.
 
 ## LOCALE — Language
 
@@ -256,7 +262,8 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 - **TASK-3** A class's tasks are listed by cuatrimestre, then by date (tasks
   without a date last), then in the order they were added.
 - **TASK-4** A date is shown as the day it was entered, whatever the time
-  zone: `2026-05-10` is 10/5/2026 in es-AR and 5/10/2026 in English.
+  zone, as DD/MM/YYYY in every language: `2026-05-10` is 10/05/2026. Where
+  the year is left out (attendance columns) it is DD/MM: 10/05.
 - **TASK-5** A task can be deleted from its page, after a confirmation that
   says how many scores go with it. Its scores, its links to standards and its
   attached file are deleted too; nothing else changes.

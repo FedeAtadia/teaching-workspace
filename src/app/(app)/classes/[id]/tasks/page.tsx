@@ -1,7 +1,7 @@
 import { CalendarDays, Paperclip } from "lucide-react";
 import Link from "next/link";
 import { progress } from "@/lib/courses";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { FormDialog } from "@/components/forms/FormDialog";
 import { listStandards, listTerms, listUnits } from "@/db/queries/classDetail";
 import { getAdaptations } from "@/db/queries/adaptations";
@@ -18,7 +18,6 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
   const t = await getTranslations("classPage.tasks");
   const tTerm = await getTranslations("terms");
   const tErr = await getTranslations("classPage.errors");
-  const locale = await getLocale();
 
   const [tasks, terms, units, standards, groups, adaptations] = await Promise.all([
     listTasks(db, teacherId, cls),
@@ -80,7 +79,7 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
                             <span>
                               {[
                                 ...task.groups.map((g) =>
-                                  g.dueOn ? `${g.name} ${formatDate(g.dueOn, locale)}` : g.name,
+                                  g.dueOn ? `${g.name} ${formatDate(g.dueOn)}` : g.name,
                                 ),
                                 task.unitTitle,
                               ]
@@ -92,7 +91,7 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
                           (task.dueOn || task.unitTitle) && (
                             <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                               <CalendarDays className="size-4 shrink-0" aria-hidden />
-                              {[task.dueOn && formatDate(task.dueOn, locale), task.unitTitle]
+                              {[task.dueOn && formatDate(task.dueOn), task.unitTitle]
                                 .filter(Boolean)
                                 .join(" · ")}
                             </p>

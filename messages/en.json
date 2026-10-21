@@ -24,7 +24,11 @@
     "delete": "Delete",
     "deleting": "Deleting…",
     "cannotUndo": "This can't be undone.",
-    "deleteFailed": "Couldn't delete it. Reload the page and try again."
+    "deleteFailed": "Couldn't delete it. Reload the page and try again.",
+    "date": {
+      "placeholder": "DD/MM/YYYY",
+      "pick": "Pick from the calendar"
+    }
   },
   "shifts": {
     "morning": "Morning",

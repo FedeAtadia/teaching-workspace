@@ -88,7 +88,7 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                             {cls.exams
                               .map(
                                 (e) =>
-                                  `${formatDate(e.takenOn, locale)} ${
+                                  `${formatDate(e.takenOn)} ${
                                     e.status === "absent" || e.value === null ? t("absent") : formatGrade(e.value, locale)
                                   }`,
                               )
@@ -160,7 +160,7 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
                                     </Link>
                                   </td>
                                   <td className="py-1.5 pr-3 whitespace-nowrap text-muted-foreground">
-                                    {task.dueOn ? formatDate(task.dueOn, locale) : ""}
+                                    {task.dueOn ? formatDate(task.dueOn) : ""}
                                   </td>
                                   <td className="py-1.5 pr-3 text-center tabular-nums">
                                     <ScoreCell
