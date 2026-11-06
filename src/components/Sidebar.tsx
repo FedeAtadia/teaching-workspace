@@ -93,7 +93,8 @@ export function Sidebar({ initial, labels }: { initial: SidebarState; labels: La
         )}
       >
         <div className={cn("mb-6 flex items-center gap-2", collapsed ? "flex-col" : "justify-between pl-3")}>
-          {collapsed ? <LogoMark className="mt-2" /> : <Logo name={labels.appName} />}
+          {/* Collapsed: the mark alone. Expanded: the mark and "annora" with its blue "o". */}
+          {collapsed ? <LogoMark className="mt-2 size-9" /> : <Logo name={labels.appName} />}
           <button
             type="button"
             onClick={toggle}
