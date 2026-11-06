@@ -19,7 +19,7 @@ export function LanguageSelect({ current }: { current: string }) {
           router.refresh();
         })
       }
-      className="rounded-md border border-black/15 bg-background px-3 py-2 dark:border-white/20"
+      className="h-10 w-full rounded-xl border border-input bg-muted px-3 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
       {Object.entries(LABELS).map(([value, label]) => (
         <option key={value} value={value}>

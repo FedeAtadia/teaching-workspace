@@ -1,9 +1,12 @@
+import { CalendarRange, CalendarX2, type LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import { BackLink } from "@/components/BackLink";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { FormDialog, type FieldSpec } from "@/components/forms/FormDialog";
 import { AddHolidaysButton } from "@/components/settings/AddHolidaysButton";
+import { Badge } from "@/components/ui/badge";
 import { getDb } from "@/db";
 import { getCalendar } from "@/db/queries/calendar";
 import { requireTeacherId } from "@/lib/auth";
@@ -55,21 +58,19 @@ export default async function CalendarPage({ params }: PageProps<"/settings/scho
     },
   ];
 
-  const when = (d: DayOff) =>
-    d.startsOn === d.endsOn
-      ? formatDate(d.startsOn)
-      : `${formatDate(d.startsOn)} – ${formatDate(d.endsOn)}`;
+  // How many entries of each kind, from the list already loaded.
+  const totals = DAY_OFF_KINDS.map((kind) => ({ kind, count: daysOff.filter((d) => d.kind === kind).length }));
 
   return (
     <>
       <BackLink href="/settings" label={t("back")} />
-      <h1 className="mt-3 text-3xl font-bold">{t("title", { year: data.schoolYear })}</h1>
-      <p className="mt-1 mb-6 text-muted-foreground">{data.school}</p>
+      <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{t("title", { year: data.schoolYear })}</h1>
+      <p className="mt-1 mb-8 text-lg text-muted-foreground">{data.school}</p>
 
-      <div className="grid max-w-2xl gap-8">
-        <section className="rounded-2xl bg-card p-5 ring-1 ring-border">
+      <div className="grid max-w-5xl gap-6">
+        <section className="grid gap-5 rounded-2xl bg-card p-5 ring-1 ring-border sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-bold">{t("dates.title")}</h2>
+            <CardTitle icon={CalendarRange}>{t("dates.title")}</CardTitle>
             <FormDialog
               trigger={calendar ? "edit" : "addSmall"}
               triggerLabel={calendar ? t("dates.edit") : t("dates.set")}
@@ -81,77 +82,120 @@ export default async function CalendarPage({ params }: PageProps<"/settings/scho
             />
           </div>
           {calendar ? (
-            <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+            <dl className="grid gap-3 sm:grid-cols-3">
               {(["startsOn", "term2StartsOn", "endsOn"] as const).map((name) => (
-                <div key={name}>
-                  <dt className="text-muted-foreground">{t(`dates.${name}`)}</dt>
-                  <dd className="font-bold">{formatDate(calendar[name])}</dd>
+                <div key={name} className="grid gap-2 rounded-xl bg-muted/60 p-4">
+                  <dt className="text-[0.7rem] font-semibold tracking-[0.12em] text-muted-foreground uppercase sm:text-xs">
+                    {t(`dates.${name}`)}
+                  </dt>
+                  <dd className="font-heading text-3xl leading-none font-bold tabular-nums">
+                    {formatDate(calendar[name])}
+                  </dd>
                 </div>
               ))}
             </dl>
           ) : (
-            <p className="mt-2 text-sm text-muted-foreground">{t("dates.missing")}</p>
+            <p className="text-sm text-muted-foreground">{t("dates.missing")}</p>
           )}
         </section>
 
         {calendar && (
-          <section>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold">{t("daysOff.title")}</h2>
-              <FormDialog
-                trigger="addSmall"
-                triggerLabel={t("daysOff.add")}
-                title={t("daysOff.addTitle")}
-                action={addDayOffAction}
-                hidden={{ calendarId: calendar.id }}
-                formErrors={errors}
-                fields={dayOffFields()}
-              />
-            </div>
-            <p className="mt-1 mb-3 text-sm text-muted-foreground">{t("daysOff.intro")}</p>
-            <div className="mb-4">
-              <AddHolidaysButton calendarId={calendar.id} year={data.schoolYear} />
+          <section className="grid gap-5 rounded-2xl bg-card p-5 ring-1 ring-border sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+              <div className="grid max-w-prose gap-2">
+                <CardTitle icon={CalendarX2}>{t("daysOff.title")}</CardTitle>
+                <p className="text-sm text-muted-foreground">{t("daysOff.intro")}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <AddHolidaysButton calendarId={calendar.id} year={data.schoolYear} />
+                <FormDialog
+                  trigger="addSmall"
+                  triggerLabel={t("daysOff.add")}
+                  title={t("daysOff.addTitle")}
+                  action={addDayOffAction}
+                  hidden={{ calendarId: calendar.id }}
+                  formErrors={errors}
+                  fields={dayOffFields()}
+                />
+              </div>
             </div>
             {daysOff.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t("daysOff.empty")}</p>
             ) : (
-              <ul className="grid gap-2">
-                {daysOff.map((d) => (
-                  <li
-                    key={d.id}
-                    className="flex items-center justify-between gap-3 rounded-2xl bg-card py-2.5 pr-2 pl-4 ring-1 ring-border"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-medium">{d.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t(`daysOff.kinds.${d.kind}`)} · {when(d)}
-                      </p>
+              <>
+                <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {totals.map(({ kind, count }) => (
+                    <div
+                      key={kind}
+                      className="flex items-center justify-between gap-2 rounded-xl bg-muted/60 px-4 py-3"
+                    >
+                      <dt className="text-sm text-muted-foreground">{t(`daysOff.totals.${kind}`)}</dt>
+                      <dd className="font-heading text-xl font-bold tabular-nums">{count}</dd>
                     </div>
-                    <div className="flex shrink-0 items-center">
-                      <FormDialog
-                        trigger="editIcon"
-                        triggerLabel={t("daysOff.edit")}
-                        title={t("daysOff.editTitle")}
-                        action={editDayOffAction}
-                        hidden={{ calendarId: calendar.id, dayOffId: d.id }}
-                        formErrors={errors}
-                        fields={dayOffFields(d)}
-                      />
-                      <ConfirmDeleteButton
-                        iconOnly
-                        label={t("daysOff.delete")}
-                        title={t("daysOff.deleteTitle", { name: d.name })}
-                        body={t("daysOff.deleteBody")}
-                        action={removeDayOff.bind(null, { dayOffId: d.id })}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                  ))}
+                </dl>
+                <ul className="grid gap-2">
+                  {daysOff.map((d) => (
+                    <li
+                      key={d.id}
+                      className="flex items-center gap-3 rounded-xl bg-muted/60 py-2.5 pr-2 pl-4 sm:gap-5"
+                    >
+                      <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-5">
+                        <p className="shrink-0 sm:w-32">
+                          <span className="block font-heading text-xl leading-tight font-bold tabular-nums">
+                            {formatDate(d.startsOn)}
+                          </span>
+                          {d.endsOn !== d.startsOn && (
+                            <span className="block text-xs text-muted-foreground tabular-nums">
+                              {t("daysOff.until", { date: formatDate(d.endsOn) })}
+                            </span>
+                          )}
+                        </p>
+                        <p className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+                          <Badge tone={d.kind === "holiday" ? "accent" : "neutral"}>
+                            {t(`daysOff.kinds.${d.kind}`)}
+                          </Badge>
+                          <span className="min-w-0 font-medium">{d.name}</span>
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center">
+                        <FormDialog
+                          trigger="editIcon"
+                          triggerLabel={t("daysOff.edit")}
+                          title={t("daysOff.editTitle")}
+                          action={editDayOffAction}
+                          hidden={{ calendarId: calendar.id, dayOffId: d.id }}
+                          formErrors={errors}
+                          fields={dayOffFields(d)}
+                        />
+                        <ConfirmDeleteButton
+                          iconOnly
+                          label={t("daysOff.delete")}
+                          title={t("daysOff.deleteTitle", { name: d.name })}
+                          body={t("daysOff.deleteBody")}
+                          action={removeDayOff.bind(null, { dayOffId: d.id })}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </section>
         )}
       </div>
     </>
+  );
+}
+
+/** A card's title with its icon in a tinted square. */
+function CardTitle({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
+  return (
+    <h2 className="flex items-center gap-3 text-xl font-bold tracking-tight">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-highlight-soft text-highlight" aria-hidden>
+        <Icon className="size-5" />
+      </span>
+      {children}
+    </h2>
   );
 }
