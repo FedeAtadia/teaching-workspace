@@ -3,8 +3,8 @@
 @import "shadcn/tailwind.css";
 
 /*
- * STACK: cool grey and white in the light, deep navy in the dark, one bright
- * blue accent and a red for alerts. Every colour is written once with
+ * Annora, still in the STACK palette: cool grey and white in the light, deep
+ * navy in the dark, one bright blue accent and a red for alerts. Every colour is written once with
  * light-dark(); which side applies comes from `color-scheme` (THEME-1, THEME-2):
  *   - no class on <html>  → the device's setting ("Sistema")
  *   - <html class="dark"> / <html class="light"> → the teacher's choice
