@@ -1,12 +1,14 @@
-import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { cn } from "cn";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { Initials } from "@/components/Initials";
 import { AdaptationButton } from "@/components/classes/Adaptation";
 import { BringStudentsDialog } from "@/components/classes/BringStudentsDialog";
 import { GroupFilter } from "@/components/classes/GroupFilter";
 import { StudentGroupSelect } from "@/components/classes/StudentGroupSelect";
 import { FormDialog, type FieldSpec } from "@/components/forms/FormDialog";
+import { Badge } from "@/components/ui/badge";
 import { getAdaptations } from "@/db/queries/adaptations";
 import { listClassStudents } from "@/db/queries/classDetail";
 import { getStudentGroups, listGroups } from "@/db/queries/groups";
@@ -76,9 +78,51 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
   const groupErrors = { duplicate: tGroups("errors.duplicate"), notFound: tGroups("errors.notFound") };
 
   const groupsSection = (
-    <section className="mb-5 rounded-2xl bg-card p-4 ring-1 ring-border">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-bold">{tGroups("title")}</h2>
+    <section className="mb-5 rounded-2xl bg-card p-5 ring-1 ring-border">
+      <h2 className="font-heading text-lg font-bold">{tGroups("title")}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{tGroups("intro")}</p>
+      {groups.length > 0 && (
+        <ul className="mt-4 grid gap-2">
+          {groups.map((g) => (
+            <li
+              key={g.id}
+              className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-muted/60 py-1.5 pr-1.5 pl-4 text-sm"
+            >
+              <span className="font-bold">{g.name}</span>
+              <Badge tone="accent">{tGroups("students", { count: g.students })}</Badge>
+              {(g.weekdays.length > 0 || g.days) && (
+                <span className="text-muted-foreground">
+                  {[g.weekdays.map((d) => tDayShort(String(d))).join(", "), g.days].filter(Boolean).join(" · ")}
+                </span>
+              )}
+              <span className="ml-auto flex shrink-0">
+                <FormDialog
+                  trigger="editIcon"
+                  triggerLabel={tGroups("edit")}
+                  title={tGroups("editTitle")}
+                  action={editGroup}
+                  hidden={{ classId: id, groupId: g.id }}
+                  formErrors={groupErrors}
+                  fields={groupFields(g)}
+                />
+                <ConfirmDeleteButton
+                  iconOnly
+                  label={tGroups("delete")}
+                  title={tGroups("deleteTitle", { name: g.name })}
+                  body={[
+                    tGroups("deleteBody", { count: g.students }),
+                    g.onlyTasks > 0 && tGroups("deleteTasks", { count: g.onlyTasks }),
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  action={removeGroup.bind(null, { classId: id, groupId: g.id })}
+                />
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="mt-4">
         <FormDialog
           trigger="addSmall"
           triggerLabel={tGroups("add")}
@@ -89,43 +133,6 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
           fields={groupFields()}
         />
       </div>
-      {groups.length === 0 ? (
-        <p className="mt-1 text-sm text-muted-foreground">{tGroups("intro")}</p>
-      ) : (
-        <ul className="mt-3 flex flex-wrap gap-2">
-          {groups.map((g) => (
-            <li key={g.id} className="flex items-center gap-1 rounded-full bg-muted py-0.5 pr-0.5 pl-3.5 text-sm">
-              <span className="font-bold">{g.name}</span>
-              {g.weekdays.length > 0 && (
-                <span className="text-muted-foreground">· {g.weekdays.map((d) => tDayShort(String(d))).join(", ")}</span>
-              )}
-              {g.days && <span className="text-muted-foreground">· {g.days}</span>}
-              <span className="text-muted-foreground">· {tGroups("students", { count: g.students })}</span>
-              <FormDialog
-                trigger="editIcon"
-                triggerLabel={tGroups("edit")}
-                title={tGroups("editTitle")}
-                action={editGroup}
-                hidden={{ classId: id, groupId: g.id }}
-                formErrors={groupErrors}
-                fields={groupFields(g)}
-              />
-              <ConfirmDeleteButton
-                iconOnly
-                label={tGroups("delete")}
-                title={tGroups("deleteTitle", { name: g.name })}
-                body={[
-                  tGroups("deleteBody", { count: g.students }),
-                  g.onlyTasks > 0 && tGroups("deleteTasks", { count: g.onlyTasks }),
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                action={removeGroup.bind(null, { classId: id, groupId: g.id })}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
     </section>
   );
 
@@ -137,8 +144,16 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
       </div>
     );
   }
+  const hasGroups = groups.length > 0;
+  // Desktop: a table of three (or two, without groups) columns; phone: one card-like row each.
+  const columns = hasGroups ? "md:grid-cols-[minmax(0,1fr)_14rem_10rem]" : "md:grid-cols-[minmax(0,1fr)_10rem]";
+  const head = "text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase";
   return (
     <>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-heading text-xl font-bold">{t("count", { count: shown.length })}</h2>
+        {bring}
+      </div>
       {groupsSection}
       <GroupFilter
         groups={groups}
@@ -146,56 +161,57 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
         allLabel={tGroups("all")}
         href={(g) => `/classes/${id}${g ? `?group=${g}` : ""}`}
       />
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">{t("count", { count: shown.length })}</p>
-        {bring}
-      </div>
-      <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {shown.map((s, i) => {
-          const name = `${s.lastName}, ${s.firstName}`;
-          return (
-            // NAV-2: the name's link stretches over the whole card; its controls sit above it.
-            <li
-              key={s.id}
-              className="group relative flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-2xl bg-card p-3 ring-1 ring-border transition hover:ring-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring"
-            >
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-sm font-extrabold text-highlight tabular-nums">
-                {i + 1}
-              </span>
-              <Link
-                href={`/students/${s.id}`}
-                className="min-w-0 flex-1 font-bold outline-none after:absolute after:inset-0 after:content-['']"
+      <div className="overflow-hidden rounded-2xl bg-card ring-1 ring-border">
+        <div className={cn("hidden gap-x-4 border-b bg-muted px-4 py-3 md:grid", columns)} aria-hidden>
+          <span className={head}>{t("student")}</span>
+          {hasGroups && <span className={head}>{t("group")}</span>}
+          <span className={cn(head, "text-right")}>{t("adaptation")}</span>
+        </div>
+        <ol className="divide-y">
+          {shown.map((s) => {
+            const name = `${s.lastName}, ${s.firstName}`;
+            return (
+              // NAV-2: the name's link stretches over the whole row; its controls sit above it.
+              <li
+                key={s.id}
+                className={cn(
+                  "relative flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 transition-colors hover:bg-muted/60 has-[a:focus-visible]:bg-muted md:grid md:gap-x-4",
+                  columns,
+                )}
               >
-                {s.lastName}, <span className="font-normal">{s.firstName}</span>
-              </Link>
-              <div className="relative z-10">
-                <AdaptationButton
-                  classId={id}
-                  studentId={s.id}
-                  studentName={name}
-                  notes={adaptations.get(s.id) ?? null}
-                />
-              </div>
-              {groups.length > 0 ? (
-                <div className="relative z-10">
-                  <StudentGroupSelect
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <Initials firstName={s.firstName} lastName={s.lastName} className="size-9" />
+                  <Link
+                    href={`/students/${s.id}`}
+                    className="min-w-0 truncate font-bold outline-none after:absolute after:inset-0 after:content-[''] focus-visible:underline"
+                  >
+                    {s.lastName}, <span className="font-normal">{s.firstName}</span>
+                  </Link>
+                </div>
+                <div className="relative z-10 md:order-last md:justify-self-end">
+                  <AdaptationButton
                     classId={id}
                     studentId={s.id}
                     studentName={name}
-                    current={studentGroups.get(s.id) ?? null}
-                    groups={groups}
+                    notes={adaptations.get(s.id) ?? null}
                   />
                 </div>
-              ) : (
-                <ChevronRight
-                  className="size-4 text-muted-foreground transition group-hover:translate-x-0.5"
-                  aria-hidden
-                />
-              )}
-            </li>
-          );
-        })}
-      </ol>
+                {hasGroups && (
+                  <div className="relative z-10 w-full pl-12 md:w-auto md:pl-0">
+                    <StudentGroupSelect
+                      classId={id}
+                      studentId={s.id}
+                      studentName={name}
+                      current={studentGroups.get(s.id) ?? null}
+                      groups={groups}
+                    />
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
     </>
   );
 }

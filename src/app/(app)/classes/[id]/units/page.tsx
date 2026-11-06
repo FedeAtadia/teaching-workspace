@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { FormDialog, type FieldSpec } from "@/components/forms/FormDialog";
+import { Badge } from "@/components/ui/badge";
 import { listTerms, listUnits } from "@/db/queries/classDetail";
 import { addUnit, editUnit, removeUnit } from "../actions";
 import { loadClass } from "../data";
@@ -29,8 +30,8 @@ export default async function UnitsPage({ params }: PageProps<"/classes/[id]/uni
 
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">{t("intro")}</p>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <p className="text-muted-foreground">{t("intro")}</p>
         <FormDialog
           triggerLabel={t("add")}
           title={t("dialogTitle")}
@@ -41,21 +42,19 @@ export default async function UnitsPage({ params }: PageProps<"/classes/[id]/uni
         />
       </div>
       {list.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-2xl bg-card p-8 text-center text-sm text-muted-foreground ring-1 ring-border">
+          {t("empty")}
+        </p>
       ) : (
         <ol className="grid gap-2">
-          {list.map((u, i) => (
-            <li key={u.id} className="flex items-center gap-3 rounded-2xl bg-card p-4 ring-1 ring-border">
-              <span className="min-w-0 flex-1 font-medium">
-                <span className="mr-2 text-muted-foreground tabular-nums">{i + 1}.</span>
-                {u.title}
-              </span>
-              {u.termPosition !== null && (
-                <span className="text-sm whitespace-nowrap text-muted-foreground">
-                  {tTerm(String(u.termPosition))}
-                </span>
-              )}
-              <div className="-my-1 flex shrink-0">
+          {list.map((u) => (
+            <li
+              key={u.id}
+              className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl bg-card py-3 pr-3 pl-5 ring-1 ring-border"
+            >
+              <span className="min-w-0 font-heading text-lg leading-snug font-bold">{u.title}</span>
+              {u.termPosition !== null && <Badge tone="accent">{tTerm(String(u.termPosition))}</Badge>}
+              <div className="-my-1 ml-auto flex shrink-0">
                 <FormDialog
                   trigger="editIcon"
                   triggerLabel={t("edit")}
