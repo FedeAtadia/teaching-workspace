@@ -61,6 +61,12 @@
       "pending": "{count, plural, one {nota por cargar} other {notas por cargar}}",
       "owed": "{count, plural, one {previa pendiente} other {previas pendientes}}"
     },
+    "statLabels": {
+      "classes": "Cursos",
+      "students": "Matrícula",
+      "pending": "Por calificar",
+      "owed": "Previas"
+    },
     "card": {
       "students": "{count, plural, =0 {Sin estudiantes todavía} one {# estudiante} other {# estudiantes}}",
       "progress": "{progress}% calificado",

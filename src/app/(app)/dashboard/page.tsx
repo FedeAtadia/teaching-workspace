@@ -1,26 +1,30 @@
-import { CalendarCheck, Check, ChevronRight } from "lucide-react";
+import { BookOpen, CalendarCheck, CalendarX, Check, ClipboardCheck, PencilLine, Users } from "lucide-react";
 import Link from "next/link";
 import { cn } from "cn";
 import { getTranslations } from "next-intl/server";
 import { AddClassDialog } from "@/components/classes/AddClassDialog";
 import { ClassCard } from "@/components/classes/ClassCard";
+import { StatTile } from "@/components/StatTile";
+import { Badge } from "@/components/ui/badge";
 import { getDb } from "@/db";
 import { listSchools } from "@/db/queries/classes";
 import { getHomeCards, getTodayClasses, type TodayClass } from "@/db/queries/home";
 import { requireTeacherId } from "@/lib/auth";
-import { todayInArgentina } from "@/lib/calendar";
+import { todayInArgentina, weekdayOf } from "@/lib/calendar";
 import { classCardProps } from "@/lib/classCards";
+import { formatDate } from "@/lib/format";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 /** HOME-1..4, EXAM-4 */
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
   const tCommon = await getTranslations("common");
+  const tWeekday = await getTranslations("weekdays");
 
   if (!isSupabaseConfigured()) {
     return (
       <>
-        <h1 className="mb-2 text-3xl font-bold">{t("greeting")}</h1>
+        <h1 className="mb-2 text-4xl font-bold tracking-tight">{t("greeting")}</h1>
         <p className="text-muted-foreground">{tCommon("notConfigured")}</p>
       </>
     );
@@ -36,114 +40,123 @@ export default async function DashboardPage() {
     getTodayClasses(db, teacherId, today),
   ]);
   const severalSchools = schools.length > 1;
+  const { stats } = home;
+  const hasToday = todayClasses.length > 0;
 
   return (
-    <div className="grid gap-8">
-      <div>
-        <h1 className="text-3xl font-bold sm:text-4xl">{t("greeting")}</h1>
-        <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
-      </div>
+    <div className="grid gap-8 sm:gap-10">
+      <header>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{t("greeting")}</h1>
+        <p className="mt-2 text-lg text-muted-foreground">{t("subtitle")}</p>
+      </header>
 
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        <Stat value={home.stats.classes} label={t("stats.classes", { count: home.stats.classes })} />
-        <Stat value={home.stats.students} label={t("stats.students", { count: home.stats.students })} />
-        <Stat value={home.stats.pending} label={t("stats.pending", { count: home.stats.pending })} highlight />
-        <Stat value={home.stats.owed} label={t("stats.owed", { count: home.stats.owed })} href="/exams" />
+      <dl className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <StatTile label={t("statLabels.classes")} value={stats.classes} unit={t("stats.classes", { count: stats.classes })} icon={BookOpen} />
+        <StatTile label={t("statLabels.students")} value={stats.students} unit={t("stats.students", { count: stats.students })} icon={Users} />
+        <StatTile
+          label={t("statLabels.pending")}
+          value={stats.pending}
+          unit={t("stats.pending", { count: stats.pending })}
+          icon={PencilLine}
+          tone={stats.pending > 0 ? "accent" : "default"}
+        />
+        <StatTile
+          label={t("statLabels.owed")}
+          value={stats.owed}
+          unit={t("stats.owed", { count: stats.owed })}
+          icon={ClipboardCheck}
+          tone={stats.owed > 0 ? "alert" : "default"}
+          href="/exams"
+        />
       </dl>
 
-      {/* HOME-4 */}
-      {todayClasses.length > 0 && (
-        <section>
-          <h2 className="mb-3 text-lg font-bold text-muted-foreground">{t("today.title")}</h2>
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {todayClasses.map((c) => (
-              <li key={c.classId}>
-                <TodayLink c={c} href={`/classes/${c.classId}/attendance/${today}`} label={t(`today.${c.state}`)} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {/* With classes today: Hoy on the left, the classes in a column on the right. */}
+      <div className={cn("grid gap-8 sm:gap-10", hasToday && "lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]")}>
+        {/* HOME-4 */}
+        {hasToday && (
+          <section className="min-w-0">
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <h2 className="text-2xl font-bold">{t("today.title")}</h2>
+              <Badge tone="accent" className="tabular-nums">
+                {tWeekday(String(weekdayOf(today)))} {formatDate(today)}
+              </Badge>
+            </div>
+            <ul className="grid gap-3">
+              {todayClasses.map((c) => (
+                <li key={c.classId}>
+                  <TodayRow c={c} href={`/classes/${c.classId}/attendance/${today}`} label={t(`today.${c.state}`)} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-      <section>
-        <h2 className="mb-3 text-lg font-bold text-muted-foreground">{t("myClasses")}</h2>
-        {home.cards.length === 0 && <p className="mb-4 text-muted-foreground">{t("empty")}</p>}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {home.cards.map((c) => (
-            <ClassCard key={c.id} {...cardProps(c, severalSchools)} />
-          ))}
-          <AddClassDialog
-            appearance="card"
-            defaultSchoolYear={new Date().getFullYear()}
-            schools={schools.map((s) => s.name)}
-          />
-        </div>
-      </section>
+        <section className="min-w-0">
+          <h2 className="mb-4 text-2xl font-bold">{t("myClasses")}</h2>
+          {home.cards.length === 0 && <p className="mb-4 text-muted-foreground">{t("empty")}</p>}
+          <div className={cn("grid gap-4", !hasToday && "sm:grid-cols-2 lg:grid-cols-3")}>
+            {home.cards.map((c) => (
+              <ClassCard key={c.id} {...cardProps(c, severalSchools)} />
+            ))}
+            <AddClassDialog
+              appearance="card"
+              defaultSchoolYear={new Date().getFullYear()}
+              schools={schools.map((s) => s.name)}
+            />
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
 
-/** HOME-4: the accent button while today is still to take; a quiet card once it's saved. */
-function TodayLink({ c, href, label }: { c: TodayClass; href: string; label: string }) {
+/**
+ * HOME-4, NAV-2: one of today's classes as a single link. Still to take: an
+ * accent edge and the button; taken: a quiet badge; not held: struck through.
+ */
+function TodayRow({ c, href, label }: { c: TodayClass; href: string; label: string }) {
   const pending = c.state === "pending";
   return (
     <Link
       href={href}
       className={cn(
-        "flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        pending
-          ? "bg-primary text-primary-foreground hover:brightness-95"
-          : "bg-card text-card-foreground ring-1 ring-border hover:ring-primary",
+        "relative flex flex-wrap items-center gap-x-4 gap-y-3 overflow-hidden rounded-2xl bg-card p-3 pr-4 text-card-foreground ring-1 transition hover:ring-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        pending ? "pl-4 ring-primary/50" : "ring-border",
       )}
     >
-      {pending ? (
-        <CalendarCheck className="size-6 shrink-0" aria-hidden />
-      ) : (
-        <Check className="size-6 shrink-0 text-highlight" aria-hidden />
-      )}
-      <span className="min-w-0 flex-1">
-        <span className="block font-bold">{label}</span>
-        <span className={cn("block truncate text-sm", pending ? "font-semibold" : "text-muted-foreground")}>
-          {c.name} · {c.course}
-        </span>
-      </span>
-      <ChevronRight className="size-5 shrink-0" aria-hidden />
-    </Link>
-  );
-}
-
-function Stat({
-  value,
-  label,
-  highlight = false,
-  href,
-}: {
-  value: number;
-  label: string;
-  /** The tile to look at: tinted in the accent. */
-  highlight?: boolean;
-  /** The whole tile opens this page (NAV-2). */
-  href?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "relative flex flex-col-reverse rounded-2xl px-4 py-3 ring-1 transition has-[a:hover]:ring-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring sm:px-5 sm:py-4",
-        highlight ? "bg-highlight-soft text-accent-foreground ring-primary" : "bg-card ring-border",
-      )}
-    >
-      <dt className={cn("text-xs sm:text-sm", highlight ? "" : "text-muted-foreground")}>
-        {href ? (
-          <Link href={href} className="outline-none after:absolute after:inset-0 after:content-['']">
-            {label}
-          </Link>
-        ) : (
-          label
+      {pending && <span className="absolute inset-y-0 left-0 w-1.5 bg-primary" aria-hidden />}
+      <span
+        className={cn(
+          "flex h-14 min-w-16 shrink-0 items-center justify-center rounded-xl px-2 font-heading text-lg font-bold",
+          pending ? "bg-highlight-soft text-highlight" : "bg-muted text-muted-foreground",
         )}
-      </dt>
-      <dd className="font-heading text-2xl font-bold sm:text-3xl">
-        {value}
-      </dd>
-    </div>
+      >
+        {c.course}
+      </span>
+      <span
+        className={cn(
+          "min-w-0 flex-1 basis-32 truncate text-lg font-semibold",
+          c.state === "notHeld" && "text-muted-foreground line-through",
+        )}
+      >
+        {c.name}
+      </span>
+      {pending ? (
+        <span className="ml-auto inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground">
+          <CalendarCheck className="size-4" aria-hidden />
+          {label}
+        </span>
+      ) : c.state === "taken" ? (
+        <Badge tone="accent" className="ml-auto">
+          <Check aria-hidden />
+          {label}
+        </Badge>
+      ) : (
+        <Badge tone="neutral" className="ml-auto">
+          <CalendarX aria-hidden />
+          {label}
+        </Badge>
+      )}
+    </Link>
   );
 }

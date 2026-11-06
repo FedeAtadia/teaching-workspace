@@ -12,8 +12,8 @@ export function PageHeader({
 }) {
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">{title}</h1>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
         {action}
       </div>
       {children}

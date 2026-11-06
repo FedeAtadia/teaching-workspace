@@ -88,11 +88,11 @@ export function Sidebar({ initial, labels }: { initial: SidebarState; labels: La
       {/* Tablets and up: the side menu. */}
       <aside
         className={cn(
-          "sticky top-0 hidden h-dvh shrink-0 flex-col gap-1 border-r border-sidebar-border bg-sidebar p-3 transition-[width] duration-150 md:flex",
+          "sticky top-0 hidden h-dvh shrink-0 flex-col gap-1 border-r border-sidebar-border bg-sidebar px-3 py-5 transition-[width] duration-150 md:flex",
           collapsed ? "w-20" : "w-64",
         )}
       >
-        <div className={cn("mb-4 flex items-center gap-2", collapsed ? "flex-col" : "justify-between pl-3")}>
+        <div className={cn("mb-6 flex items-center gap-2", collapsed ? "flex-col" : "justify-between pl-3")}>
           {collapsed ? <LogoMark className="mt-2" /> : <Logo name={labels.appName} />}
           <button
             type="button"
@@ -150,11 +150,12 @@ function NavLink({
       title={compact ? label : undefined}
       aria-label={compact ? label : undefined}
       className={cn(
-        "flex h-12 items-center gap-3 rounded-xl text-[15px] font-bold transition-colors",
+        "flex h-11 items-center gap-3 rounded-xl text-[15px] font-semibold transition-colors",
         compact ? "justify-center" : "px-4",
+        // The mocks' filled pill: dark text on the blue, as the palette requires.
         active
-          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-          : "text-sidebar-foreground hover:bg-muted",
+          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+          : "text-muted-foreground hover:bg-muted hover:text-sidebar-foreground",
       )}
     >
       <Icon className="size-5 shrink-0" aria-hidden />
