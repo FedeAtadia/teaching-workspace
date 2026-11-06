@@ -1,5 +1,8 @@
+import { BookOpen, Puzzle } from "lucide-react";
 import Link from "next/link";
 import { BackLink } from "@/components/BackLink";
+import { Initials } from "@/components/Initials";
+import { Badge } from "@/components/ui/badge";
 import { AdaptedBadge } from "@/components/classes/Adaptation";
 import { ResultLabel } from "@/components/classes/StudentExams";
 import { notFound } from "next/navigation";
@@ -23,32 +26,54 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
   const tShift = await getTranslations("shifts");
   const tTerm = await getTranslations("terms");
   const tGrades = await getTranslations("classPage.grades");
+  const tDash = await getTranslations("dashboard.stats");
+  const tAdapt = await getTranslations("adaptations");
   const locale = await getLocale();
   const { student, courses } = history;
+  // The header's badges: the newest course (HISTORY-1 lists it first), any adaptation in it, and what is owed.
+  const current = courses[0];
+  const adapted = current?.classes.some((c) => c.adaptation) ?? false;
+  const owed = courses.flatMap((c) => c.classes).filter((c) => c.result.kind === "owed").length;
 
   return (
     <>
       <BackLink href="/students" label={t("back")} />
-      <h1 className="mt-3 mb-6 text-3xl font-bold">
-        {student.lastName}, {student.firstName}
-      </h1>
+      <header className="mt-2 mb-8 flex flex-wrap items-center gap-5 rounded-2xl bg-card p-5 ring-1 ring-border sm:p-6">
+        <Initials firstName={student.firstName} lastName={student.lastName} shape="square" />
+        <div className="min-w-0">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            {student.lastName}, {student.firstName}
+          </h1>
+          {(current || owed > 0) && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {current && (
+                <Badge tone="neutral">
+                  {formatCourse(current.year, current.division)} · {current.schoolYear}
+                </Badge>
+              )}
+              {adapted && <Badge tone="accent">{tAdapt("badge")}</Badge>}
+              {owed > 0 && (
+                <Badge tone="alert" dot>
+                  {owed} {tDash("owed", { count: owed })}
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
+      </header>
 
       {courses.length === 0 && <p className="text-sm text-muted-foreground">{t("noCourses")}</p>}
 
-      <div className="grid gap-8">
+      <div className="grid gap-10">
         {courses.map((course) => (
           <section key={course.courseId}>
-            <h2 className="mb-3 flex flex-wrap items-baseline gap-x-3 text-lg font-semibold">
-              {course.schoolYear} · {formatCourse(course.year, course.division)} · {tShift(course.shift)} ·{" "}
-              {course.school}
-              {course.status === "withdrawn" && (
-                <span className="text-sm font-normal text-muted-foreground">{t("left")}</span>
-              )}
-              {course.outcome && (
-                <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-bold text-highlight">
-                  {t(`outcomes.${course.outcome}`)}
-                </span>
-              )}
+            <h2 className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xl font-bold">
+              {course.schoolYear} · {formatCourse(course.year, course.division)}
+              <span className="text-base font-normal text-muted-foreground">
+                {tShift(course.shift)} · {course.school}
+              </span>
+              {course.status === "withdrawn" && <Badge tone="outline">{t("left")}</Badge>}
+              {course.outcome && <Badge tone="accent">{t(`outcomes.${course.outcome}`)}</Badge>}
             </h2>
 
             {course.classes.length === 0 && <p className="text-sm text-muted-foreground">{t("noClasses")}</p>}
@@ -56,92 +81,112 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
             <div className="grid gap-4">
               {course.classes.map((cls) => {
                 const rules = { ...DEFAULT_RULES, passMark: cls.passMark };
+                const isOwed = cls.result.kind === "owed";
                 return (
-                  <article key={cls.id} className="rounded-2xl bg-card p-5 ring-1 ring-border">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <h3 className="text-lg font-bold">
-                        <Link href={`/classes/${cls.id}`} className="underline-offset-4 hover:underline">
-                          {cls.name}
-                        </Link>
-                        {/* ADAPT-1 */}
-                        {cls.adaptation && <AdaptedBadge notes={cls.adaptation} />}
+                  <article
+                    key={cls.id}
+                    className={`relative grid gap-4 overflow-hidden rounded-2xl bg-card p-5 ring-1 ${isOwed ? "pl-6 ring-destructive/40" : "ring-border"}`}
+                  >
+                    {/* An owed class (previa) gets a red edge. */}
+                    {isOwed && <span className="absolute inset-y-0 left-0 w-1.5 bg-alert" aria-hidden />}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <h3 className="flex items-center gap-3 text-lg font-bold">
+                        <span
+                          className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-highlight-soft text-highlight"
+                          aria-hidden
+                        >
+                          <BookOpen className="size-5" />
+                        </span>
+                        <span>
+                          <Link href={`/classes/${cls.id}`} className="underline-offset-4 hover:underline">
+                            {cls.name}
+                          </Link>
+                          {/* ADAPT-1 */}
+                          {cls.adaptation && <AdaptedBadge notes={cls.adaptation} />}
+                        </span>
                       </h3>
-                      {/* TERM-1, TERM-7: the 2° cuatrimestre grade. */}
-                      {cls.finalGrade !== null && (
-                        <p className="text-sm">
-                          {t("finalGrade")}:{" "}
-                          <Grade value={cls.finalGrade} passing={isPassing(cls.finalGrade, rules)} locale={locale} big />
-                        </p>
-                      )}
+                      <div className="flex flex-wrap items-center gap-3">
+                        {/* HISTORY-4: the result once there is a final grade. */}
+                        {cls.result.kind !== "pending" && (
+                          <Badge tone={isOwed ? "alert" : "accent"}>
+                            <ResultLabel result={cls.result} />
+                          </Badge>
+                        )}
+                        {/* TERM-1, TERM-7: the 2° cuatrimestre grade. */}
+                        {cls.finalGrade !== null && (
+                          <p className="flex items-baseline gap-2 rounded-xl bg-muted px-3 py-1.5 text-sm">
+                            <span className="text-muted-foreground">{t("finalGrade")}</span>
+                            <Grade value={cls.finalGrade} passing={isPassing(cls.finalGrade, rules)} locale={locale} big />
+                          </p>
+                        )}
+                      </div>
                     </div>
                     {cls.adaptation && (
-                      <p className="mt-1 text-sm whitespace-pre-line text-muted-foreground">{cls.adaptation}</p>
-                    )}
-                    {/* HISTORY-4: the result once there is a final grade, and any exams. */}
-                    {cls.result.kind !== "pending" && (
-                      <p className="mt-1 text-sm">
-                        <ResultLabel result={cls.result} />
-                        {cls.exams.length > 0 && (
-                          <span className="text-muted-foreground">
-                            {" · "}
-                            {t("exams")}:{" "}
-                            {cls.exams
-                              .map(
-                                (e) =>
-                                  `${formatDate(e.takenOn)} ${
-                                    e.status === "absent" || e.value === null ? t("absent") : formatGrade(e.value, locale)
-                                  }`,
-                              )
-                              .join(", ")}
-                          </span>
-                        )}
+                      <p className="flex gap-3 rounded-xl bg-highlight-soft px-4 py-3 text-sm text-accent-foreground">
+                        <Puzzle className="mt-0.5 size-4 shrink-0" aria-hidden />
+                        <span className="whitespace-pre-line">
+                          <span className="font-bold">{tAdapt("badge")}:</span> {cls.adaptation}
+                        </span>
                       </p>
                     )}
-                    {cls.terms.length === 0 && (
-                      <p className="mt-1 text-sm text-muted-foreground">{t("noTasks")}</p>
+                    {/* HISTORY-4: the exams, in a strip (red while still owed). */}
+                    {cls.exams.length > 0 && (
+                      <p className={`rounded-xl px-4 py-2.5 text-sm ${isOwed ? "bg-alert-soft" : "bg-muted"}`}>
+                        <span className="font-bold">{t("exams")}:</span>{" "}
+                        {cls.exams
+                          .map(
+                            (e) =>
+                              `${formatDate(e.takenOn)} ${
+                                e.status === "absent" || e.value === null ? t("absent") : formatGrade(e.value, locale)
+                              }`,
+                          )
+                          .join(", ")}
+                      </p>
                     )}
-                    {cls.terms.map((term) => (
-                      <div key={term.position} className="mt-3">
-                        <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-                          <h4 className="text-sm font-semibold text-muted-foreground">
-                            {tTerm(String(term.position))}
-                          </h4>
-                          <p className="text-sm tabular-nums">
-                            {t("average")}:{" "}
-                            {term.suggestion.average === null ? (
-                              "—"
-                            ) : (
-                              <span
-                                className={
-                                  isPassing(term.suggestion.average, rules)
-                                    ? "font-semibold"
-                                    : "font-semibold text-destructive"
-                                }
-                              >
-                                {formatGrade(term.suggestion.average, locale)}
-                              </span>
-                            )}
-                            {term.suggestion.missing > 0 && (
-                              <span className="ml-1 text-muted-foreground">
-                                ({term.suggestion.missing} {tGrades("missingShort")})
-                              </span>
-                            )}
-                            {term.grade !== null && (
-                              <>
-                                {" · "}
-                                {t("grade")}:{" "}
-                                <Grade value={term.grade} passing={isPassing(term.grade, rules)} locale={locale} />
-                              </>
-                            )}
-                            {/* HISTORY-5 */}
-                            {term.attendance !== null && (
-                              <>
-                                {" · "}
-                                {t("attendance", { rate: term.attendance })}
-                              </>
-                            )}
-                          </p>
-                        </div>
+                    {cls.terms.length === 0 && <p className="text-sm text-muted-foreground">{t("noTasks")}</p>}
+                    {/* One box per cuatrimestre: its grade (or the average so far), then the details. */}
+                    {cls.terms.length > 0 && (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {cls.terms.map((term) => {
+                          const shown = term.grade ?? term.suggestion.average;
+                          return (
+                            <div key={term.position} className="rounded-xl bg-muted/60 px-4 py-3">
+                              <p className="text-[0.7rem] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                                {tTerm(String(term.position))}
+                              </p>
+                              <p className="mt-1 font-heading text-3xl font-bold tabular-nums">
+                                {shown === null ? (
+                                  <span className="text-muted-foreground">—</span>
+                                ) : (
+                                  <Grade value={shown} passing={isPassing(shown, rules)} locale={locale} />
+                                )}
+                              </p>
+                              <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+                                {[
+                                  term.grade !== null ? t("grade") : null,
+                                  `${t("average")} ${term.suggestion.average === null ? "—" : formatGrade(term.suggestion.average, locale)}${
+                                    term.suggestion.missing > 0
+                                      ? ` (${term.suggestion.missing} ${tGrades("missingShort")})`
+                                      : ""
+                                  }`,
+                                  // HISTORY-5
+                                  term.attendance !== null ? t("attendance", { rate: term.attendance }) : null,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {cls.terms
+                      .filter((term) => term.tasks.length > 0)
+                      .map((term) => (
+                      <div key={term.position}>
+                        <h4 className="mb-1 text-sm font-semibold text-muted-foreground">
+                          {tTerm(String(term.position))}
+                        </h4>
                         <div className="overflow-x-auto">
                           <table className="w-full text-sm">
                             <tbody>
