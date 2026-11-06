@@ -59,7 +59,8 @@ export function StatTile({
           <Icon className="size-[18px]" />
         </span>
       </div>
-      <dd className="flex flex-wrap items-baseline gap-x-2">
+      {/* mt-auto: a label that wraps on a phone doesn't push its number below the neighbour's. */}
+      <dd className="mt-auto flex flex-wrap items-baseline gap-x-2">
         <span className="font-heading text-4xl leading-none font-bold tabular-nums sm:text-5xl">{value}</span>
         <span className={cn("text-sm", tone === "default" && "text-muted-foreground")}>{unit}</span>
       </dd>
