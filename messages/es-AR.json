@@ -148,7 +148,10 @@
       "empty": "Este curso todavía no tiene estudiantes. Agregalos desde Estudiantes.",
       "count": "{count, plural, one {# estudiante} other {# estudiantes}}",
       "lastName": "Apellido",
-      "firstName": "Nombre"
+      "firstName": "Nombre",
+      "student": "Estudiante",
+      "group": "Grupo",
+      "adaptation": "Adaptación"
     },
     "standards": {
       "intro": "Valen para todo el ciclo lectivo.",
@@ -214,7 +217,9 @@
       "adapted": {
         "title": "Versión adaptada",
         "empty": "Para estudiantes con adaptación. Agregá la consigna o el criterio adaptado con «Editar tarea», y el archivo acá."
-      }
+      },
+      "count": "{count, plural, one {# tarea} other {# tareas}}",
+      "fileTitle": "Archivo de la tarea"
     },
     "deleteTask": {
       "button": "Eliminar tarea",
@@ -257,7 +262,8 @@
         "notesTooLong": "Las observaciones son demasiado largas."
       },
       "adapted": "Adaptada",
-      "adaptedFor": "Nota adaptada de {name}"
+      "adaptedFor": "Nota adaptada de {name}",
+      "title": "Planilla de calificación"
     },
     "grades": {
       "student": "Estudiante",

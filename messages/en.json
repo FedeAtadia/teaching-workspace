@@ -148,7 +148,10 @@
       "empty": "This course has no students yet. Add them from Students.",
       "count": "{count, plural, one {# student} other {# students}}",
       "lastName": "Last name",
-      "firstName": "First name"
+      "firstName": "First name",
+      "student": "Student",
+      "group": "Group",
+      "adaptation": "Adaptation"
     },
     "standards": {
       "intro": "They apply to the whole school year.",
@@ -214,7 +217,9 @@
       "adapted": {
         "title": "Adapted version",
         "empty": "For students with an adaptation. Add the adapted instructions or standard with “Edit task”, and the file here."
-      }
+      },
+      "count": "{count, plural, one {# task} other {# tasks}}",
+      "fileTitle": "Task file"
     },
     "deleteTask": {
       "button": "Delete task",
@@ -257,7 +262,8 @@
         "notesTooLong": "The notes are too long."
       },
       "adapted": "Adapted",
-      "adaptedFor": "{name}'s score is adapted"
+      "adaptedFor": "{name}'s score is adapted",
+      "title": "Scoring sheet"
     },
     "grades": {
       "student": "Student",
