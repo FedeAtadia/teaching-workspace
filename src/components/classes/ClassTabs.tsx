@@ -77,17 +77,18 @@ export function ClassTabs({ tabs, title }: { tabs: Tab[]; title: string }) {
         </SheetContent>
       </Sheet>
 
-      <nav className="hidden flex-wrap gap-2 md:flex">
+      {/* A tinted bar; the current section is a raised pill with a dot. */}
+      <nav className="hidden flex-wrap gap-1 rounded-2xl bg-muted p-1.5 ring-1 ring-border md:flex">
         {tabs.map((t) => {
-          const Icon = ICONS[t.icon];
+          const current = t.href === active.href;
           return (
             <Link
               key={t.href}
               href={t.href}
-              aria-current={t.href === active.href ? "page" : undefined}
-              className="flex h-11 shrink-0 items-center gap-2 rounded-xl bg-card px-4 text-sm font-bold whitespace-nowrap text-muted-foreground ring-1 ring-border transition-colors hover:text-foreground aria-[current=page]:bg-foreground aria-[current=page]:text-background aria-[current=page]:ring-foreground"
+              aria-current={current ? "page" : undefined}
+              className="flex h-10 shrink-0 items-center gap-2 rounded-xl px-3.5 text-sm font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:bg-card aria-[current=page]:text-foreground aria-[current=page]:shadow-sm"
             >
-              {Icon && <Icon className="size-4" aria-hidden />}
+              {current && <span className="size-1.5 rounded-full bg-primary" aria-hidden />}
               {t.label}
             </Link>
           );
