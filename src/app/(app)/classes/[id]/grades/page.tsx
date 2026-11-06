@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AdaptedBadge } from "@/components/classes/Adaptation";
 import { GroupFilter } from "@/components/classes/GroupFilter";
+import { Initials } from "@/components/Initials";
 import { getAdaptations } from "@/db/queries/adaptations";
 import { getAttendanceRates } from "@/db/queries/attendance";
 import { listTerms } from "@/db/queries/classDetail";
@@ -47,13 +48,13 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
 
   return (
     <>
-      <nav className="mb-4 flex gap-2">
+      <nav className="mb-4 inline-flex gap-1 rounded-xl bg-muted p-1 ring-1 ring-border">
         {terms.map((tm) => (
           <Link
             key={tm.id}
             href={`/classes/${id}/grades?term=${tm.position}${withGroup}`}
             aria-current={tm.id === term?.id ? "page" : undefined}
-            className="flex h-10 items-center rounded-full bg-muted px-4 text-sm font-bold text-muted-foreground hover:text-foreground aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
+            className="flex h-9 items-center rounded-lg px-4 text-sm font-semibold text-muted-foreground hover:text-foreground aria-[current=page]:bg-card aria-[current=page]:text-foreground aria-[current=page]:shadow-sm"
           >
             {tTerm(String(tm.position))}
           </Link>
@@ -159,7 +160,9 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
             <table className="text-sm">
               <thead>
                 <tr className="border-b bg-muted">
-                  <th className="sticky left-0 z-10 bg-muted px-4 py-3 text-left font-bold">{t("student")}</th>
+                  <th className="sticky left-0 z-10 bg-muted px-4 py-3 text-left text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+                    {t("student")}
+                  </th>
                   {book.tasks.map((task) => (
                     <th key={task.id} className="px-2 py-2 font-medium">
                       <Link
@@ -171,8 +174,10 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                       </Link>
                     </th>
                   ))}
-                  <th className="border-l px-3 py-2 font-medium">{t("average")}</th>
-                  <th className="px-3 py-2 font-medium">
+                  <th className="border-l px-3 py-2 text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+                    {t("average")}
+                  </th>
+                  <th className="px-3 py-2 text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase">
                     <Link href={`/classes/${id}/term-grades?term=${term?.position ?? 1}`} className="hover:underline">
                       {t("termGrade")}
                     </Link>
@@ -189,9 +194,12 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                     <td className="sticky left-0 bg-card px-4 py-2 font-bold whitespace-nowrap">
                       <Link
                         href={`/students/${student.id}`}
-                        className="outline-none after:absolute after:inset-0 after:content-['']"
+                        className="inline-flex items-center gap-3 align-middle outline-none after:absolute after:inset-0 after:content-['']"
                       >
-                        {student.lastName}, <span className="font-normal">{student.firstName}</span>
+                        <Initials firstName={student.firstName} lastName={student.lastName} />
+                        <span>
+                          {student.lastName}, <span className="font-normal">{student.firstName}</span>
+                        </span>
                       </Link>
                       {/* ADAPT-1 */}
                       {adaptations.has(student.id) && <AdaptedBadge notes={adaptations.get(student.id)!} />}
