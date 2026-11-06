@@ -90,7 +90,8 @@ export default async function AttendanceDayPage({ params, searchParams }: PagePr
         href={(g) => `/classes/${id}/attendance/${date}${g ? `?group=${g}` : ""}`}
       />
 
-      <div className="grid max-w-3xl gap-6">
+      {/* From lg up the list fills the left and "¿No hubo clase?" sits beside it; a phone keeps one column. */}
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("day.noStudents")}</p>
         ) : (
@@ -106,12 +107,15 @@ export default async function AttendanceDayPage({ params, searchParams }: PagePr
             }))}
           />
         )}
-        <NoClassForm
-          key={`${date}:no-class`}
-          classId={id}
-          date={date}
-          current={session && !session.held ? { reason: session.reason, note: session.note } : null}
-        />
+        <aside className="grid gap-4 lg:sticky lg:top-4">
+          <NoClassForm
+            key={`${date}:no-class`}
+            classId={id}
+            date={date}
+            current={session && !session.held ? { reason: session.reason, note: session.note } : null}
+          />
+          <p className="px-1 text-xs text-muted-foreground">{t("day.legend")}</p>
+        </aside>
       </div>
     </>
   );

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { TermGradesForm } from "@/components/classes/TermGradesForm";
+import { getAdaptations } from "@/db/queries/adaptations";
 import { getAttendanceRates } from "@/db/queries/attendance";
 import { listTerms } from "@/db/queries/classDetail";
 import { getMinAttendance } from "@/db/queries/settings";
@@ -23,10 +24,11 @@ export default async function TermGradesPage({ params, searchParams }: PageProps
   const latestWithTasks = Math.max(1, ...tasks.map((t) => t.termPosition));
   const position = termParam === "1" || termParam === "2" ? Number(termParam) : latestWithTasks;
   const term = terms.find((t) => t.position === position) ?? terms[0];
-  const [sheet, rates, minimum] = await Promise.all([
+  const [sheet, rates, minimum, adaptations] = await Promise.all([
     term ? getTermGradeSheet(db, teacherId, cls, term.id) : null,
     term ? getAttendanceRates(db, teacherId, cls, term.position) : new Map(),
     getMinAttendance(db, teacherId),
+    getAdaptations(db, teacherId, id),
   ]);
   if (!term || !sheet) notFound();
 
@@ -65,7 +67,9 @@ export default async function TermGradesPage({ params, searchParams }: PageProps
           rules={rules}
           rows={sheet.rows.map(({ student, suggestion, saved, firstTerm }) => ({
             studentId: student.id,
-            name: `${student.lastName}, ${student.firstName}`,
+            firstName: student.firstName,
+            lastName: student.lastName,
+            adaptation: adaptations.get(student.id) ?? null,
             suggestion,
             lowAttendance: belowMinimum(rates.get(student.id)?.rate ?? null, minimum)
               ? rates.get(student.id)!.rate

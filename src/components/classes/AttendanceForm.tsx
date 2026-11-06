@@ -1,5 +1,6 @@
 "use client";
 
+import { CalendarX } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import {
@@ -95,10 +96,15 @@ export function NoClassForm({
   const noteError = state.fieldErrors?.note;
 
   return (
-    <form action={formAction} className="grid gap-3 rounded-2xl bg-card p-4 ring-1 ring-border">
+    <form action={formAction} className="grid gap-4 rounded-2xl bg-card p-4 ring-1 ring-border sm:p-5">
       <input type="hidden" name="classId" value={classId} />
       <input type="hidden" name="date" value={date} />
-      <h2 className="font-bold">{t("day.noClass.title")}</h2>
+      <h2 className="flex items-center gap-3 text-lg font-bold">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-alert-soft text-destructive">
+          <CalendarX className="size-4.5" aria-hidden />
+        </span>
+        {t("day.noClass.title")}
+      </h2>
       <Field id="no-class-reason" label={t("day.noClass.reason")}>
         <NativeSelect
           id="no-class-reason"
@@ -124,9 +130,9 @@ export function NoClassForm({
           className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive dark:bg-input/30"
         />
       </Field>
-      <p className="text-xs text-muted-foreground">{t("day.noClass.warning")}</p>
+      <p className="rounded-xl bg-alert-soft px-3 py-2 text-xs font-medium text-destructive">{t("day.noClass.warning")}</p>
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" variant="outline" disabled={pending}>
+        <Button type="submit" variant="outline" disabled={pending} className="w-full">
           {pending ? tCommon("saving") : t("day.noClass.save")}
         </Button>
         {state.status === "error" && state.formError && (
