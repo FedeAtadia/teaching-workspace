@@ -1,8 +1,9 @@
 "use client";
 
-import { Pencil, Plus } from "lucide-react";
+import { CircleAlert, Pencil, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
+import { cn } from "cn";
 import { DateField } from "@/components/forms/DateField";
 import { Field } from "@/components/forms/Field";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -64,6 +66,7 @@ export type FieldSpec =
 export function FormDialog({
   triggerLabel,
   title,
+  description,
   action,
   fields,
   hidden = {},
@@ -80,6 +83,8 @@ export function FormDialog({
    */
   trigger?: "add" | "addSmall" | "edit" | "editIcon" | "badge" | "text";
   title: string;
+  /** A short line under the title. */
+  description?: string;
   /** A wider dialog, for forms with many fields. */
   wide?: boolean;
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
@@ -124,10 +129,11 @@ export function FormDialog({
       )}
       <DialogContent
         showCloseButton={false}
-        className={wide ? "max-h-[90vh] overflow-y-auto sm:max-w-lg" : "max-h-[90vh] overflow-y-auto"}
+        className={cn("max-h-[90vh] gap-0 overflow-y-auto rounded-2xl p-0 sm:max-w-md", wide && "sm:max-w-xl")}
       >
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+        <DialogHeader className="gap-1 border-b bg-muted/50 px-5 py-4">
+          <DialogTitle className="text-lg leading-snug font-bold">{title}</DialogTitle>
+          {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         {/* Its own component, so closing the dialog throws away old errors. */}
         <DialogForm
@@ -143,6 +149,11 @@ export function FormDialog({
 }
 
 type State = FormState & { version: number };
+
+// The dialog's fields sit on a light tint, a little taller than elsewhere.
+const TINTED = "h-10 bg-muted/50";
+const TINTED_DATE = "w-48 rounded-lg bg-muted/50 [&_button]:h-10 [&_input]:h-10";
+const TINTED_SELECT = "w-full rounded-lg bg-muted/50 [&_select]:h-10 [&_select]:pl-3";
 
 function DialogForm({
   action,
@@ -175,7 +186,7 @@ function DialogForm({
 
   return (
     // Remounted after every submit so the fields take their refilled values.
-    <form key={state.version} action={formAction} className="grid gap-4">
+    <form key={state.version} action={formAction} className="grid gap-5 px-5 pt-5">
       {Object.entries(hidden).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
@@ -193,6 +204,7 @@ function DialogForm({
                 placeholder={f.placeholder}
                 aria-invalid={invalid}
                 autoFocus={i === 0}
+                className={TINTED}
               />
             )}
             {f.kind === "textarea" && (
@@ -203,17 +215,34 @@ function DialogForm({
                 maxLength={f.maxLength}
                 rows={f.rows ?? 3}
                 aria-invalid={invalid}
-                className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive dark:bg-input/30"
+                className="w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:bg-alert-soft dark:bg-input/30"
               />
             )}
             {f.kind === "date" && (
-              <DateField id={id} name={f.name} defaultValue={v[f.name] ?? f.defaultValue} invalid={invalid} />
+              <DateField
+                id={id}
+                name={f.name}
+                defaultValue={v[f.name] ?? f.defaultValue}
+                invalid={invalid}
+                className={TINTED_DATE}
+              />
             )}
             {f.kind === "checkboxes" && f.hint && <p className="text-xs text-muted-foreground">{f.hint}</p>}
             {f.kind === "checkboxes" && (
-              <div id={id} className={f.inline ? "flex flex-wrap gap-x-4 gap-y-1.5" : "grid gap-1.5"}>
+              <div
+                id={id}
+                className={f.inline ? "grid grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] gap-2" : "grid gap-1.5"}
+              >
                 {f.options.map((o) => (
-                  <label key={o.value} className="flex items-start gap-2 text-sm">
+                  <label
+                    key={o.value}
+                    className={
+                      f.inline
+                        ? // A box per day, tinted blue once ticked (CAL-4).
+                          "flex cursor-pointer flex-col items-center gap-1.5 rounded-xl bg-muted/60 px-2 py-2.5 text-sm font-medium has-checked:bg-highlight-soft has-checked:text-highlight has-focus-visible:ring-2 has-focus-visible:ring-ring"
+                        : "flex items-start gap-2 text-sm"
+                    }
+                  >
                     <input
                       type="checkbox"
                       name={f.name}
@@ -224,7 +253,7 @@ function DialogForm({
                           ? v[f.name].split(",").includes(o.value)
                           : (f.defaultValue ?? []).includes(o.value)
                       }
-                      className="mt-0.5 size-4 accent-primary"
+                      className={f.inline ? "size-4 accent-primary" : "mt-0.5 size-4 accent-primary"}
                     />
                     {o.label}
                   </label>
@@ -254,6 +283,7 @@ function DialogForm({
                         name={`groupDue.${o.value}`}
                         defaultValue={v[`groupDue.${o.value}`] ?? saved?.dueOn ?? ""}
                         label={o.label}
+                        className={TINTED_DATE}
                       />
                     </div>
                   );
@@ -266,7 +296,7 @@ function DialogForm({
                 name={f.name}
                 defaultValue={v[f.name] ?? f.defaultValue ?? ""}
                 aria-invalid={invalid}
-                className="w-full"
+                className={TINTED_SELECT}
               >
                 {f.options.map((o) => (
                   <NativeSelectOption key={o.value} value={o.value}>
@@ -280,12 +310,13 @@ function DialogForm({
       })}
 
       {state.formError && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="flex items-start gap-2 rounded-xl bg-alert-soft px-3 py-2.5 text-sm text-destructive">
+          <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
           {formErrors[state.formError] ?? tErr("invalid")}
         </p>
       )}
 
-      <DialogFooter>
+      <DialogFooter className="-mx-5 mt-1 mb-0 rounded-b-2xl px-5">
         <DialogClose render={<Button type="button" variant="outline" />}>{tCommon("cancel")}</DialogClose>
         <Button type="submit" disabled={pending}>
           {pending ? tCommon("saving") : tCommon("save")}

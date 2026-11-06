@@ -362,6 +362,9 @@
     "introLast": "El resultado de cada estudiante en la materia, y su egreso. La nota final es la del 2° cuatrimestre; quien no aprueba la debe hasta rendirla.",
     "toFinalGrades": "Cargar notas finales",
     "finalGrade": "Nota final",
+    "student": "Estudiante",
+    "result": "Resultado en la materia",
+    "outcome": "Fin de año",
     "outcomeFor": "Fin de año de {name}",
     "undecided": "Sin decidir",
     "outcomes": {
@@ -584,6 +587,7 @@
       "save": "Guardar asistencia",
       "saved": "Asistencia guardada.",
       "failed": "No se pudo guardar. Recargá la página.",
+      "legend": "P: presente · A: ausente · T: tarde (media falta) · J: justificado (no cuenta)",
       "noClass": {
         "title": "¿No hubo clase?",
         "reason": "Motivo",

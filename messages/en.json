@@ -362,6 +362,9 @@
     "introLast": "Each student's result in the class, and their graduation. The final grade is the 2nd term's; a failed class is owed until passed by exam.",
     "toFinalGrades": "Enter final grades",
     "finalGrade": "Final grade",
+    "student": "Student",
+    "result": "Result in the class",
+    "outcome": "Year end",
     "outcomeFor": "Year end for {name}",
     "undecided": "Undecided",
     "outcomes": {
@@ -584,6 +587,7 @@
       "save": "Save attendance",
       "saved": "Attendance saved.",
       "failed": "Couldn't save. Reload the page.",
+      "legend": "P: present · A: absent · L: late (half an absence) · E: excused (doesn't count)",
       "noClass": {
         "title": "Class didn't happen?",
         "reason": "Reason",
