@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { AddClassDialog } from "@/components/classes/AddClassDialog";
 import { ClassCard } from "@/components/classes/ClassCard";
 import { PageHeader } from "@/components/PageHeader";
+import { Badge } from "@/components/ui/badge";
 import { getDb } from "@/db";
 import { listSchools } from "@/db/queries/classes";
 import { getHomeCards, type HomeCard } from "@/db/queries/home";
@@ -47,7 +48,10 @@ export default async function ClassesPage() {
             .filter(([, cards]) => cards.length > 0)
             .map(([school, cards]) => (
               <section key={school}>
-                <h2 className="mb-3 text-lg font-bold">{school}</h2>
+                <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <h2 className="text-xl font-bold tracking-tight">{school}</h2>
+                  <Badge>{t("count", { count: cards.length })}</Badge>
+                </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {cards.map((c) => (
                     <ClassCard key={c.id} {...cardProps(c, false)} />

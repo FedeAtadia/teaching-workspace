@@ -17,7 +17,7 @@ export function ThemeSelect({ current, labels }: { current: Theme; labels: Recor
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   return (
-    <div role="radiogroup" className="inline-flex gap-1 rounded-2xl bg-muted p-1">
+    <div role="radiogroup" className="flex gap-1 rounded-2xl bg-muted p-1">
       {OPTIONS.map(({ value, icon: Icon }) => (
         <button
           key={value}
@@ -32,7 +32,7 @@ export function ThemeSelect({ current, labels }: { current: Theme; labels: Recor
               router.refresh();
             })
           }
-          className="flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-bold text-muted-foreground transition-colors hover:text-foreground aria-checked:bg-card aria-checked:text-foreground aria-checked:shadow-sm"
+          className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-sm font-bold text-muted-foreground transition-colors hover:text-foreground aria-checked:bg-card aria-checked:text-foreground aria-checked:shadow-sm"
         >
           <Icon className="size-4" aria-hidden />
           {labels[value]}
