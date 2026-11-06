@@ -11,7 +11,8 @@ export async function classCardProps() {
   return (c: HomeCard, withSchool: boolean) => ({
     href: `/classes/${c.id}`,
     name: c.name,
-    courseLine: [formatCourse(c.year, c.division), c.schoolYear, withSchool ? c.school : null].filter(Boolean).join(" · "),
+    course: formatCourse(c.year, c.division),
+    courseLine: [c.schoolYear, withSchool ? c.school : null].filter(Boolean).join(" · "),
     shift: tShift(c.shift),
     studentsText: t("students", { count: c.students }),
     progress: c.progress,

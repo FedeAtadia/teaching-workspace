@@ -1,9 +1,6 @@
-import { BookOpen, CalendarDays, ChevronRight, Users } from "lucide-react";
+import { CalendarDays, ChevronRight, Users } from "lucide-react";
 import Link from "next/link";
-
-/** The strip on top of a card. Picked from the class's address, so a class keeps its colour on every page. */
-const STRIPES = ["bg-primary", "bg-accent-deep", "bg-chart-4"];
-const stripeOf = (href: string) => STRIPES[[...href].reduce((n, ch) => n + ch.charCodeAt(0), 0) % STRIPES.length];
+import { Badge } from "@/components/ui/badge";
 
 /**
  * HOME-1..3, NAV-2: one class as a card; the whole card is a single link.
@@ -12,6 +9,7 @@ const stripeOf = (href: string) => STRIPES[[...href].reduce((n, ch) => n + ch.ch
 export function ClassCard({
   href,
   name,
+  course,
   courseLine,
   shift,
   studentsText,
@@ -21,6 +19,9 @@ export function ClassCard({
 }: {
   href: string;
   name: string;
+  /** "4° A" (COURSE-2). */
+  course: string;
+  /** The school year, and the school when the teacher has several. */
   courseLine: string;
   shift: string;
   studentsText: string;
@@ -31,37 +32,34 @@ export function ClassCard({
   return (
     <Link
       href={href}
-      className="group relative flex flex-col gap-4 overflow-hidden rounded-2xl bg-card p-5 pt-7 text-card-foreground ring-1 ring-border transition hover:-translate-y-0.5 hover:ring-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      className="group flex flex-col gap-4 rounded-2xl bg-card p-5 text-card-foreground ring-1 ring-border transition hover:-translate-y-0.5 hover:ring-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
-      <span className={`absolute inset-x-0 top-0 h-2 ${stripeOf(href)}`} aria-hidden />
-      <div className="flex items-center justify-between gap-3">
-        <span className="flex size-11 items-center justify-center rounded-xl bg-highlight-soft text-highlight">
-          <BookOpen className="size-5" aria-hidden />
-        </span>
-        <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">{shift}</span>
+      <div className="flex items-start justify-between gap-3">
+        <span className="pt-0.5 text-[0.7rem] font-semibold tracking-[0.12em] text-highlight uppercase">{shift}</span>
+        <Badge tone="accent" className="tabular-nums">
+          {progress}%
+        </Badge>
       </div>
       <div>
-        <h3 className="text-xl leading-tight font-bold">{name}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{courseLine}</p>
-        <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+        <h3 className="text-xl leading-tight font-bold">
+          {course} · {name}
+        </h3>
+        <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
           <Users className="size-4" aria-hidden />
-          {studentsText}
+          {[studentsText, courseLine].filter(Boolean).join(" · ")}
         </p>
       </div>
-      <div>
-        <div
-          className="h-2 overflow-hidden rounded-full bg-muted"
-          role="progressbar"
-          aria-valuenow={progress}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={progressText}
-        >
-          <div className="h-full rounded-full bg-accent-deep" style={{ width: `${progress}%` }} />
-        </div>
-        <p className="mt-1.5 text-xs text-muted-foreground">{progressText}</p>
+      <div
+        className="h-2 overflow-hidden rounded-full bg-muted"
+        role="progressbar"
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={progressText}
+      >
+        <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
       </div>
-      <div className="mt-auto flex items-center gap-2 border-t border-dashed pt-3 text-sm">
+      <div className="mt-auto flex items-center gap-2 border-t pt-3 text-sm">
         <CalendarDays className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         <span className="flex-1">{nextText}</span>
         <ChevronRight className="size-4 text-muted-foreground transition group-hover:translate-x-0.5" aria-hidden />
