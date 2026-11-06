@@ -25,8 +25,9 @@ export function AttendanceMark({
       title={title}
       className={cn(
         "inline-flex size-7 items-center justify-center rounded-lg text-xs font-bold no-underline",
-        cell === "present" && "bg-highlight-soft text-highlight",
-        cell === "absent" && "bg-alert-soft text-destructive",
+        // The thin outline keeps the square visible on today's tinted column and on a red row.
+        cell === "present" && "bg-highlight-soft text-highlight ring-1 ring-highlight/25 ring-inset",
+        cell === "absent" && "bg-alert-soft text-destructive ring-1 ring-destructive/35 ring-inset",
         cell === "late" && "text-highlight ring-1 ring-highlight/60 ring-inset",
         cell === "excused" && "bg-muted text-muted-foreground",
         cell === "notExpected" && "text-muted-foreground/60",
