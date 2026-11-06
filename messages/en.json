@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "STACK",
+    "name": "Annora",
     "setupBanner": "Supabase isn't configured yet, so sign-in is off. See README.md."
   },
   "nav": {
@@ -60,6 +60,12 @@
       "students": "{count, plural, one {student} other {students}}",
       "pending": "{count, plural, one {score to enter} other {scores to enter}}",
       "owed": "{count, plural, one {owed class} other {owed classes}}"
+    },
+    "statLabels": {
+      "classes": "Classes",
+      "students": "Enrolment",
+      "pending": "To grade",
+      "owed": "Owed classes"
     },
     "card": {
       "students": "{count, plural, =0 {No students yet} one {# student} other {# students}}",

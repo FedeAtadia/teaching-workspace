@@ -1,6 +1,6 @@
-# STACK
+# Annora
 
-STACK (the repository is still `teaching-workspace`) keeps everything about
+Annora (the repository is still `teaching-workspace`) keeps everything about
 the classes I teach in one place: classes, students, tasks, scores with notes,
 term grades, attendance and exports. Replaces a Google Drive full of
 spreadsheets.

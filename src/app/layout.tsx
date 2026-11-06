@@ -9,7 +9,7 @@ import { htmlThemeClass, resolveTheme, THEME_COOKIE } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "STACK",
+  title: "Annora",
   description: "Classes, students, tasks and grades in one place.",
 };
 

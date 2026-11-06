@@ -14,11 +14,11 @@ import { ATTENDANCE_STATUSES, SESSION_REASONS, type AttendanceStatus, type Sessi
 
 export type AttendanceFormRow = { studentId: string; name: string; status: AttendanceStatus | null };
 
-/** The checked pill of each mark. */
+/** The checked square of each mark, in the same colours as the sheet's marks (AttendanceMark), filled. */
 const CHECKED: Record<AttendanceStatus, string> = {
   present: "peer-checked:bg-primary peer-checked:text-primary-foreground",
-  absent: "peer-checked:bg-destructive peer-checked:text-background",
-  late: "peer-checked:bg-foreground peer-checked:text-background",
+  absent: "peer-checked:bg-alert-deep peer-checked:text-white",
+  late: "peer-checked:bg-accent-deep peer-checked:text-white",
   excused: "peer-checked:bg-muted-foreground peer-checked:text-background",
 };
 
@@ -36,8 +36,8 @@ export function AttendanceForm({ classId, date, rows }: { classId: string; date:
       <input type="hidden" name="date" value={date} />
       <ul className="divide-y rounded-2xl bg-card ring-1 ring-border">
         {rows.map((row) => (
-          <li key={row.studentId} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2.5">
-            <span className="font-bold">{row.name}</span>
+          <li key={row.studentId} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+            <span className="font-semibold">{row.name}</span>
             <fieldset className="flex gap-1.5">
               <legend className="sr-only">{row.name}</legend>
               {ATTENDANCE_STATUSES.map((status) => (
@@ -50,7 +50,7 @@ export function AttendanceForm({ classId, date, rows }: { classId: string; date:
                     className="peer sr-only"
                   />
                   <span
-                    className={`flex h-9 min-w-9 items-center justify-center rounded-full bg-muted px-2.5 text-sm font-bold text-muted-foreground transition-colors peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 ${CHECKED[status]}`}
+                    className={`flex size-10 items-center justify-center rounded-xl bg-muted text-sm font-bold text-muted-foreground transition-colors peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 ${CHECKED[status]}`}
                   >
                     <span aria-hidden>{t(`short.${status}`)}</span>
                     <span className="sr-only">{t(`statuses.${status}`)}</span>
@@ -61,8 +61,9 @@ export function AttendanceForm({ classId, date, rows }: { classId: string; date:
           </li>
         ))}
       </ul>
-      <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={pending}>
+      {/* The save bar stays in view while scrolling a long list; on a phone it sits above the menu bar (NAV-1). */}
+      <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-10 flex flex-wrap items-center gap-3 rounded-2xl bg-card/95 p-3 shadow-lg ring-1 ring-border backdrop-blur md:bottom-4">
+        <Button type="submit" size="lg" disabled={pending}>
           {pending ? tCommon("saving") : t("day.save")}
         </Button>
         <p role="status" className="text-sm">

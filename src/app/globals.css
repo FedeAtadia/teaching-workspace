@@ -3,8 +3,8 @@
 @import "shadcn/tailwind.css";
 
 /*
- * STACK: cool grey and white in the light, deep navy in the dark, one bright
- * blue accent and a red for alerts. Every colour is written once with
+ * Annora, still in the STACK palette: cool grey and white in the light, deep
+ * navy in the dark, one bright blue accent and a red for alerts. Every colour is written once with
  * light-dark(); which side applies comes from `color-scheme` (THEME-1, THEME-2):
  *   - no class on <html>  → the device's setting ("Sistema")
  *   - <html class="dark"> / <html class="light"> → the teacher's choice
@@ -44,6 +44,8 @@
   --color-highlight: var(--highlight);
   --color-highlight-soft: var(--highlight-soft);
   --color-alert: var(--alert);
+  --color-alert-soft: var(--alert-soft);
+  --color-alert-deep: var(--alert-deep);
   --color-accent-deep: var(--accent-deep);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -103,6 +105,11 @@
   /* Red as text and outlines; --alert is the fill (bars, the logo). */
   --destructive: light-dark(#d6004a, #ff4d85);
   --alert: #ff0054;
+  /* The tint behind red text (pills, at-risk rows): #d6004a on it is 4.7:1,
+     #ff4d85 on the dark one 5.6:1. */
+  --alert-soft: light-dark(#fff0f4, #3a1222);
+  /* A tile filled in red with white text on it (6.2:1); #ff0054 is too light for that. */
+  --alert-deep: light-dark(#c4003f, #b3003a);
   --accent-deep: #157cc5;
   --border: light-dark(#dde1ea, #2f3546);
   --input: light-dark(#cfd4de, #3a4153);

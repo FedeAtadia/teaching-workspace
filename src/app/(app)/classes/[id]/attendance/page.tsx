@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { CircleAlert } from "lucide-react";
 import { AttendanceChart } from "@/components/classes/AttendanceChart";
+import { AttendanceMark } from "@/components/classes/AttendanceMark";
+import { Initials } from "@/components/Initials";
+import { Badge } from "@/components/ui/badge";
 import { GoToDate } from "@/components/classes/GoToDate";
 import { GroupFilter } from "@/components/classes/GroupFilter";
 import { getAttendanceSheet } from "@/db/queries/attendance";
@@ -46,8 +50,7 @@ export default async function AttendancePage({ params, searchParams }: PageProps
   }
 
   const withGroup = groupId ? `&group=${groupId}` : "";
-  const dayHref = (date: string) =>
-    `/classes/${id}/attendance/${date}${groupId ? `?group=${groupId}` : ""}`;
+  const dayHref = (date: string) => `/classes/${id}/attendance/${date}${groupId ? `?group=${groupId}` : ""}`;
   const today = todayInArgentina();
   const dayTitle = (d: ClassDay) =>
     d.state === "off"
@@ -57,36 +60,23 @@ export default async function AttendancePage({ params, searchParams }: PageProps
         : t(`states.${d.state}`);
 
   const cell = (c: AttendanceCell) =>
-    c === null ? (
-      ""
-    ) : c === "notExpected" ? (
-      <abbr title={t("notExpected")} className="text-muted-foreground/60 no-underline">
-        {t("short.notExpected")}
-      </abbr>
-    ) : (
-      <abbr
-        title={t(`statuses.${c}`)}
-        className={
-          c === "absent"
-            ? "font-bold text-destructive no-underline"
-            : c === "present"
-              ? "text-muted-foreground no-underline"
-              : "font-bold no-underline"
-        }
-      >
-        {t(`short.${c}`)}
-      </abbr>
+    c === null ? null : (
+      <AttendanceMark
+        cell={c}
+        short={t(`short.${c}`)}
+        title={c === "notExpected" ? t("notExpected") : t(`statuses.${c}`)}
+      />
     );
 
   return (
     <>
-      <nav className="mb-4 flex gap-2">
+      <nav className="mb-4 inline-flex gap-1 rounded-xl bg-muted p-1 ring-1 ring-border">
         {([1, 2] as const).map((position) => (
           <Link
             key={position}
             href={`/classes/${id}/attendance?term=${position}${withGroup}`}
             aria-current={position === sheet.position ? "page" : undefined}
-            className="flex h-10 items-center rounded-full bg-muted px-4 text-sm font-bold text-muted-foreground hover:text-foreground aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
+            className="flex h-9 items-center rounded-lg px-4 text-sm font-semibold text-muted-foreground hover:text-foreground aria-[current=page]:bg-card aria-[current=page]:text-foreground aria-[current=page]:shadow-sm"
           >
             {tTerm(String(position))}
           </Link>
@@ -137,16 +127,22 @@ export default async function AttendancePage({ params, searchParams }: PageProps
               {sheet.rows.map(({ student, counts }) => {
                 const low = belowMinimum(counts.rate, minimum);
                 return (
-                  <li key={student.id} className="rounded-2xl bg-card p-4 ring-1 ring-border">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <Link href={`/students/${student.id}`} className="font-bold">
-                        {student.lastName}, <span className="font-normal">{student.firstName}</span>
+                  <li
+                    key={student.id}
+                    className={`rounded-2xl p-4 ring-1 ring-border ${low ? "bg-alert-soft" : "bg-card"}`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <Link href={`/students/${student.id}`} className="flex min-w-0 items-center gap-3 font-bold">
+                        <Initials firstName={student.firstName} lastName={student.lastName} />
+                        <span className="truncate">
+                          {student.lastName}, <span className="font-normal">{student.firstName}</span>
+                        </span>
                       </Link>
                       <span className={`font-heading text-xl font-bold tabular-nums ${low ? "text-destructive" : ""}`}>
                         {counts.rate === null ? "—" : `${counts.rate} %`}
                       </span>
                     </div>
-                    <div className="relative mt-2 h-2 rounded-full bg-muted">
+                    <div className="relative mt-3 h-2 rounded-full bg-muted">
                       {counts.rate !== null && (
                         <div
                           className={`absolute inset-y-0 left-0 rounded-r-[4px] ${low ? "bg-alert" : "bg-primary"}`}
@@ -178,14 +174,19 @@ export default async function AttendancePage({ params, searchParams }: PageProps
             <table className="text-sm">
               <thead>
                 <tr className="border-b bg-muted">
-                  <th className="sticky left-0 z-10 bg-muted px-4 py-3 text-left font-bold">{t("student")}</th>
+                  <th className="sticky left-0 z-10 bg-muted px-4 py-3 text-left text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+                    {t("student")}
+                  </th>
                   {sheet.days.map((d) => (
-                    <th key={d.date} className="px-0.5 py-1.5 font-medium">
+                    <th
+                      key={d.date}
+                      className={`px-0.5 py-1.5 font-medium ${d.date === today ? "bg-highlight-soft" : ""}`}
+                    >
                       <Link
                         href={dayHref(d.date)}
                         title={dayTitle(d)}
                         aria-current={d.date === today ? "date" : undefined}
-                        className={`flex min-w-9 flex-col items-center rounded-lg px-1 py-0.5 leading-tight hover:bg-background aria-[current=date]:ring-2 aria-[current=date]:ring-primary ${
+                        className={`flex min-w-9 flex-col items-center rounded-lg px-1 py-0.5 leading-tight hover:bg-background aria-[current=date]:font-bold aria-[current=date]:text-highlight ${
                           d.state === "off" || d.state === "notHeld"
                             ? "text-muted-foreground/70 line-through decoration-1"
                             : d.state === "pending" && d.date <= today
@@ -202,7 +203,9 @@ export default async function AttendancePage({ params, searchParams }: PageProps
                       </Link>
                     </th>
                   ))}
-                  <th className="border-l px-3 py-2 font-medium">{t("rate")}</th>
+                  <th className="border-l px-3 py-2 text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+                    {t("rate")}
+                  </th>
                   {(["present", "absent", "late", "excused"] as const).map((s) => (
                     <th key={s} className="px-2 py-2 font-medium">
                       <abbr title={t(`statuses.${s}`)} className="no-underline">
@@ -213,48 +216,75 @@ export default async function AttendancePage({ params, searchParams }: PageProps
                 </tr>
               </thead>
               <tbody>
-                {sheet.rows.map(({ student, cells, counts }) => (
-                  <tr key={student.id} className="border-b last:border-0 hover:bg-muted/60">
-                    <td className="sticky left-0 bg-card px-4 py-2 font-bold whitespace-nowrap">
-                      <Link href={`/students/${student.id}`} className="hover:underline">
-                        {student.lastName}, <span className="font-normal">{student.firstName}</span>
-                      </Link>
-                    </td>
-                    {cells.map((c, i) => {
-                      const d = sheet.days[i];
-                      const blank = d.state === "off" || d.state === "notHeld";
-                      return (
-                        <td
-                          key={d.date}
-                          className={`px-0.5 py-1.5 text-center ${blank ? "bg-muted/50" : ""}`}
-                        >
-                          {cell(c)}
-                        </td>
-                      );
-                    })}
-                    <td className="border-l px-3 py-1.5 text-center font-bold whitespace-nowrap tabular-nums">
-                      {counts.rate === null ? (
-                        "—"
-                      ) : (
-                        <span className={belowMinimum(counts.rate, minimum) ? "text-destructive" : ""}>
-                          {counts.rate} %
-                        </span>
-                      )}
-                    </td>
-                    {(["present", "absent", "late", "excused"] as const).map((s) => (
-                      <td key={s} className="px-2 py-1.5 text-center text-muted-foreground tabular-nums">
-                        {counts[s]}
+                {sheet.rows.map(({ student, cells, counts }) => {
+                  // Below the minimum: the whole row is tinted red, the rate is a red pill.
+                  const low = belowMinimum(counts.rate, minimum);
+                  return (
+                    <tr
+                      key={student.id}
+                      className={`border-b last:border-0 ${low ? "bg-alert-soft" : "hover:bg-muted/60"}`}
+                    >
+                      <td
+                        className={`sticky left-0 px-4 py-2 font-bold whitespace-nowrap ${low ? "bg-alert-soft" : "bg-card"}`}
+                      >
+                        <Link href={`/students/${student.id}`} className="flex items-center gap-3 hover:underline">
+                          <Initials firstName={student.firstName} lastName={student.lastName} />
+                          <span>
+                            {student.lastName}, <span className="font-normal">{student.firstName}</span>
+                          </span>
+                        </Link>
                       </td>
-                    ))}
-                  </tr>
-                ))}
+                      {cells.map((c, i) => {
+                        const d = sheet.days[i];
+                        const blank = d.state === "off" || d.state === "notHeld";
+                        return (
+                          <td
+                            key={d.date}
+                            className={`px-0.5 py-1.5 text-center ${
+                              d.date === today ? "bg-highlight-soft/70" : blank ? "bg-muted/50" : ""
+                            }`}
+                          >
+                            {cell(c)}
+                          </td>
+                        );
+                      })}
+                      <td className="border-l px-3 py-1.5 text-center font-bold whitespace-nowrap tabular-nums">
+                        {counts.rate === null ? (
+                          "—"
+                        ) : low ? (
+                          <Badge tone="alert" className="bg-card tabular-nums">
+                            <CircleAlert aria-hidden />
+                            {counts.rate} %
+                          </Badge>
+                        ) : (
+                          `${counts.rate} %`
+                        )}
+                      </td>
+                      {(["present", "absent", "late", "excused"] as const).map((s) => (
+                        <td key={s} className="px-2 py-1.5 text-center text-muted-foreground tabular-nums">
+                          {counts[s]}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </>
       )}
       {sheet.rows.length > 0 && sheet.days.length > 0 && (
-        <p className="mt-3 text-xs text-muted-foreground">{t("legend")}</p>
+        <div className="mt-4 grid gap-2">
+          <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+            {(["present", "absent", "late", "excused"] as const).map((s) => (
+              <li key={s} className="flex items-center gap-2">
+                <AttendanceMark cell={s} short={t(`short.${s}`)} title={t(`statuses.${s}`)} className="size-6" />
+                {t(`statuses.${s}`)}
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-muted-foreground">{t("legend")}</p>
+        </div>
       )}
 
       <GoToDate

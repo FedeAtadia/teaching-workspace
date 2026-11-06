@@ -37,13 +37,13 @@ export default async function TermGradesPage({ params, searchParams }: PageProps
 
   return (
     <>
-      <nav className="mb-4 flex gap-2">
+      <nav className="mb-4 inline-flex gap-1 rounded-xl bg-muted p-1 ring-1 ring-border">
         {terms.map((tm) => (
           <Link
             key={tm.id}
             href={`/classes/${id}/term-grades?term=${tm.position}`}
             aria-current={tm.id === term.id ? "page" : undefined}
-            className="flex h-10 items-center rounded-full bg-muted px-4 text-sm font-bold text-muted-foreground hover:text-foreground aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
+            className="flex h-9 items-center rounded-lg px-4 text-sm font-semibold text-muted-foreground hover:text-foreground aria-[current=page]:bg-card aria-[current=page]:text-foreground aria-[current=page]:shadow-sm"
           >
             {tTerm(String(tm.position))}
           </Link>

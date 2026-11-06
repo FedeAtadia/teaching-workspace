@@ -26,8 +26,10 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
   return (
     <>
       <BackLink href="/classes" label={t("back")} />
-      <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
-        <h1 className="text-3xl font-bold">{cls.name}</h1>
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          {formatCourse(cls.year, cls.division)} · {cls.name}
+        </h1>
         <div className="flex flex-wrap gap-2">
           <EditClassDialog
             classId={id}
@@ -59,8 +61,16 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
           />
         </div>
       </div>
-      <p className="mt-1 mb-5 text-muted-foreground">
-        {[course, cls.school, cls.weekdays.map((d) => tDayShort(String(d))).join(", ")].filter(Boolean).join(" · ")}
+      {/* The course is in the title; the rest of what identifies the class goes here. */}
+      <p className="mt-1.5 mb-6 text-muted-foreground">
+        {[
+          tShift(cls.shift),
+          cls.schoolYear,
+          cls.school,
+          cls.weekdays.map((d) => tDayShort(String(d))).join(", "),
+        ]
+          .filter(Boolean)
+          .join(" · ")}
       </p>
       <ClassTabs
         title={t("tabs.title")}
