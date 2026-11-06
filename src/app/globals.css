@@ -44,6 +44,7 @@
   --color-highlight: var(--highlight);
   --color-highlight-soft: var(--highlight-soft);
   --color-alert: var(--alert);
+  --color-brand: var(--brand);
   --color-alert-soft: var(--alert-soft);
   --color-alert-deep: var(--alert-deep);
   --color-accent-deep: var(--accent-deep);
@@ -105,6 +106,9 @@
   /* Red as text and outlines; --alert is the fill (bars, the logo). */
   --destructive: light-dark(#d6004a, #ff4d85);
   --alert: #ff0054;
+  /* The logo's main blue: the "o" in "annora". Large bold text, so 3:1 is enough
+     (#0496ff on white 3.1:1; #74cbf5 on the dark sidebar 8.9:1). */
+  --brand: light-dark(#0496ff, #74cbf5);
   /* The tint behind red text (pills, at-risk rows): #d6004a on it is 4.7:1,
      #ff4d85 on the dark one 5.6:1. */
   --alert-soft: light-dark(#fff0f4, #3a1222);

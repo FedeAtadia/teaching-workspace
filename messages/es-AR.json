@@ -114,7 +114,8 @@
       "duplicate": "Ese curso ya tiene esa materia.",
       "courseExists": "Ya tenés otro curso con esa escuela, año, división, turno y ciclo lectivo.",
       "notFound": "No se encontró este curso. Recargá la página."
-    }
+    },
+    "count": "{count, plural, one {# curso} other {# cursos}}"
   },
   "classPage": {
     "back": "Cursos",
@@ -148,7 +149,10 @@
       "empty": "Este curso todavía no tiene estudiantes. Agregalos desde Estudiantes.",
       "count": "{count, plural, one {# estudiante} other {# estudiantes}}",
       "lastName": "Apellido",
-      "firstName": "Nombre"
+      "firstName": "Nombre",
+      "student": "Estudiante",
+      "group": "Grupo",
+      "adaptation": "Adaptación"
     },
     "standards": {
       "intro": "Valen para todo el ciclo lectivo.",
@@ -214,7 +218,9 @@
       "adapted": {
         "title": "Versión adaptada",
         "empty": "Para estudiantes con adaptación. Agregá la consigna o el criterio adaptado con «Editar tarea», y el archivo acá."
-      }
+      },
+      "count": "{count, plural, one {# tarea} other {# tareas}}",
+      "fileTitle": "Archivo de la tarea"
     },
     "deleteTask": {
       "button": "Eliminar tarea",
@@ -257,7 +263,8 @@
         "notesTooLong": "Las observaciones son demasiado largas."
       },
       "adapted": "Adaptada",
-      "adaptedFor": "Nota adaptada de {name}"
+      "adaptedFor": "Nota adaptada de {name}",
+      "title": "Planilla de calificación"
     },
     "grades": {
       "student": "Estudiante",
@@ -362,6 +369,9 @@
     "introLast": "El resultado de cada estudiante en la materia, y su egreso. La nota final es la del 2° cuatrimestre; quien no aprueba la debe hasta rendirla.",
     "toFinalGrades": "Cargar notas finales",
     "finalGrade": "Nota final",
+    "student": "Estudiante",
+    "result": "Resultado en la materia",
+    "outcome": "Fin de año",
     "outcomeFor": "Fin de año de {name}",
     "undecided": "Sin decidir",
     "outcomes": {
@@ -401,7 +411,12 @@
     "errors": {
       "notOwed": "Esta materia ya no está adeudada. Recargá la página.",
       "notFound": "No se encontró. Recargá la página."
-    }
+    },
+    "closingLink": "Cierre del curso",
+    "pending": "{count, plural, one {# pendiente} other {# pendientes}}",
+    "finalGradeBadge": "Nota final {grade}",
+    "gradeBadge": "Nota {grade}",
+    "history": "Exámenes anteriores"
   },
   "nextYear": {
     "button": "{count, plural, one {Traer # estudiante del año pasado} other {Traer # estudiantes del año pasado}}",
@@ -444,7 +459,8 @@
       "title": "Apariencia",
       "system": "Sistema",
       "light": "Claro",
-      "dark": "Oscuro"
+      "dark": "Oscuro",
+      "hint": "Tema visual de la aplicación"
     },
     "schools": {
       "title": "Escuelas",
@@ -463,7 +479,8 @@
       "minimum": "Asistencia mínima (%)",
       "hint": "Debajo de este porcentaje en un cuatrimestre, el promedio sugerido se muestra como no aprobado, con «asistencia insuficiente». El número no cambia. Con 0 no se marca nada.",
       "saved": "Guardado."
-    }
+    },
+    "languageHint": "Idioma de la interfaz"
   },
   "weekdays": {
     "1": "Lunes",
@@ -516,6 +533,13 @@
         "jornada": "Jornada",
         "recess": "Receso",
         "other": "Otro"
+      },
+      "until": "al {date}",
+      "totals": {
+        "holiday": "Feriados",
+        "jornada": "Jornadas",
+        "recess": "Recesos",
+        "other": "Otros"
       }
     },
     "holidays": {
@@ -584,6 +608,7 @@
       "save": "Guardar asistencia",
       "saved": "Asistencia guardada.",
       "failed": "No se pudo guardar. Recargá la página.",
+      "legend": "P: presente · A: ausente · T: tarde (media falta) · J: justificado (no cuenta)",
       "noClass": {
         "title": "¿No hubo clase?",
         "reason": "Motivo",

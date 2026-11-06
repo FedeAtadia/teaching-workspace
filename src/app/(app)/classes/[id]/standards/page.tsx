@@ -1,7 +1,11 @@
+import { BadgeCheck, ClipboardList } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { cn } from "cn";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { Initials } from "@/components/Initials";
 import { Attachment } from "@/components/classes/Attachment";
 import { FormDialog, type FieldSpec } from "@/components/forms/FormDialog";
+import { Badge } from "@/components/ui/badge";
 import { getAdaptations, listStudentStandards } from "@/db/queries/adaptations";
 import { listClassStudents, listStandards, type StandardRow } from "@/db/queries/classDetail";
 import { addStandard, editStandard, removeStandard } from "../actions";
@@ -33,15 +37,17 @@ export default async function StandardsPage({ params }: PageProps<"/classes/[id]
   ];
   const formErrors = { notFound: tErr("notFound") };
 
-  const standardList = (items: StandardRow[]) => (
+  // ADAPT-2: a student's own standards carry the alert colour of their adaptation.
+  const standardList = (items: StandardRow[], own = false) => (
     <ol className="grid gap-3">
-      {items.map((s, i) => (
-        <li key={s.id} className="flex items-start gap-3 rounded-2xl bg-card p-4 ring-1 ring-border">
+      {items.map((s) => (
+        <li key={s.id} className="flex items-start gap-3 rounded-2xl bg-card p-5 ring-1 ring-border">
+          <span
+            aria-hidden
+            className={cn("mt-1 h-5 w-1 shrink-0 rounded-full", own ? "bg-destructive" : "bg-primary")}
+          />
           <div className="min-w-0 flex-1">
-            <p className="font-medium">
-              <span className="mr-2 text-muted-foreground tabular-nums">{i + 1}.</span>
-              {s.title}
-            </p>
+            <h3 className="font-heading text-lg leading-snug font-bold">{s.title}</h3>
             {s.description && <p className="mt-1 text-sm whitespace-pre-line text-muted-foreground">{s.description}</p>}
             {/* FILE-4: a rubric or any other file for this standard. */}
             <div className="mt-3">
@@ -80,13 +86,15 @@ export default async function StandardsPage({ params }: PageProps<"/classes/[id]
   );
 
   // ADAPT-2: a section per student with an adaptation (even with no standards yet), in roster order.
-  const nameOf = new Map(roster.map((s) => [s.id, `${s.lastName}, ${s.firstName}`]));
   const adaptedStudents = roster.filter((s) => adaptations.has(s.id));
 
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">{t("intro")}</p>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <p className="flex items-center gap-2 text-muted-foreground">
+          <BadgeCheck className="size-5 shrink-0 text-highlight" aria-hidden />
+          {t("intro")}
+        </p>
         <FormDialog
           triggerLabel={t("add")}
           title={t("dialogTitle")}
@@ -96,20 +104,29 @@ export default async function StandardsPage({ params }: PageProps<"/classes/[id]
           fields={fields()}
         />
       </div>
-      {list.length === 0 ? <p className="text-sm text-muted-foreground">{t("empty")}</p> : standardList(list)}
+      {list.length === 0 ? (
+        <p className="rounded-2xl bg-card p-8 text-center text-sm text-muted-foreground ring-1 ring-border">
+          {t("empty")}
+        </p>
+      ) : (
+        standardList(list)
+      )}
 
       {adaptedStudents.map((student) => {
-        const name = nameOf.get(student.id)!;
+        const name = `${student.lastName}, ${student.firstName}`;
         const own = ownLists.find((g) => g.studentId === student.id)?.standards ?? [];
         return (
-          <section key={student.id} className="mt-8">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-bold">
-                {t("ownTitle", { name })}
-                <span className="ml-2 rounded-full bg-highlight-soft px-2 py-0.5 align-middle text-[0.7rem] font-bold text-highlight">
-                  {t("ownBadge")}
-                </span>
-              </h2>
+          <section key={student.id} className="mt-8 grid gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-card px-5 py-4 ring-1 ring-border">
+              <div className="flex min-w-0 flex-wrap items-center gap-3">
+                <Initials
+                  firstName={student.firstName}
+                  lastName={student.lastName}
+                  className="size-10 bg-alert-soft text-sm text-destructive"
+                />
+                <h2 className="font-heading text-lg font-bold">{t("ownTitle", { name })}</h2>
+                <Badge tone="alert">{t("ownBadge")}</Badge>
+              </div>
               <FormDialog
                 trigger="addSmall"
                 triggerLabel={t("add")}
@@ -121,9 +138,14 @@ export default async function StandardsPage({ params }: PageProps<"/classes/[id]
               />
             </div>
             {own.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t("ownEmpty")}</p>
+              <p className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center text-sm text-muted-foreground ring-1 ring-border">
+                <span className="flex size-11 items-center justify-center rounded-full bg-muted">
+                  <ClipboardList className="size-5" aria-hidden />
+                </span>
+                {t("ownEmpty")}
+              </p>
             ) : (
-              standardList(own)
+              standardList(own, true)
             )}
           </section>
         );

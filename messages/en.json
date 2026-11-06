@@ -114,7 +114,8 @@
       "duplicate": "That course already has this subject.",
       "courseExists": "You already have another course with that school, year, division, shift and school year.",
       "notFound": "This class wasn't found. Reload the page."
-    }
+    },
+    "count": "{count, plural, one {# class} other {# classes}}"
   },
   "classPage": {
     "back": "Classes",
@@ -148,7 +149,10 @@
       "empty": "This course has no students yet. Add them from Students.",
       "count": "{count, plural, one {# student} other {# students}}",
       "lastName": "Last name",
-      "firstName": "First name"
+      "firstName": "First name",
+      "student": "Student",
+      "group": "Group",
+      "adaptation": "Adaptation"
     },
     "standards": {
       "intro": "They apply to the whole school year.",
@@ -214,7 +218,9 @@
       "adapted": {
         "title": "Adapted version",
         "empty": "For students with an adaptation. Add the adapted instructions or standard with “Edit task”, and the file here."
-      }
+      },
+      "count": "{count, plural, one {# task} other {# tasks}}",
+      "fileTitle": "Task file"
     },
     "deleteTask": {
       "button": "Delete task",
@@ -257,7 +263,8 @@
         "notesTooLong": "The notes are too long."
       },
       "adapted": "Adapted",
-      "adaptedFor": "{name}'s score is adapted"
+      "adaptedFor": "{name}'s score is adapted",
+      "title": "Scoring sheet"
     },
     "grades": {
       "student": "Student",
@@ -362,6 +369,9 @@
     "introLast": "Each student's result in the class, and their graduation. The final grade is the 2nd term's; a failed class is owed until passed by exam.",
     "toFinalGrades": "Enter final grades",
     "finalGrade": "Final grade",
+    "student": "Student",
+    "result": "Result in the class",
+    "outcome": "Year end",
     "outcomeFor": "Year end for {name}",
     "undecided": "Undecided",
     "outcomes": {
@@ -401,7 +411,12 @@
     "errors": {
       "notOwed": "This class is no longer owed. Reload the page.",
       "notFound": "Not found. Reload the page."
-    }
+    },
+    "closingLink": "Year end",
+    "pending": "{count, plural, one {# pending} other {# pending}}",
+    "finalGradeBadge": "Final grade {grade}",
+    "gradeBadge": "Grade {grade}",
+    "history": "Previous exams"
   },
   "nextYear": {
     "button": "{count, plural, one {Bring in # student from last year} other {Bring in # students from last year}}",
@@ -444,7 +459,8 @@
       "title": "Appearance",
       "system": "System",
       "light": "Light",
-      "dark": "Dark"
+      "dark": "Dark",
+      "hint": "How the app looks"
     },
     "schools": {
       "title": "Schools",
@@ -463,7 +479,8 @@
       "minimum": "Minimum attendance (%)",
       "hint": "Below this percentage in a cuatrimestre, the suggested average shows as not passing, with “attendance too low”. The number doesn't change. 0 turns it off.",
       "saved": "Saved."
-    }
+    },
+    "languageHint": "Interface language"
   },
   "weekdays": {
     "1": "Monday",
@@ -515,6 +532,13 @@
         "holiday": "Holiday",
         "jornada": "Jornada",
         "recess": "Break",
+        "other": "Other"
+      },
+      "until": "to {date}",
+      "totals": {
+        "holiday": "Holidays",
+        "jornada": "Jornadas",
+        "recess": "Recesses",
         "other": "Other"
       }
     },
@@ -584,6 +608,7 @@
       "save": "Save attendance",
       "saved": "Attendance saved.",
       "failed": "Couldn't save. Reload the page.",
+      "legend": "P: present · A: absent · L: late (half an absence) · E: excused (doesn't count)",
       "noClass": {
         "title": "Class didn't happen?",
         "reason": "Reason",
