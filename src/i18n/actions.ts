@@ -1,7 +1,14 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { resolveSidebar, resolveTheme, SIDEBAR_COOKIE, THEME_COOKIE } from "@/lib/theme";
+import {
+  PALETTE_COOKIE,
+  resolvePalette,
+  resolveSidebar,
+  resolveTheme,
+  SIDEBAR_COOKIE,
+  THEME_COOKIE,
+} from "@/lib/theme";
 import { LOCALE_COOKIE, resolveLocale } from "./config";
 
 // Preferences live in cookies so the server renders them from the first byte.
@@ -14,6 +21,11 @@ export async function setLocale(locale: string) {
 /** THEME-1 */
 export async function setTheme(theme: string) {
   (await cookies()).set(THEME_COOKIE, resolveTheme(theme), YEAR);
+}
+
+/** THEME-3 */
+export async function setPalette(palette: string) {
+  (await cookies()).set(PALETTE_COOKIE, resolvePalette(palette), YEAR);
 }
 
 /** NAV-1 */

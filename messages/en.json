@@ -462,6 +462,14 @@
       "dark": "Dark",
       "hint": "How the app looks"
     },
+    "palette": {
+      "title": "Colour theme",
+      "hint": "The app's colours. Each theme has a light and a dark version.",
+      "teal": "Nordic teal",
+      "terracota": "Terracotta",
+      "malva": "Mauve",
+      "pizarra": "Slate"
+    },
     "schools": {
       "title": "Schools",
       "intro": "They're created when you add a class. Here you can rename them and set each year's school calendar.",

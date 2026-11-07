@@ -3,15 +3,15 @@
 @import "shadcn/tailwind.css";
 
 /*
- * Annora, still in the STACK palette: cool grey and white in the light, deep
- * navy in the dark, one bright blue accent and a red for alerts. Every colour is written once with
- * light-dark(); which side applies comes from `color-scheme` (THEME-1, THEME-2):
+ * Annora's colours: four themes (Teal nórdico, Terracota, Malva, Pizarra;
+ * THEME-3), chosen by data-palette on <html>, plus one red for alerts shared by
+ * all. Every colour is written once with light-dark(); which side applies comes
+ * from `color-scheme` (THEME-1, THEME-2):
  *   - no class on <html>  → the device's setting ("Sistema")
  *   - <html class="dark"> / <html class="light"> → the teacher's choice
  *
- * Text pairs are at least 4.5:1. That is why buttons put dark text on the blue
- * (white on #0496FF is 3.1:1), and why red and blue *text* use deeper shades
- * (#D6004A, #1272B5) than the fills (#FF0054, #157CC5).
+ * Text pairs are at least 4.5:1. That is why accent *text* (--highlight) is a
+ * deeper shade than the fills, and why dark themes put dark text on --primary.
  */
 :root {
   color-scheme: light dark;
@@ -86,55 +86,141 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* What every theme shares: the reds stay the same, so an alert always looks like one. */
 :root {
-  /*                        light            dark */
-  --background: light-dark(#eef0f4, #12151c);
-  --foreground: light-dark(#1b1f2a, #eef0f4);
-  --card: light-dark(#ffffff, #1b1f2a);
-  --card-foreground: light-dark(#1b1f2a, #eef0f4);
-  --popover: light-dark(#ffffff, #1b1f2a);
-  --popover-foreground: light-dark(#1b1f2a, #eef0f4);
-  /* The accent, with dark text on it in both themes (5.3:1 and 5.9:1). */
-  --primary: #0496ff;
-  --primary-foreground: light-dark(#1b1f2a, #12151c);
-  --secondary: light-dark(#f3f4f7, #242938);
-  --secondary-foreground: light-dark(#1b1f2a, #eef0f4);
-  --muted: light-dark(#f3f4f7, #242938);
-  --muted-foreground: light-dark(#5a6275, #9aa3b5);
-  --accent: light-dark(#e6f4ff, #0f2a44);
-  --accent-foreground: light-dark(#0f6bae, #7cc6ff);
-  /* Red as text and outlines; --alert is the fill (bars, the logo). */
+  /* Red as text and outlines; --alert is the fill (bars). */
   --destructive: light-dark(#d6004a, #ff4d85);
   --alert: #ff0054;
-  /* The logo's main blue: the "o" in "annora". Large bold text, so 3:1 is enough
-     (#0496ff on white 3.1:1; #74cbf5 on the dark sidebar 8.9:1). */
-  --brand: light-dark(#0496ff, #74cbf5);
   /* The tint behind red text (pills, at-risk rows): #d6004a on it is 4.7:1,
      #ff4d85 on the dark one 5.6:1. */
   --alert-soft: light-dark(#fff0f4, #3a1222);
   /* A tile filled in red with white text on it (6.2:1); #ff0054 is too light for that. */
   --alert-deep: light-dark(#c4003f, #b3003a);
-  --accent-deep: #157cc5;
-  --border: light-dark(#dde1ea, #2f3546);
-  --input: light-dark(#cfd4de, #3a4153);
-  --ring: #0496ff;
-  /* Blue text and figures (links, counts), and the tint badges sit on. */
-  --highlight: light-dark(#1272b5, #4db2ff);
-  --highlight-soft: light-dark(#e6f4ff, #0f2a44);
-  --chart-1: #0496ff;
-  --chart-2: #157cc5;
   --chart-3: #ff0054;
-  --chart-4: light-dark(#5a6275, #9aa3b5);
-  --chart-5: light-dark(#1b1f2a, #eef0f4);
   --radius: 0.75rem;
-  --sidebar: light-dark(#ffffff, #1b1f2a);
-  --sidebar-foreground: light-dark(#1b1f2a, #eef0f4);
-  --sidebar-primary: #0496ff;
-  --sidebar-primary-foreground: light-dark(#1b1f2a, #12151c);
-  --sidebar-accent: light-dark(#e6f4ff, #0f2a44);
-  --sidebar-accent-foreground: light-dark(#0f6bae, #7cc6ff);
-  --sidebar-border: light-dark(#dde1ea, #2f3546);
-  --sidebar-ring: #0496ff;
+}
+
+/*
+ * THEME-3: each theme gives the same set of colours, light and dark. Checked:
+ * text on its background, card and muted at least 4.5:1; text on --primary and
+ * white on --accent-deep at least 4.5:1; --brand (the large "o") at least 3:1.
+ * --logo-* paint the mark (THEME-4): the leg, then the two stops of the
+ * triangle's and the foot's gradients (equal in light, a soft gradient in dark).
+ */
+/* Teal nórdico (the default, THEME-3) */
+:root,
+[data-palette="teal"] {
+  --background: light-dark(#eef4f3, #0b171b);
+  --foreground: light-dark(#112d2e, #e6f2f1);
+  --card: light-dark(#ffffff, #13242a);
+  --muted: light-dark(#f2f7f6, #1c3137);
+  --muted-foreground: light-dark(#4d6a6c, #93b3b0);
+  --primary: light-dark(#006d77, #2ec4b6);
+  --primary-foreground: light-dark(#ffffff, #0b171b);
+  --accent: light-dark(#dff1ef, #0f3438);
+  --highlight: light-dark(#005f68, #5fd8cc);
+  --accent-deep: light-dark(#0b4f57, #12766e);
+  --border: light-dark(#d3e2e0, #24393f);
+  --input: light-dark(#bfd4d1, #2f4950);
+  --brand: light-dark(#006d77, #2ec4b6);
+  --logo-leg: light-dark(#006d77, #2ec4b6);
+  --logo-tri-1: light-dark(#0b4f57, #2ec4b6);
+  --logo-tri-2: light-dark(#0b4f57, #64dfdf);
+  --logo-foot-1: light-dark(#2ec4b6, #64dfdf);
+  --logo-foot-2: light-dark(#2ec4b6, #a8f0ec);
+}
+
+/* Terracota */
+[data-palette="terracota"] {
+  --background: light-dark(#fbf3ef, #151110);
+  --foreground: light-dark(#2b211e, #f6ece7);
+  --card: light-dark(#ffffff, #211a18);
+  --muted: light-dark(#f8efea, #2d2422);
+  --muted-foreground: light-dark(#74584e, #b69c92);
+  --primary: light-dark(#b8532e, #e07a5f);
+  --primary-foreground: light-dark(#ffffff, #151110);
+  --accent: light-dark(#fbe5da, #3b2620);
+  --highlight: light-dark(#9c4420, #f2a88e);
+  --accent-deep: light-dark(#8e3b1c, #a6452a);
+  --border: light-dark(#ebdcd4, #3b2f2b);
+  --input: light-dark(#decac0, #4b3c37);
+  --brand: light-dark(#d96b43, #e07a5f);
+  --logo-leg: light-dark(#d96b43, #e07a5f);
+  --logo-tri-1: light-dark(#9e4526, #e07a5f);
+  --logo-tri-2: light-dark(#9e4526, #f4a261);
+  --logo-foot-1: light-dark(#f4a261, #f4a261);
+  --logo-foot-2: light-dark(#f4a261, #e9c46a);
+}
+
+/* Malva */
+[data-palette="malva"] {
+  --background: light-dark(#f4f1fa, #13101b);
+  --foreground: light-dark(#251a38, #eeeaf6);
+  --card: light-dark(#ffffff, #1d1828);
+  --muted: light-dark(#f6f3fb, #28223a);
+  --muted-foreground: light-dark(#675c7f, #a99fc0);
+  --primary: light-dark(#6e58a0, #b794f4);
+  --primary-foreground: light-dark(#ffffff, #13101b);
+  --accent: light-dark(#ece6f8, #2e2548);
+  --highlight: light-dark(#5c4790, #cdb5fa);
+  --accent-deep: light-dark(#4e3c80, #6b50b8);
+  --border: light-dark(#e2dbef, #332b48);
+  --input: light-dark(#d3c9e5, #41375b);
+  --brand: light-dark(#7e69ab, #b794f4);
+  --logo-leg: light-dark(#7e69ab, #b794f4);
+  --logo-tri-1: light-dark(#54437f, #9d8df1);
+  --logo-tri-2: light-dark(#54437f, #d6bcfa);
+  --logo-foot-1: light-dark(#b794f4, #b794f4);
+  --logo-foot-2: light-dark(#b794f4, #e6d6fc);
+}
+
+/* Pizarra */
+[data-palette="pizarra"] {
+  --background: light-dark(#eef2f6, #151e27);
+  --foreground: light-dark(#16222c, #e8eef4);
+  --card: light-dark(#ffffff, #1d2833);
+  --muted: light-dark(#f1f4f8, #27333f);
+  --muted-foreground: light-dark(#556677, #9bacbd);
+  --primary: light-dark(#3e5c76, #7ea8ce);
+  --primary-foreground: light-dark(#ffffff, #151e27);
+  --accent: light-dark(#e2eaf2, #22354b);
+  --highlight: light-dark(#33516b, #a9c7e4);
+  --accent-deep: light-dark(#2b4255, #4a6e91);
+  --border: light-dark(#d7dfe7, #2f3c49);
+  --input: light-dark(#c7d2dd, #3b4a59);
+  --brand: light-dark(#3e5c76, #7ea8ce);
+  --logo-leg: light-dark(#3e5c76, #7ea8ce);
+  --logo-tri-1: light-dark(#2b4255, #5b82a6);
+  --logo-tri-2: light-dark(#2b4255, #93b7d8);
+  --logo-foot-1: light-dark(#7ea8ce, #93b7d8);
+  --logo-foot-2: light-dark(#7ea8ce, #c3d8ec);
+}
+
+/* The rest follows from each theme's colours. Declared on every theme element,
+   so a nested data-palette (the sign-in page, THEME-4) gets its own set. */
+:root,
+[data-palette] {
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --secondary: var(--muted);
+  --secondary-foreground: var(--foreground);
+  /* Accent text and figures (links, counts), and the tint badges sit on. */
+  --accent-foreground: var(--highlight);
+  --highlight-soft: var(--accent);
+  --ring: var(--primary);
+  --chart-1: var(--primary);
+  --chart-2: var(--accent-deep);
+  --chart-4: var(--muted-foreground);
+  --chart-5: var(--foreground);
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--highlight);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--primary);
 }
 
 @layer base {

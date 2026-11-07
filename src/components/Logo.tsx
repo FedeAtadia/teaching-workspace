@@ -9,9 +9,9 @@ const TRIANGLE = "M781.065,418.507C784.399,421.345 844.276,560.82 850.826,575.68
 const FOOT = "M834.162,1514.37L796.578,1596.14C790.244,1609.83 781.235,1631.12 773.677,1643.54C767.217,1654.24 759.427,1664.07 750.494,1672.8C707.145,1714.8 668.5,1717.01 612.101,1717.08L546.006,1717.14C477.861,1717.17 409.529,1717.27 341.378,1716.97C312.519,1716.84 287.231,1708.5 267.04,1686.94C250.127,1668.67 241.143,1644.44 242.055,1619.55C243.067,1596.69 256.917,1571.49 266.438,1550.63L309.601,1457.95L350.816,1367.25C361.329,1344.51 370.022,1319.41 388.953,1302.42C401.109,1291.6 416.125,1284.52 432.203,1282.02C442.689,1280.36 465.826,1280.54 477.1,1280.45L554.999,1279.8C622.929,1278.81 690.867,1278.43 758.804,1278.66C790.618,1278.62 836.262,1277.11 866.641,1278.94C889.716,1278.19 918.131,1278.36 941.253,1279.03C904.605,1355.97 869.663,1436.66 834.162,1514.37Z";
 
 /**
- * The mark alone. Light theme: the app blues. Dark theme: the teacher's own
- * colours (light blue and cyan gradients), which only read well on dark.
- * Decorative; the name next to it, or a label around it, is the text.
+ * The mark alone, in the colour theme's --logo-* colours (THEME-4): solid in
+ * light, soft gradients on the left pieces in dark, like the teacher's
+ * original. Decorative; the name next to it, or a label around it, is the text.
  */
 export function LogoMark({ className }: { className?: string }) {
   // Ids per instance: the phone header and the sidebar both draw a mark, and a
@@ -31,8 +31,8 @@ export function LogoMark({ className }: { className?: string }) {
           gradientUnits="userSpaceOnUse"
           gradientTransform="matrix(-650.535,103.207,-103.207,-650.535,1063.6,801.771)"
         >
-          <stop offset="0" stopColor="#74c6f6" />
-          <stop offset="1" stopColor="#26ecfb" />
+          <stop offset="0" style={{ stopColor: "var(--logo-tri-1)" }} />
+          <stop offset="1" style={{ stopColor: "var(--logo-tri-2)" }} />
         </linearGradient>
         <linearGradient
           id={foot}
@@ -43,25 +43,18 @@ export function LogoMark({ className }: { className?: string }) {
           gradientUnits="userSpaceOnUse"
           gradientTransform="matrix(-675.66,52.31,-52.31,-675.66,910.724,1470.19)"
         >
-          <stop offset="0" stopColor="#67caf7" />
-          <stop offset="1" stopColor="#00fffc" />
+          <stop offset="0" style={{ stopColor: "var(--logo-foot-1)" }} />
+          <stop offset="1" style={{ stopColor: "var(--logo-foot-2)" }} />
         </linearGradient>
       </defs>
-      <g className="dark:hidden">
-        <path d={LEG} fill="#0496ff" />
-        <path d={TRIANGLE} fill="#157cc5" />
-        <path d={FOOT} fill="#0fb4e6" />
-      </g>
-      <g className="hidden dark:inline">
-        <path d={LEG} fill="#74cbf5" />
-        <path d={TRIANGLE} fill={`url(#${tri})`} />
-        <path d={FOOT} fill={`url(#${foot})`} />
-      </g>
+      <path d={LEG} style={{ fill: "var(--logo-leg)" }} />
+      <path d={TRIANGLE} fill={`url(#${tri})`} />
+      <path d={FOOT} fill={`url(#${foot})`} />
     </svg>
   );
 }
 
-/** The mark and the name in lowercase League Spartan, its first "o" in the brand colour ("ann·o·ra"). */
+/** The mark and the name in lowercase League Spartan, its first "o" in the theme's brand colour ("ann·o·ra"). */
 export function Logo({ name, className, size = "md" }: { name: string; className?: string; size?: "md" | "lg" }) {
   const word = name.toLowerCase();
   const o = word.indexOf("o");
