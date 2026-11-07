@@ -524,16 +524,25 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   whether it is taken, not held or still to take. With no class today the
   list doesn't show.
 
-## THEME — Light and dark
+## THEME — Light, dark and colour themes
 
-*Enforced by `src/lib/theme.ts`, `src/app/layout.tsx`, `src/app/globals.css`.
-Covered by `src/lib/theme.test.ts`.*
+*Enforced by `src/lib/theme.ts`, `src/app/layout.tsx`, `src/app/globals.css`,
+`src/components/Logo.tsx`. Covered by `src/lib/theme.test.ts`; THEME-4's colours
+by hand (Known gaps).*
 
 - **THEME-1** The app follows the device's light or dark setting until the
   teacher picks Claro or Oscuro in Configuración; Sistema goes back to
   following the device. Any other stored value counts as Sistema.
 - **THEME-2** The choice is stored and applied as the page is served, so a
   page never flashes the other theme first.
+- **THEME-3** The teacher picks one of four colour themes in Configuración:
+  Teal nórdico, Terracota, Malva or Pizarra, each with its light and dark
+  version. Until one is picked, and for any other stored value, the theme is
+  Teal nórdico. Like Claro / Oscuro, the choice is stored and applied as the
+  page is served (THEME-2).
+- **THEME-4** Inside the app the logo and the "o" of "annora" take the chosen
+  theme's colours. The browser-tab icon and the sign-in page always use
+  Teal nórdico, the official logo, since nobody has chosen anything there.
 
 ## NAV — Getting around
 

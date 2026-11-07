@@ -6,6 +6,7 @@ import {
   type LucideIcon,
   Palette,
   School,
+  SwatchBook,
 } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -17,7 +18,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { MinAttendanceForm } from "@/components/settings/MinAttendanceForm";
 import { ThemeSelect } from "@/components/ThemeSelect";
 import { Badge } from "@/components/ui/badge";
-import { resolveTheme, THEME_COOKIE } from "@/lib/theme";
+import { PALETTE_COOKIE, resolvePalette, resolveTheme, THEME_COOKIE } from "@/lib/theme";
+import { PaletteSelect } from "@/components/PaletteSelect";
 import { getDb } from "@/db";
 import { listSchools } from "@/db/queries/classes";
 import { getMinAttendance } from "@/db/queries/settings";
@@ -27,7 +29,9 @@ import { renameSchoolAction } from "./actions";
 
 export default async function SettingsPage() {
   const t = await getTranslations("settings");
-  const theme = resolveTheme((await cookies()).get(THEME_COOKIE)?.value);
+  const jar = await cookies();
+  const theme = resolveTheme(jar.get(THEME_COOKIE)?.value);
+  const palette = resolvePalette(jar.get(PALETTE_COOKIE)?.value);
   const teacherId = isSupabaseConfigured() ? await requireTeacherId() : null;
   const [schools, minAttendance] = teacherId
     ? await Promise.all([listSchools(getDb(), teacherId), getMinAttendance(getDb(), teacherId)])
@@ -51,6 +55,20 @@ export default async function SettingsPage() {
             />
           </SettingsCard>
         </div>
+
+        {/* THEME-3 */}
+        <SettingsCard icon={SwatchBook} title={t("palette.title")}>
+          <p className="text-sm text-muted-foreground">{t("palette.hint")}</p>
+          <PaletteSelect
+            current={palette}
+            labels={{
+              teal: t("palette.teal"),
+              terracota: t("palette.terracota"),
+              malva: t("palette.malva"),
+              pizarra: t("palette.pizarra"),
+            }}
+          />
+        </SettingsCard>
 
         {minAttendance !== null && (
           <SettingsCard icon={ClipboardCheck} title={t("attendance.title")}>

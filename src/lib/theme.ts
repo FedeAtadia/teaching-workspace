@@ -19,6 +19,17 @@ export function htmlThemeClass(theme: Theme): "light" | "dark" | undefined {
   return theme === "system" ? undefined : theme;
 }
 
+/** THEME-3: the colour themes, the default first. Their colours live in globals.css. */
+export const PALETTES = ["teal", "terracota", "malva", "pizarra"] as const;
+export type Palette = (typeof PALETTES)[number];
+export const DEFAULT_PALETTE: Palette = "teal";
+export const PALETTE_COOKIE = "palette";
+
+/** THEME-3: anything but a known theme is Teal nórdico. */
+export function resolvePalette(value: string | undefined): Palette {
+  return PALETTES.includes(value as Palette) ? (value as Palette) : DEFAULT_PALETTE;
+}
+
 export type SidebarState = "expanded" | "collapsed";
 export const SIDEBAR_COOKIE = "sidebar";
 

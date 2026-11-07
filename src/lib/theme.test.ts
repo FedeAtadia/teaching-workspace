@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { htmlThemeClass, resolveSidebar, resolveTheme } from "./theme";
+import { DEFAULT_PALETTE, htmlThemeClass, PALETTES, resolvePalette, resolveSidebar, resolveTheme } from "./theme";
 
 describe("the theme (THEME)", () => {
   it("follows the device until Claro or Oscuro is picked (THEME-1)", () => {
@@ -18,6 +18,24 @@ describe("the theme (THEME)", () => {
     expect(htmlThemeClass("dark")).toBe("dark");
     expect(htmlThemeClass("light")).toBe("light");
     expect(htmlThemeClass("system")).toBeUndefined();
+  });
+});
+
+describe("the colour theme (THEME-3)", () => {
+  it("offers Teal nórdico, Terracota, Malva and Pizarra, Teal nórdico first", () => {
+    expect(PALETTES).toEqual(["teal", "terracota", "malva", "pizarra"]);
+    expect(DEFAULT_PALETTE).toBe("teal");
+  });
+
+  it("is Teal nórdico until another one is picked", () => {
+    expect(resolvePalette(undefined)).toBe("teal");
+    for (const palette of PALETTES) expect(resolvePalette(palette)).toBe(palette);
+  });
+
+  it("treats anything else stored as Teal nórdico", () => {
+    // An old or tampered cookie must still give a complete set of colours.
+    expect(resolvePalette("blue")).toBe("teal");
+    expect(resolvePalette("")).toBe("teal");
   });
 });
 

@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { cn } from "cn";
-import { htmlThemeClass, resolveTheme, THEME_COOKIE } from "@/lib/theme";
+import { htmlThemeClass, PALETTE_COOKIE, resolvePalette, resolveTheme, THEME_COOKIE } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,10 +15,12 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
-  // THEME-2: applied while rendering, so the page never paints the other theme first.
-  const theme = resolveTheme((await cookies()).get(THEME_COOKIE)?.value);
+  const jar = await cookies();
+  // THEME-2, THEME-3: applied while rendering, so the page never paints another theme first.
+  const theme = resolveTheme(jar.get(THEME_COOKIE)?.value);
+  const palette = resolvePalette(jar.get(PALETTE_COOKIE)?.value);
   return (
-    <html lang={locale} className={cn("h-full font-sans antialiased", htmlThemeClass(theme))}>
+    <html lang={locale} data-palette={palette} className={cn("h-full font-sans antialiased", htmlThemeClass(theme))}>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
