@@ -462,6 +462,14 @@
       "dark": "Oscuro",
       "hint": "Tema visual de la aplicación"
     },
+    "palette": {
+      "title": "Tema de color",
+      "hint": "Los colores de la app. Cada tema tiene su versión clara y oscura.",
+      "teal": "Teal nórdico",
+      "terracota": "Terracota",
+      "malva": "Malva",
+      "pizarra": "Pizarra"
+    },
     "schools": {
       "title": "Escuelas",
       "intro": "Se crean al agregar un curso. Acá podés cambiarles el nombre y cargar el calendario escolar de cada año.",
