@@ -784,23 +784,23 @@
       "items": [
         {
           "q": "¿Cuánto cuesta?",
-          "a": "[Respuesta pendiente]"
+          "a": "El primer mes es gratis; después, es una suscripción mensual de USD 2."
         },
         {
           "q": "¿Tengo que instalar algo?",
-          "a": "[Respuesta pendiente]"
+          "a": "No, todo funciona desde el navegador. Incluso se puede instalar y usar como una app."
         },
         {
           "q": "¿Mis estudiantes tienen que registrarse?",
-          "a": "[Respuesta pendiente]"
+          "a": "No, todos los registros son tuyos: tus estudiantes no necesitan cuenta."
         },
         {
           "q": "¿Sirve si doy clases en más de una escuela?",
-          "a": "[Respuesta pendiente]"
+          "a": "¡Obvio que sí! Se pueden agregar varias escuelas, cursos y estudiantes. Cada escuela tiene su calendario y cada curso, sus días de clase."
         },
         {
           "q": "¿Puedo usarlo en inglés?",
-          "a": "[Respuesta pendiente]"
+          "a": "Sí, es una plataforma multilingüe: hoy está en español y en inglés."
         }
       ]
     },

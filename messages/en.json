@@ -784,23 +784,23 @@
       "items": [
         {
           "q": "How much does it cost?",
-          "a": "[Answer pending]"
+          "a": "The first month is free; after that, it's a monthly subscription of USD 2."
         },
         {
           "q": "Do I have to install anything?",
-          "a": "[Answer pending]"
+          "a": "No, everything works in your browser. You can even install it and use it like an app."
         },
         {
           "q": "Do my students have to sign up?",
-          "a": "[Answer pending]"
+          "a": "No, all the records are yours: your students don't need an account."
         },
         {
           "q": "Does it work if I teach at more than one school?",
-          "a": "[Answer pending]"
+          "a": "Of course! You can add several schools, classes and students. Each school has its own calendar, and each class its own class days."
         },
         {
           "q": "Can I use it in English?",
-          "a": "[Answer pending]"
+          "a": "Yes, it's a multilingual platform: it's in Spanish and English today."
         }
       ]
     },
