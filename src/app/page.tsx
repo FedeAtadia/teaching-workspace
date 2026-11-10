@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { Faq } from "@/components/landing/Faq";
+import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { HomePreview, PhonePreview } from "@/components/landing/Previews";
-import { Logo } from "@/components/Logo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("landing.meta");
@@ -177,15 +177,7 @@ export default async function HomePage() {
         </section>
       </main>
 
-      <footer className="border-t border-border">
-        <div className={`${WIDE} flex flex-wrap items-center justify-between gap-x-6 gap-y-3 py-7 text-sm text-muted-foreground`}>
-          <span className="text-foreground">
-            <Logo name={tApp("name")} />
-          </span>
-          <span>{t("footer.madeBy")}</span>
-          <span>© {new Date().getFullYear()}</span>
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }

@@ -111,6 +111,7 @@ get paused, restoring it is one click in the dashboard; nothing is lost.
 src/
   app/
     page.tsx        the public home page (signed-in teachers skip it)
+    privacidad/     the privacy policy, public
     (app)/          signed-in pages: dashboard, classes, students, settings
     login/          Google sign-in
     auth/callback/  finishes the Google sign-in

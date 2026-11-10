@@ -809,7 +809,78 @@
       "text": "Entrás con tu cuenta de Google y cargás tu primer curso en un par de minutos."
     },
     "footer": {
-      "madeBy": "Hecho en Argentina, por un docente."
+      "madeBy": "Hecho en Argentina, por un docente.",
+      "privacy": "Privacidad"
     }
+  },
+  "privacy": {
+    "meta": {
+      "title": "Política de privacidad — Annora",
+      "description": "Qué datos usa Annora, para qué, dónde se guardan y cómo pedir verlos, corregirlos o borrarlos."
+    },
+    "title": "Política de privacidad",
+    "updated": "Última actualización: 10/11/2026",
+    "intro": "Esta política explica qué datos usa Annora, para qué, dónde se guardan y qué podés hacer con ellos. Está escrita para docentes, que son quienes usan Annora.",
+    "sections": [
+      {
+        "title": "Quién es responsable",
+        "paragraphs": [
+          "Annora es un proyecto de Federico Atadia, docente en Argentina, que es el responsable de los datos que se describen acá.",
+          "Para cualquier consulta sobre tus datos, escribí a {email}."
+        ]
+      },
+      {
+        "title": "Qué recibe Annora de tu cuenta de Google",
+        "paragraphs": [
+          "Annora no tiene contraseñas propias: entrás con tu cuenta de Google. Al hacerlo, Google le comparte a Annora tu nombre, tu dirección de email y tu foto de perfil, y nada más. Annora no pide acceso a tu Gmail, tu Drive, tus contactos, tu calendario ni a ningún otro dato de tu cuenta.",
+          "Esos datos se usan solo para identificarte cuando entrás y para que lo que cargás quede asociado a tu cuenta. No se usan para publicidad, no se venden y no se comparten con nadie.",
+          "El uso que Annora hace de la información recibida de las APIs de Google cumple con la Política de Datos del Usuario de los Servicios de API de Google, incluidos los requisitos de Uso Limitado.",
+          "Podés quitarle a Annora el acceso a tu cuenta de Google cuando quieras, desde {google}."
+        ]
+      },
+      {
+        "title": "Lo que cargás en Annora",
+        "paragraphs": [
+          "Annora guarda lo que cargás vos: tus escuelas y su calendario, tus cursos, tus estudiantes (nombre y apellido, notas, asistencia, observaciones y adaptaciones), tus tareas y sus archivos, y tus preferencias.",
+          "Son tus registros como docente, como lo eran tus planillas: vos decidís qué cargás y sos responsable de tenerlo. Annora los guarda para mostrártelos a vos y a nadie más: ningún otro docente ni otra persona puede verlos.",
+          "Tus estudiantes no tienen cuenta en Annora y Annora no se comunica con ellos. De las adaptaciones se guarda qué contenido se adapta, nunca un diagnóstico. Te pedimos que no cargues diagnósticos ni otros datos de salud."
+        ]
+      },
+      {
+        "title": "Dónde se guardan",
+        "paragraphs": [
+          "Annora funciona sobre dos servicios: Supabase, que guarda la base de datos y los archivos y gestiona el ingreso con Google, y Vercel, que publica la aplicación. Sus servidores pueden estar fuera de Argentina. Solo tratan los datos para que Annora funcione.",
+          "Todo viaja cifrado (HTTPS), y Annora solo deja que cada docente vea y modifique lo suyo."
+        ]
+      },
+      {
+        "title": "Cookies",
+        "paragraphs": [
+          "Annora usa solo las cookies necesarias para funcionar: la de tu sesión y las que recuerdan el idioma, el tema claro u oscuro, el color y el menú. No usa cookies de publicidad ni de analítica, y no hay herramientas de seguimiento de terceros."
+        ]
+      },
+      {
+        "title": "Cuánto tiempo se guardan y cómo borrarlos",
+        "paragraphs": [
+          "Tus datos se guardan mientras uses Annora. Podés pedir una copia, una corrección o que se borren tu cuenta y todo lo que cargaste, escribiendo a {email}. Se responde dentro de los 10 días hábiles, y un borrado se completa dentro de los 30 días."
+        ]
+      },
+      {
+        "title": "Tus derechos",
+        "paragraphs": [
+          "Según la Ley 25.326 de Protección de Datos Personales, podés acceder a tus datos, pedir que se corrijan, se actualicen o se borren.",
+          "El titular de los datos personales tiene la facultad de ejercer el derecho de acceso a los mismos en forma gratuita a intervalos no inferiores a seis meses, salvo que se acredite un interés legítimo al efecto conforme lo establecido en el artículo 14, inciso 3 de la Ley Nº 25.326.",
+          "La AGENCIA DE ACCESO A LA INFORMACIÓN PÚBLICA, en su carácter de Órgano de Control de la Ley Nº 25.326, tiene la atribución de atender las denuncias y reclamos que interpongan quienes resulten afectados en sus derechos por incumplimiento de las normas vigentes en materia de protección de datos personales."
+        ]
+      },
+      {
+        "title": "Cambios en esta política",
+        "paragraphs": [
+          "Si esta política cambia (por ejemplo, cuando Annora empiece a cobrar una suscripción), se publica acá con su nueva fecha, y si el cambio es importante se avisa dentro de la aplicación antes de que rija."
+        ]
+      }
+    ],
+    "google": "la configuración de tu cuenta de Google",
+    "back": "Volver al inicio"
   }
 }

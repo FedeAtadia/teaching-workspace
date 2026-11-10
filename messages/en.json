@@ -809,7 +809,78 @@
       "text": "Sign in with your Google account and set up your first class in a couple of minutes."
     },
     "footer": {
-      "madeBy": "Made in Argentina, by a teacher."
+      "madeBy": "Made in Argentina, by a teacher.",
+      "privacy": "Privacy"
     }
+  },
+  "privacy": {
+    "meta": {
+      "title": "Privacy policy — Annora",
+      "description": "What data Annora uses, what for, where it is stored and how to ask to see, correct or delete it."
+    },
+    "title": "Privacy policy",
+    "updated": "Last updated: 10/11/2026",
+    "intro": "This policy explains what data Annora uses, what for, where it is stored and what you can do about it. It is written for teachers, who are the people who use Annora. The Spanish version is the one that applies.",
+    "sections": [
+      {
+        "title": "Who is responsible",
+        "paragraphs": [
+          "Annora is a project by Federico Atadia, a teacher in Argentina, who is responsible for the data described here.",
+          "For any question about your data, write to {email}."
+        ]
+      },
+      {
+        "title": "What Annora receives from your Google account",
+        "paragraphs": [
+          "Annora has no passwords of its own: you sign in with your Google account. When you do, Google shares your name, your email address and your profile picture with Annora, and nothing else. Annora does not ask for access to your Gmail, your Drive, your contacts, your calendar or any other data in your account.",
+          "That data is used only to identify you when you sign in and to keep what you enter tied to your account. It is not used for advertising, it is not sold and it is not shared with anyone.",
+          "Annora's use of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.",
+          "You can remove Annora's access to your Google account at any time from {google}."
+        ]
+      },
+      {
+        "title": "What you enter in Annora",
+        "paragraphs": [
+          "Annora stores what you enter: your schools and their calendar, your classes, your students (name, grades, attendance, notes and adaptations), your tasks and their files, and your preferences.",
+          "They are your records as a teacher, as your spreadsheets were: you decide what to enter and are responsible for having it. Annora keeps them to show them to you and nobody else: no other teacher or person can see them.",
+          "Your students have no account in Annora and Annora never contacts them. For adaptations, what is stored is which content is adapted, never a diagnosis. Please don't enter diagnoses or other health data."
+        ]
+      },
+      {
+        "title": "Where it is stored",
+        "paragraphs": [
+          "Annora runs on two services: Supabase, which stores the database and files and handles signing in with Google, and Vercel, which serves the application. Their servers may be outside Argentina. They only process the data so that Annora works.",
+          "Everything travels encrypted (HTTPS), and Annora only lets each teacher see and change their own data."
+        ]
+      },
+      {
+        "title": "Cookies",
+        "paragraphs": [
+          "Annora only uses the cookies it needs to work: your session, and the ones that remember the language, light or dark theme, colour and menu. It uses no advertising or analytics cookies, and no third-party tracking tools."
+        ]
+      },
+      {
+        "title": "How long it is kept and how to delete it",
+        "paragraphs": [
+          "Your data is kept while you use Annora. You can ask for a copy, a correction, or for your account and everything you entered to be deleted, by writing to {email}. You get an answer within 10 business days, and a deletion is completed within 30 days."
+        ]
+      },
+      {
+        "title": "Your rights",
+        "paragraphs": [
+          "Under Argentina's Personal Data Protection Law 25.326 you can access your data and ask for it to be corrected, updated or deleted.",
+          "You may exercise the right of access free of charge at intervals of no less than six months, unless a legitimate interest is shown, as set out in article 14, paragraph 3 of Law 25.326.",
+          "Argentina's Agency for Access to Public Information (Agencia de Acceso a la Información Pública), as the supervisory authority under Law 25.326, handles complaints from anyone whose rights under the personal data protection rules are affected."
+        ]
+      },
+      {
+        "title": "Changes to this policy",
+        "paragraphs": [
+          "If this policy changes (for example, when Annora starts charging a subscription), the new version is published here with its date, and important changes are announced in the application before they apply."
+        ]
+      }
+    ],
+    "google": "your Google account settings",
+    "back": "Back to the home page"
   }
 }
