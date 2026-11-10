@@ -526,8 +526,9 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 
 ## LAND — The public home page
 
-*Enforced by `src/lib/access.ts`, `src/proxy.ts`, `src/app/page.tsx`. Covered
-by `src/lib/access.test.ts`; the page itself by hand (Known gaps).*
+*Enforced by `src/lib/access.ts`, `src/proxy.ts`, `src/app/page.tsx`,
+`src/app/privacidad/page.tsx`. Covered by `src/lib/access.test.ts`; the
+pages themselves by hand (Known gaps).*
 
 - **LAND-1** Anyone not signed in can open the home page, `/`, which explains
   what Annora is. Every other page, except signing in (`/login`, `/auth/…`),
@@ -539,6 +540,11 @@ by `src/lib/access.test.ts`; the page itself by hand (Known gaps).*
   has its own Español / English switch.
 - **LAND-4** Its sign-in buttons start the Google sign-in directly, like the
   button on `/login`.
+- **LAND-5** The privacy policy, at `/privacidad`, can be read by anyone,
+  signed in or not, and the home page links to it. It says who is
+  responsible and how to reach them, what Annora receives from Google and
+  what for, how the data a teacher enters is kept, and how to see, correct
+  or delete it.
 
 ## INSTALL — Installing Annora as an app
 
