@@ -540,6 +540,18 @@ by `src/lib/access.test.ts`; the page itself by hand (Known gaps).*
 - **LAND-4** Its sign-in buttons start the Google sign-in directly, like the
   button on `/login`.
 
+## INSTALL — Installing Annora as an app
+
+*Enforced by `src/app/manifest.ts`, `src/lib/access.ts`. Covered by
+`src/app/manifest.test.ts`, `src/lib/access.test.ts`.*
+
+- **INSTALL-1** Annora can be installed from the browser on a phone or a
+  computer: it then opens in its own window, without the browser's bar,
+  with the Teal nórdico mark as its icon, straight at Inicio (or sign-in,
+  for someone not signed in).
+- **INSTALL-2** What the browser needs to install it (the app's manifest)
+  can be read without signing in, so it can be installed from the home page.
+
 ## THEME — Light, dark and colour themes
 
 *Enforced by `src/lib/theme.ts`, `src/app/layout.tsx`, `src/app/globals.css`,

@@ -29,4 +29,9 @@ describe("who can open what (LAND)", () => {
     expect(routeFor("/dashboard", true)).toBeNull();
     expect(routeFor("/classes/abc", true)).toBeNull();
   });
+
+  it("lets anyone read what installing the app needs (INSTALL-2)", () => {
+    expect(routeFor("/manifest.webmanifest", false)).toBeNull();
+    expect(routeFor("/manifest.webmanifest", true)).toBeNull();
+  });
 });
