@@ -630,5 +630,186 @@
         "body": "The day goes back to not taken, with no marks."
       }
     }
+  },
+  "landing": {
+    "meta": {
+      "title": "Annora — Your whole school year, in one place",
+      "description": "Classes, students, grades, attendance and the end of the year, organised and always at hand. For secondary-school teachers in Argentina."
+    },
+    "nav": {
+      "home": "Annora, home",
+      "sections": "Sections",
+      "how": "How it works",
+      "features": "Features",
+      "data": "Your data",
+      "faq": "Questions",
+      "language": "Language",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu",
+      "signIn": "Sign in"
+    },
+    "hero": {
+      "badge": "For secondary-school teachers",
+      "title": "Your whole school year, in one place.",
+      "lead": "Annora replaces the loose spreadsheets in Drive. Classes, students, grades, attendance and the end of the year, organised and always at hand, on your computer or your phone.",
+      "signIn": "Sign in with Google",
+      "how": "See how it works",
+      "note": "All you need is a Google account. No new passwords."
+    },
+    "preview": {
+      "tab": "Home",
+      "hello": "Hi, teacher",
+      "classes": "classes",
+      "students": "students",
+      "toGrade": "scores to enter",
+      "today": "Take today's attendance",
+      "todayClass": "Math · 4th A",
+      "graded": "{pct}% scored",
+      "math": "Math",
+      "mathLine": "4th A · Morning",
+      "physics": "Physics",
+      "physicsLine": "5th B · Afternoon"
+    },
+    "pains": {
+      "title": "Sound familiar?",
+      "lead": "One spreadsheet per class, another for attendance, averages worked out by hand and, in December, hunting for who owes the subject.",
+      "items": [
+        {
+          "before": "One Drive spreadsheet per class",
+          "after": "All your classes and schools in one place"
+        },
+        {
+          "before": "Averages worked out by hand",
+          "after": "Each term's suggested grade, already worked out"
+        },
+        {
+          "before": "Attendance on paper",
+          "after": "Attendance on your phone, with each student's percentage"
+        },
+        {
+          "before": "In December, hunting for owed subjects",
+          "after": "The end of the year and owed subjects, listed for you"
+        }
+      ]
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "title": "From the first class to the end of the year, in three steps.",
+      "steps": [
+        {
+          "title": "Sign in with Google",
+          "text": "No new passwords. Your data belongs to your account and nobody else sees it."
+        },
+        {
+          "title": "Set up your classes",
+          "text": "School, subject, year and class days. Add your students, or bring them over from last year in one tap."
+        },
+        {
+          "title": "Use it every class",
+          "text": "Take attendance, add tasks and scores. Annora works out averages, flags what's missing and puts the end of the year together."
+        }
+      ]
+    },
+    "features": {
+      "eyebrow": "Features",
+      "title": "Built for how teaching works in Argentina.",
+      "lead": "Terms, the 1 to 10 scale, the passing grade, school-wide days off and owed subjects: Annora already knows them.",
+      "groups": [
+        {
+          "title": "Everything in one place",
+          "items": [
+            "Classes and schools",
+            "Tasks with their file",
+            "Passing standards",
+            "Units per term"
+          ]
+        },
+        {
+          "title": "Know each student",
+          "items": [
+            "Their history across every year",
+            "Attendance and percentage",
+            "Groups that come on different days",
+            "Adaptations, with their own version of each task"
+          ]
+        },
+        {
+          "title": "The year under control",
+          "items": [
+            "School calendar with holidays and days off",
+            "Term grades with their expected range",
+            "Closing the year and owed subjects",
+            "Bringing students into next year"
+          ]
+        },
+        {
+          "title": "Time back",
+          "items": [
+            "Automatic averages",
+            "Today's attendance from Home",
+            "Works on your phone and computer",
+            "In Spanish and English"
+          ]
+        }
+      ]
+    },
+    "attendance": {
+      "eyebrow": "In the classroom",
+      "title": "Take attendance with one hand.",
+      "text1": "Everyone starts present: you only tap whoever was absent or late. Holidays and days off already show as days without class, and if there was a strike, you mark it with its reason.",
+      "text2": "Each student has their percentage, and if it drops below the minimum you choose, their average tells you.",
+      "day": "Monday 19/10",
+      "save": "Save"
+    },
+    "data": {
+      "eyebrow": "Your data",
+      "title": "What happens in your classes stays between you and your classes.",
+      "points": [
+        {
+          "title": "Only you see your classes",
+          "text": "Each teacher sees only their own: their schools, classes, students and grades."
+        },
+        {
+          "title": "Your students don't need an account",
+          "text": "They're your records, not users. Nobody has to install anything or sign up."
+        },
+        {
+          "title": "Adaptations without diagnoses",
+          "text": "What's stored is which content is adapted, never a diagnosis. The label only says “Adaptation”."
+        }
+      ]
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        {
+          "q": "How much does it cost?",
+          "a": "[Answer pending]"
+        },
+        {
+          "q": "Do I have to install anything?",
+          "a": "[Answer pending]"
+        },
+        {
+          "q": "Do my students have to sign up?",
+          "a": "[Answer pending]"
+        },
+        {
+          "q": "Does it work if I teach at more than one school?",
+          "a": "[Answer pending]"
+        },
+        {
+          "q": "Can I use it in English?",
+          "a": "[Answer pending]"
+        }
+      ]
+    },
+    "band": {
+      "title": "Start this term with everything in order.",
+      "text": "Sign in with your Google account and set up your first class in a couple of minutes."
+    },
+    "footer": {
+      "madeBy": "Made in Argentina, by a teacher."
+    }
   }
 }

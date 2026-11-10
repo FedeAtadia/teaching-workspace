@@ -110,6 +110,7 @@ get paused, restoring it is one click in the dashboard; nothing is lost.
 ```
 src/
   app/
+    page.tsx        the public home page (signed-in teachers skip it)
     (app)/          signed-in pages: dashboard, classes, students, settings
     login/          Google sign-in
     auth/callback/  finishes the Google sign-in
@@ -117,9 +118,12 @@ src/
   db/               schema.ts (the data model) and the connection
   i18n/             language config; texts live in messages/
   lib/
+    access.ts       who can open which page, pure and tested
     grading.ts      grading rules, pure and tested
     supabase/       auth clients
-  proxy.ts          refreshes the session, sends signed-out users to /login
+  proxy.ts          refreshes the session; sends signed-out users to /login
+                    (except from the home page), signed-in ones from / and
+                    /login to /dashboard
 messages/           es-AR.json, en.json
 drizzle/            generated SQL migrations
 docs/
