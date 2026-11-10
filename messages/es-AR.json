@@ -630,5 +630,186 @@
         "body": "El día vuelve a quedar sin tomar, sin marcas."
       }
     }
+  },
+  "landing": {
+    "meta": {
+      "title": "Annora — Todo tu año escolar, en un solo lugar",
+      "description": "Cursos, estudiantes, notas, asistencia y el cierre del año, ordenados y siempre a mano. Para docentes de secundaria en Argentina."
+    },
+    "nav": {
+      "home": "Annora, inicio",
+      "sections": "Secciones",
+      "how": "Cómo funciona",
+      "features": "Funciones",
+      "data": "Tus datos",
+      "faq": "Preguntas",
+      "language": "Idioma",
+      "openMenu": "Abrir menú",
+      "closeMenu": "Cerrar menú",
+      "signIn": "Ingresar"
+    },
+    "hero": {
+      "badge": "Para docentes de secundaria",
+      "title": "Todo tu año escolar, en un solo lugar.",
+      "lead": "Annora reemplaza las planillas sueltas de Drive. Cursos, estudiantes, notas, asistencia y el cierre del año, ordenados y siempre a mano, en la compu o en el teléfono.",
+      "signIn": "Ingresar con Google",
+      "how": "Ver cómo funciona",
+      "note": "Solo necesitás una cuenta de Google. Sin contraseñas nuevas."
+    },
+    "preview": {
+      "tab": "Inicio",
+      "hello": "Hola, profe",
+      "classes": "cursos",
+      "students": "estudiantes",
+      "toGrade": "notas por cargar",
+      "today": "Tomar asistencia de hoy",
+      "todayClass": "Matemática · 4° A",
+      "graded": "{pct}% calificado",
+      "math": "Matemática",
+      "mathLine": "4° A · Mañana",
+      "physics": "Física",
+      "physicsLine": "5° B · Tarde"
+    },
+    "pains": {
+      "title": "¿Te suena?",
+      "lead": "Una planilla por curso, otra para la asistencia, el promedio hecho a mano y, en diciembre, a buscar quién se lleva la materia.",
+      "items": [
+        {
+          "before": "Una planilla de Drive por curso",
+          "after": "Todos tus cursos y escuelas en un mismo lugar"
+        },
+        {
+          "before": "Promedios hechos a mano",
+          "after": "El promedio sugerido de cada cuatrimestre, ya calculado"
+        },
+        {
+          "before": "La asistencia en papel",
+          "after": "Asistencia en el teléfono, con el porcentaje de cada uno"
+        },
+        {
+          "before": "En diciembre, a buscar las previas",
+          "after": "El cierre del año y las previas, listados solos"
+        }
+      ]
+    },
+    "how": {
+      "eyebrow": "Cómo funciona",
+      "title": "De la primera clase al cierre, en tres pasos.",
+      "steps": [
+        {
+          "title": "Entrá con Google",
+          "text": "Sin contraseñas nuevas. Tus datos quedan asociados a tu cuenta y nadie más los ve."
+        },
+        {
+          "title": "Armá tus cursos",
+          "text": "Escuela, materia, curso y días de clase. Sumá a tus estudiantes, o traelos del año anterior en un toque."
+        },
+        {
+          "title": "Usalo en cada clase",
+          "text": "Tomá asistencia, cargá tareas y notas. Annora calcula promedios, avisa lo que falta y arma el cierre."
+        }
+      ]
+    },
+    "features": {
+      "eyebrow": "Funciones",
+      "title": "Hecho para cómo se enseña en Argentina.",
+      "lead": "Cuatrimestres, escala del 1 al 10, nota de aprobación, jornadas institucionales y previas: Annora ya los conoce.",
+      "groups": [
+        {
+          "title": "Todo en un lugar",
+          "items": [
+            "Cursos y escuelas",
+            "Tareas con su archivo",
+            "Criterios de aprobación",
+            "Unidades por cuatrimestre"
+          ]
+        },
+        {
+          "title": "Conocé a cada estudiante",
+          "items": [
+            "Su historial de todos los años",
+            "Asistencia y porcentaje",
+            "Grupos que vienen distintos días",
+            "Adaptaciones, con su propia versión de cada tarea"
+          ]
+        },
+        {
+          "title": "El año bajo control",
+          "items": [
+            "Calendario escolar con feriados y jornadas",
+            "Notas de cuatrimestre con su rango esperado",
+            "Cierre del año y previas",
+            "Traer estudiantes al año siguiente"
+          ]
+        },
+        {
+          "title": "Tiempo de vuelta",
+          "items": [
+            "Promedios automáticos",
+            "Asistencia de hoy desde Inicio",
+            "Funciona en el teléfono y la compu",
+            "En español y en inglés"
+          ]
+        }
+      ]
+    },
+    "attendance": {
+      "eyebrow": "En el aula",
+      "title": "Tomar asistencia, con una mano.",
+      "text1": "Todos empiezan presentes: tocás solo a quien faltó o llegó tarde. Los feriados y las jornadas ya aparecen como días sin clase, y si hubo paro, lo marcás con su motivo.",
+      "text2": "Cada estudiante tiene su porcentaje, y si baja del mínimo que elegís, su promedio te lo avisa.",
+      "day": "Lunes 19/10",
+      "save": "Guardar"
+    },
+    "data": {
+      "eyebrow": "Tus datos",
+      "title": "Lo de tus cursos queda entre vos y tus cursos.",
+      "points": [
+        {
+          "title": "Solo vos ves tus cursos",
+          "text": "Cada docente ve únicamente lo suyo: sus escuelas, cursos, estudiantes y notas."
+        },
+        {
+          "title": "Tus estudiantes no necesitan cuenta",
+          "text": "Son registros tuyos, no usuarios. Nadie tiene que instalar nada ni registrarse."
+        },
+        {
+          "title": "Adaptaciones sin diagnósticos",
+          "text": "Se guarda qué contenido se adapta, nunca un diagnóstico. El aviso solo dice «Adaptación»."
+        }
+      ]
+    },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "items": [
+        {
+          "q": "¿Cuánto cuesta?",
+          "a": "El primer mes es gratis; después, es una suscripción mensual de USD 2."
+        },
+        {
+          "q": "¿Tengo que instalar algo?",
+          "a": "No, todo funciona desde el navegador. Incluso se puede instalar y usar como una app."
+        },
+        {
+          "q": "¿Mis estudiantes tienen que registrarse?",
+          "a": "No, todos los registros son tuyos: tus estudiantes no necesitan cuenta."
+        },
+        {
+          "q": "¿Sirve si doy clases en más de una escuela?",
+          "a": "¡Obvio que sí! Se pueden agregar varias escuelas, cursos y estudiantes. Cada escuela tiene su calendario y cada curso, sus días de clase."
+        },
+        {
+          "q": "¿Puedo usarlo en inglés?",
+          "a": "Sí, es una plataforma multilingüe: hoy está en español y en inglés."
+        }
+      ]
+    },
+    "band": {
+      "title": "Empezá este cuatrimestre con todo en orden.",
+      "text": "Entrás con tu cuenta de Google y cargás tu primer curso en un par de minutos."
+    },
+    "footer": {
+      "madeBy": "Hecho en Argentina, por un docente."
+    }
   }
 }

@@ -1,12 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { routeFor } from "@/lib/access";
 import { isSupabaseConfigured, supabaseKey, supabaseUrl } from "@/lib/supabase/env";
 
-const PUBLIC_PATHS = ["/login", "/auth"];
-
-// Refreshes the Supabase session cookie on every request and sends anyone not
-// signed in to /login. This is an optimistic check only: pages still verify
-// the user on the server before reading data.
+// Refreshes the Supabase session cookie on every request. Anyone not signed in
+// can open the home page and sign in, and is sent to /login from anywhere
+// else; a signed-in teacher skips the home page and /login (LAND-1, LAND-2).
+// This is an optimistic check only: pages still verify the user on the server
+// before reading data.
 export async function proxy(request: NextRequest) {
   if (!isSupabaseConfigured()) return NextResponse.next();
 
@@ -28,10 +29,11 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const signedIn = !!data?.claims.sub;
 
-  const isPublic = PUBLIC_PATHS.some((p) => request.nextUrl.pathname.startsWith(p));
-  if (!signedIn && !isPublic) {
+  const to = routeFor(request.nextUrl.pathname, signedIn);
+  if (to) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = to;
+    url.search = "";
     return NextResponse.redirect(url);
   }
   return response;

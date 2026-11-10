@@ -524,6 +524,34 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
   whether it is taken, not held or still to take. With no class today the
   list doesn't show.
 
+## LAND — The public home page
+
+*Enforced by `src/lib/access.ts`, `src/proxy.ts`, `src/app/page.tsx`. Covered
+by `src/lib/access.test.ts`; the page itself by hand (Known gaps).*
+
+- **LAND-1** Anyone not signed in can open the home page, `/`, which explains
+  what Annora is. Every other page, except signing in (`/login`, `/auth/…`),
+  still sends them to `/login`.
+- **LAND-2** A signed-in teacher who opens `/` or `/login` goes straight to
+  Inicio (`/dashboard`).
+- **LAND-3** The home page is in Teal nórdico whatever colour theme is stored
+  (THEME-4), follows light and dark (THEME-1) and the language (LOCALE), and
+  has its own Español / English switch.
+- **LAND-4** Its sign-in buttons start the Google sign-in directly, like the
+  button on `/login`.
+
+## INSTALL — Installing Annora as an app
+
+*Enforced by `src/app/manifest.ts`, `src/lib/access.ts`. Covered by
+`src/app/manifest.test.ts`, `src/lib/access.test.ts`.*
+
+- **INSTALL-1** Annora can be installed from the browser on a phone or a
+  computer: it then opens in its own window, without the browser's bar,
+  with the Teal nórdico mark as its icon, straight at Inicio (or sign-in,
+  for someone not signed in).
+- **INSTALL-2** What the browser needs to install it (the app's manifest)
+  can be read without signing in, so it can be installed from the home page.
+
 ## THEME — Light, dark and colour themes
 
 *Enforced by `src/lib/theme.ts`, `src/app/layout.tsx`, `src/app/globals.css`,
@@ -541,8 +569,9 @@ by hand (Known gaps).*
   Teal nórdico. Like Claro / Oscuro, the choice is stored and applied as the
   page is served (THEME-2).
 - **THEME-4** Inside the app the logo and the "o" of "annora" take the chosen
-  theme's colours. The browser-tab icon and the sign-in page always use
-  Teal nórdico, the official logo, since nobody has chosen anything there.
+  theme's colours. The browser-tab icon, the home page (LAND-3) and the
+  sign-in page always use Teal nórdico, the official logo, since nobody has
+  chosen anything there.
 
 ## NAV — Getting around
 
@@ -582,6 +611,9 @@ by hand (Known gaps).*
 - **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and
   **NAV-3**'s section button are interface behaviour, checked by hand in the
   browser; there are no component tests yet.
+- **LAND-3**'s page — its sections, the phone menu (closed until opened) and
+  the language switch — is checked by hand in the browser, light and dark, on
+  a phone and a computer.
 - **FILE-2**'s folder rules and **FILE-3**'s upload, removal and one-minute
   link run in Supabase Storage, which the in-memory test database doesn't
   have. The rules are in `supabase/storage.sql` and were checked by hand:
