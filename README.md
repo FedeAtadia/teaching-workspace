@@ -6,7 +6,8 @@ term grades, attendance and exports. Replaces a Google Drive full of
 spreadsheets.
 
 Next.js 16 (App Router) · Tailwind CSS 4 · PostgreSQL on Supabase · Drizzle ORM ·
-next-intl (Español (Argentina) / English) · Vitest · hosted on Vercel.
+next-intl (Español (Argentina) / English) · Vitest · hosted on Vercel at
+[annora.com.ar](https://annora.com.ar).
 
 ## Documentation
 
@@ -70,8 +71,11 @@ for working, `prod` for Vercel — so experiments never touch real grades.
 4. Turn on Google sign-in: in Google Cloud Console create an OAuth client
    (Web application) with the redirect URI Supabase shows under
    Authentication → Providers → Google, then paste its id and secret there.
-   Add `http://localhost:3000/auth/callback` and the Vercel URL under
-   Authentication → URL Configuration → Redirect URLs.
+   Under Authentication → URL Configuration, add the address sign-in returns
+   to: `http://localhost:3000/auth/callback` in the dev project, and
+   `https://annora.com.ar/auth/callback` in the prod project, whose Site URL is
+   `https://annora.com.ar`. Sign-in returns to whatever domain the page is on,
+   so a new domain needs only this setting, not a code change.
 
 The free plan pauses a project that gets too little activity over a week
 (school holidays). One read every 3 days wasn't enough, so
