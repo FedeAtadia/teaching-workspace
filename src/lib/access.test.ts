@@ -34,4 +34,9 @@ describe("who can open what (LAND)", () => {
     expect(routeFor("/manifest.webmanifest", false)).toBeNull();
     expect(routeFor("/manifest.webmanifest", true)).toBeNull();
   });
+
+  it("lets anyone read the privacy policy, signed in or not (LAND-5)", () => {
+    expect(routeFor("/privacidad", false)).toBeNull();
+    expect(routeFor("/privacidad", true)).toBeNull();
+  });
 });

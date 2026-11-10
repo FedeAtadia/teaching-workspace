@@ -1,15 +1,18 @@
 /** Signing in: the sign-in page and the address Google returns to. */
 const SIGN_IN = ["/login", "/auth"];
 
-/** Open to everyone, signed in or not: what installing the app needs (INSTALL-2). */
-const ALWAYS_OPEN = ["/manifest.webmanifest"];
+/**
+ * Open to everyone, signed in or not: the privacy policy (LAND-5) and what
+ * installing the app needs (INSTALL-2).
+ */
+const ALWAYS_OPEN = ["/privacidad", "/manifest.webmanifest"];
 
 const startsWithAny = (pathname: string, prefixes: string[]) =>
   prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
 /**
  * Where a request should go instead, or null to let it through (LAND-1,
- * LAND-2, INSTALL-2). The home page is public by exact match: as a prefix,
+ * LAND-2, LAND-5, INSTALL-2). The home page is public by exact match: as a prefix,
  * "/" would open every page.
  */
 export function routeFor(pathname: string, signedIn: boolean): string | null {
