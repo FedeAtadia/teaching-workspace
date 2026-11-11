@@ -208,6 +208,10 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   course — including classes added to it later.
 - **STUDENT-3** Students are listed by last name, then first name, in Spanish
   alphabetical order (accents do not push a name to the end).
+- **STUDENT-4** A student can be deleted from their page, after a
+  confirmation. Their scores, cuatrimestre grades, attendance, exams,
+  adaptations, own passing standards and places in courses and groups go with
+  them; the courses, classes and tasks stay.
 
 ## ROSTER — A class's students
 
@@ -594,6 +598,26 @@ by hand (Known gaps).*
 - **NAV-3** On a phone, a class's sections open from one button that names
   the current one; elsewhere they are a row of tabs.
 
+## DATA — A teacher's copy of their data, and deleting it
+
+*Enforced by `src/db/queries/account.ts`, `src/lib/dataExport.ts`. Covered by
+`src/db/queries/account.test.ts`, `src/lib/dataExport.test.ts`.*
+
+- **DATA-1** Settings offers a download of everything the teacher has
+  loaded, as one Excel file with a sheet for each kind: classes, students,
+  units and passing standards, tasks, scores, cuatrimestre grades,
+  attendance, days not held, exams, adaptations, groups, school calendars
+  and settings. Rows name things (the school, the course, the student)
+  rather than showing ids, and only the teacher's own rows are in it
+  (OWNER-1). Attached files are listed by name, not included.
+- **DATA-2** Sheet names, column titles and values such as "presente" are in
+  the teacher's language; dates are dates and grades are numbers, so the
+  file can be sorted and filtered.
+- **DATA-3** Settings lets the teacher delete their account, after typing a
+  word to confirm. Everything they loaded, their attached files, their
+  settings and their sign-in are deleted; they are signed out and land on the
+  public home page. Another teacher's data is untouched.
+
 ## OWNER — Each teacher's data
 
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
@@ -620,6 +644,11 @@ by hand (Known gaps).*
 - **LAND-3**'s page — its sections, the phone menu (closed until opened) and
   the language switch — is checked by hand in the browser, light and dark, on
   a phone and a computer.
+- **DATA-1**'s Excel file itself is written in the download route and
+  checked by hand; the tests cover what goes into each sheet. **DATA-3**'s
+  removal of the sign-in and of the files runs in Supabase (its `auth` schema
+  and Storage), which the in-memory test database doesn't have; the tests
+  cover the deletion of everything else.
 - **FILE-2**'s folder rules and **FILE-3**'s upload, removal and one-minute
   link run in Supabase Storage, which the in-memory test database doesn't
   have. The rules are in `supabase/storage.sql` and were checked by hand:

@@ -1,6 +1,8 @@
 import {
   CalendarDays,
   ClipboardCheck,
+  Download,
+  HardDriveDownload,
   Landmark,
   Languages,
   type LucideIcon,
@@ -15,6 +17,7 @@ import type { ReactNode } from "react";
 import { FormDialog } from "@/components/forms/FormDialog";
 import { LanguageSelect } from "@/components/LanguageSelect";
 import { PageHeader } from "@/components/PageHeader";
+import { DeleteAccountButton } from "@/components/settings/DeleteAccountButton";
 import { MinAttendanceForm } from "@/components/settings/MinAttendanceForm";
 import { ThemeSelect } from "@/components/ThemeSelect";
 import { Badge } from "@/components/ui/badge";
@@ -128,6 +131,27 @@ export default async function SettingsPage() {
             </ul>
           )}
         </SettingsCard>
+
+        {/* DATA-1, DATA-3 */}
+        {teacherId && (
+          <SettingsCard icon={HardDriveDownload} title={t("data.title")}>
+            <p className="text-sm text-muted-foreground">{t("data.downloadHint")}</p>
+            {/* A plain link: the route answers with the file, so nothing navigates. */}
+            <a
+              href="/settings/export"
+              download
+              className="inline-flex h-9 items-center gap-2 justify-self-start rounded-lg bg-primary px-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              <Download className="size-4" aria-hidden />
+              {t("data.download")}
+            </a>
+            <div className="mt-2 grid gap-3 border-t border-border pt-5">
+              <h3 className="font-heading text-lg leading-tight font-bold">{t("data.deleteTitle")}</h3>
+              <p className="text-sm text-muted-foreground">{t("data.deleteHint")}</p>
+              <DeleteAccountButton />
+            </div>
+          </SettingsCard>
+        )}
       </div>
     </PageHeader>
   );

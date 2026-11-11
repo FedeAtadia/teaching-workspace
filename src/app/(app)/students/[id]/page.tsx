@@ -1,6 +1,8 @@
 import { BookOpen, Puzzle } from "lucide-react";
 import Link from "next/link";
 import { BackLink } from "@/components/BackLink";
+import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { removeStudent } from "../actions";
 import { Initials } from "@/components/Initials";
 import { Badge } from "@/components/ui/badge";
 import { AdaptedBadge } from "@/components/classes/Adaptation";
@@ -59,6 +61,15 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
               )}
             </div>
           )}
+        </div>
+        {/* STUDENT-4 */}
+        <div className="ml-auto">
+          <ConfirmDeleteButton
+            label={t("delete.button")}
+            title={t("delete.title", { name: `${student.firstName} ${student.lastName}` })}
+            body={t("delete.body")}
+            action={removeStudent.bind(null, { studentId: student.id })}
+          />
         </div>
       </header>
 
