@@ -367,6 +367,19 @@
       "button": "Eliminar estudiante",
       "title": "¿Eliminar a {name}?",
       "body": "Se borran sus calificaciones, notas de cuatrimestre, asistencia, exámenes y adaptaciones, de todos los años. Los cursos, las clases y las tareas quedan."
+    },
+    "edit": {
+      "button": "Editar",
+      "title": "Editar estudiante",
+      "notFound": "No se encontró al estudiante. Recargá la página."
+    },
+    "move": {
+      "button": "Cambiar de curso",
+      "title": "Cambiar de curso a {name}",
+      "description": "Sale de {course} y pasa a otro curso de {year}. Si ya cargaste algo en este curso, queda en su historial.",
+      "to": "Nuevo curso",
+      "otherYear": "Ese curso es de otro ciclo lectivo.",
+      "notFound": "No se pudo cambiar de curso. Recargá la página y probá de nuevo."
     }
   },
   "closing": {
@@ -455,7 +468,19 @@
     },
     "errors": {
       "courseNotFound": "Ese curso ya no existe. Elegí otro."
-    }
+    },
+    "filters": {
+      "label": "Filtrar estudiantes",
+      "current": "Actuales",
+      "graduates": "Egresados",
+      "all": "Todos",
+      "course": "Curso",
+      "allCourses": "Todos los cursos"
+    },
+    "graduated": "Egresó",
+    "owes": "Debe materias",
+    "emptyFilter": "No hay estudiantes con este filtro.",
+    "graduatesHint": "Quienes egresaron y no deben ninguna materia. Ya no aparecen en la lista de trabajo."
   },
   "settings": {
     "title": "Configuración",

@@ -2,7 +2,9 @@ import { BookOpen, Puzzle } from "lucide-react";
 import Link from "next/link";
 import { BackLink } from "@/components/BackLink";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
-import { removeStudent } from "../actions";
+import { FormDialog } from "@/components/forms/FormDialog";
+import { listCourses } from "@/db/queries/classes";
+import { editStudentAction, moveStudentAction, removeStudent } from "../actions";
 import { Initials } from "@/components/Initials";
 import { Badge } from "@/components/ui/badge";
 import { AdaptedBadge } from "@/components/classes/Adaptation";
@@ -21,7 +23,11 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 export default async function StudentPage({ params }: PageProps<"/students/[id]">) {
   const { id } = await params;
   if (!isSupabaseConfigured()) notFound();
-  const history = await getStudentHistory(getDb(), await requireTeacherId(), id);
+  const teacherId = await requireTeacherId();
+  const [history, allCourses] = await Promise.all([
+    getStudentHistory(getDb(), teacherId, id),
+    listCourses(getDb(), teacherId),
+  ]);
   if (!history) notFound();
 
   const t = await getTranslations("studentPage");
@@ -33,9 +39,23 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
   const locale = await getLocale();
   const { student, courses } = history;
   // The header's badges: the newest course (HISTORY-1 lists it first), any adaptation in it, and what is owed.
-  const current = courses[0];
+  // A course they left (STUDENT-8) is not where they are now.
+  const current = courses.find((c) => c.status === "active") ?? courses[0];
   const adapted = current?.classes.some((c) => c.adaptation) ?? false;
   const owed = courses.flatMap((c) => c.classes).filter((c) => c.result.kind === "owed").length;
+  const tStudents = await getTranslations("students.fields");
+  /** STUDENT-8: the other courses of that school year the student isn't already in. */
+  const moveOptions = (from: { courseId: string; schoolYear: string }) =>
+    allCourses
+      .filter(
+        (c) =>
+          c.schoolYear === from.schoolYear &&
+          !courses.some((mine) => mine.courseId === c.id && mine.status === "active"),
+      )
+      .map((c) => ({
+        value: c.id,
+        label: `${formatCourse(c.year, c.division)} · ${tShift(c.shift)} · ${c.school}`,
+      }));
 
   return (
     <>
@@ -62,8 +82,20 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
             </div>
           )}
         </div>
-        {/* STUDENT-4 */}
-        <div className="ml-auto">
+        {/* STUDENT-7, STUDENT-4 */}
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <FormDialog
+            trigger="edit"
+            triggerLabel={t("edit.button")}
+            title={t("edit.title")}
+            action={editStudentAction}
+            hidden={{ studentId: student.id }}
+            formErrors={{ notFound: t("edit.notFound") }}
+            fields={[
+              { kind: "text", name: "lastName", label: tStudents("lastName"), maxLength: 80, defaultValue: student.lastName },
+              { kind: "text", name: "firstName", label: tStudents("firstName"), maxLength: 80, defaultValue: student.firstName },
+            ]}
+          />
           <ConfirmDeleteButton
             label={t("delete.button")}
             title={t("delete.title", { name: `${student.firstName} ${student.lastName}` })}
@@ -85,6 +117,22 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
               </span>
               {course.status === "withdrawn" && <Badge tone="outline">{t("left")}</Badge>}
               {course.outcome && <Badge tone="accent">{t(`outcomes.${course.outcome}`)}</Badge>}
+              {/* STUDENT-8: only between courses of the same school year. */}
+              {course.status === "active" && moveOptions(course).length > 0 && (
+                <FormDialog
+                  trigger="text"
+                  triggerLabel={t("move.button")}
+                  title={t("move.title", { name: `${student.firstName} ${student.lastName}` })}
+                  description={t("move.description", {
+                    course: formatCourse(course.year, course.division),
+                    year: course.schoolYear,
+                  })}
+                  action={moveStudentAction}
+                  hidden={{ studentId: student.id, fromCourseId: course.courseId }}
+                  formErrors={{ notFound: t("move.notFound"), otherYear: t("move.otherYear") }}
+                  fields={[{ kind: "select", name: "toCourseId", label: t("move.to"), options: moveOptions(course) }]}
+                />
+              )}
             </h2>
 
             {course.classes.length === 0 && <p className="text-sm text-muted-foreground">{t("noClasses")}</p>}

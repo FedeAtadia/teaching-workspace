@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
-import { createStudent, deleteStudent } from "@/db/queries/students";
+import { createStudent, deleteStudent, moveStudent, updateStudent } from "@/db/queries/students";
 import { requireTeacherId } from "@/lib/auth";
-import { studentInput, toFieldErrors, type FieldError } from "@/lib/validation";
+import type { FormState } from "@/lib/formState";
+import { studentEdit, studentInput, studentMove, toFieldErrors, type FieldError } from "@/lib/validation";
 
 export type AddStudentState = {
   status: "idle" | "saved" | "error";
@@ -41,4 +42,29 @@ export async function removeStudent(input: { studentId: string }): Promise<{ ok:
   // Class pages, gradebooks, attendance, Previas and Home all showed them.
   revalidatePath("/", "layout");
   redirect("/students");
+}
+
+/** STUDENT-7 */
+export async function editStudentAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = studentEdit.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+
+  const result = await updateStudent(getDb(), await requireTeacherId(), parsed.data);
+  if (!result.ok) return { status: "error", formError: result.error, values };
+  // The name shows on class pages, gradebooks, attendance, Previas and Home.
+  revalidatePath("/", "layout");
+  return { status: "saved" };
+}
+
+/** STUDENT-8 */
+export async function moveStudentAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = studentMove.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+
+  const result = await moveStudent(getDb(), await requireTeacherId(), parsed.data);
+  if (!result.ok) return { status: "error", formError: result.error, values };
+  revalidatePath("/", "layout");
+  return { status: "saved" };
 }
