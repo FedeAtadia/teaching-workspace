@@ -499,6 +499,26 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 - **HISTORY-5** Each cuatrimestre of a class also shows the student's
   attendance in it (ATT-4), when there is a percentage.
 
+## REPORT — A student's report
+
+*Enforced by `src/lib/report.ts`. Covered by `src/lib/report.test.ts`.*
+
+- **REPORT-1** A student's page opens a report on one of their courses: by
+  default the one they are in now (not one they left), newest first. It
+  names the student, the course, the school, the school year and the
+  teacher, is dated, and for each class of the course shows, cuatrimestre by
+  cuatrimestre, the average of the tasks scored, the tasks not handed in,
+  the attendance and the grade set; then the final grade, the result
+  (YEAR-1) and any exams. A student in no course has no report.
+- **REPORT-2** The report lists the classes the student still owes from
+  their other courses (EXAM-3), by subject, course and school year.
+- **REPORT-3** Each task with its score and notes, and what is adapted for
+  the student (ADAPT-1), are left out unless the teacher asks for them.
+- **REPORT-4** The teacher can pick another of the student's courses. The
+  course and what is included are kept in the address, and the report is
+  laid out to be printed or saved as a PDF, black on white whatever the
+  theme, without the app's menus.
+
 ## YEAR — Closing the school year
 
 *Enforced by `src/lib/yearEnd.ts`, `src/lib/validation.ts`,
@@ -715,6 +735,8 @@ by hand (Known gaps).*
   reason: every page behind them needs a signed-in teacher.
 - **IMPORT-3**'s preview and **IMPORT-5**'s guide are interface, checked by
   hand; the tests cover how a list is read and what is saved.
+- **REPORT-1**'s teacher name and date, and **REPORT-4**'s printed layout, are
+  checked by hand: print preview on a computer and a phone, light and dark.
 - **NAV-4**'s sign-out runs in Supabase Auth, like sign-in, and is checked by
   hand.
 - **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and
