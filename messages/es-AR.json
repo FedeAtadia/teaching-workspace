@@ -12,7 +12,8 @@
     "menu": "Menú principal",
     "collapse": "Contraer menú",
     "expand": "Expandir menú",
-    "settingsShort": "Ajustes"
+    "settingsShort": "Ajustes",
+    "signOut": "Cerrar sesión"
   },
   "common": {
     "cancel": "Cancelar",

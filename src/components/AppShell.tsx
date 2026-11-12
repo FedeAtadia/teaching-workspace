@@ -25,6 +25,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
           exams: t("nav.exams"),
           settings: t("nav.settings"),
           settingsShort: t("nav.settingsShort"),
+          signOut: t("nav.signOut"),
         }}
       />
       <div className="flex min-w-0 flex-1 flex-col">
