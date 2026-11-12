@@ -1,4 +1,4 @@
-import { BookOpen, Puzzle } from "lucide-react";
+import { BookOpen, FileText, Puzzle } from "lucide-react";
 import Link from "next/link";
 import { BackLink } from "@/components/BackLink";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
@@ -7,6 +7,7 @@ import { listCourses } from "@/db/queries/classes";
 import { editStudentAction, moveStudentAction, removeStudent } from "../actions";
 import { Initials } from "@/components/Initials";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { AdaptedBadge } from "@/components/classes/Adaptation";
 import { ResultLabel } from "@/components/classes/StudentExams";
 import { notFound } from "next/navigation";
@@ -82,8 +83,14 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
             </div>
           )}
         </div>
-        {/* STUDENT-7, STUDENT-4 */}
+        {/* REPORT-1, STUDENT-7, STUDENT-4 */}
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          {courses.length > 0 && (
+            <Link href={`/students/${student.id}/report`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+              <FileText aria-hidden />
+              {t("report")}
+            </Link>
+          )}
           <FormDialog
             trigger="edit"
             triggerLabel={t("edit.button")}

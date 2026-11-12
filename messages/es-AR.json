@@ -401,7 +401,8 @@
       "to": "Nuevo curso",
       "otherYear": "Ese curso es de otro ciclo lectivo.",
       "notFound": "No se pudo cambiar de curso. Recargá la página y probá de nuevo."
-    }
+    },
+    "report": "Informe"
   },
   "closing": {
     "intro": "El resultado de cada estudiante en la materia, y si promociona o repite el año. La nota final es la del 2° cuatrimestre.",
@@ -1148,5 +1149,59 @@
       "invalid": "No se pudo importar la lista. Revisala y probá de nuevo.",
       "unreadable": "No se pudo leer ese archivo. Guardalo como CSV y probá de nuevo."
     }
+  },
+  "report": {
+    "metaTitle": "Informe de {name}",
+    "title": "Informe del estudiante",
+    "back": "Volver al estudiante",
+    "print": "Imprimir o guardar como PDF",
+    "printHint": "Para tener un PDF, en la ventana de impresión elegí «Guardar como PDF» como destino.",
+    "options": {
+      "course": "Curso",
+      "tasks": "Incluir el detalle de las tareas",
+      "adaptations": "Incluir las adaptaciones"
+    },
+    "fields": {
+      "student": "Estudiante",
+      "course": "Curso",
+      "school": "Escuela",
+      "schoolYear": "Ciclo lectivo",
+      "teacher": "Docente",
+      "date": "Fecha del informe",
+      "outcome": "Cierre del año"
+    },
+    "left": "Ya no está en este curso",
+    "columns": {
+      "term": "Cuatrimestre",
+      "average": "Promedio de tareas",
+      "missing": "Tareas sin entregar",
+      "attendance": "Asistencia",
+      "grade": "Nota"
+    },
+    "finalGrade": "Nota final",
+    "result": "Situación",
+    "passMark": "Se aprueba con {grade}",
+    "exams": "Exámenes",
+    "examAbsent": "ausente",
+    "adaptation": "Adaptaciones",
+    "tasks": "Tareas del {term}",
+    "taskColumns": {
+      "task": "Tarea",
+      "date": "Fecha",
+      "score": "Calificación",
+      "notes": "Observaciones"
+    },
+    "scores": {
+      "missing": "No entregó",
+      "excused": "Justificado",
+      "none": "Sin calificar",
+      "adapted": "adaptada"
+    },
+    "noClasses": "Este curso todavía no tiene materias.",
+    "noTerms": "Todavía no hay nada cargado.",
+    "owedElsewhere": "Materias que debe de otros años",
+    "owedLine": "{name} ({course}, {year})",
+    "noCourse": "Este estudiante no está en ningún curso, así que todavía no hay nada que informar.",
+    "footer": "Informe generado con Annora el {date}. Refleja lo cargado por el o la docente hasta esa fecha."
   }
 }

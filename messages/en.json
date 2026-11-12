@@ -401,7 +401,8 @@
       "to": "New course",
       "otherYear": "That course belongs to another school year.",
       "notFound": "The course couldn't be changed. Reload the page and try again."
-    }
+    },
+    "report": "Report"
   },
   "closing": {
     "intro": "Each student's result in the class, and whether they move up or repeat the year. The final grade is the 2nd term's.",
@@ -1148,5 +1149,59 @@
       "invalid": "The list couldn't be imported. Check it and try again.",
       "unreadable": "That file couldn't be read. Save it as CSV and try again."
     }
+  },
+  "report": {
+    "metaTitle": "Report on {name}",
+    "title": "Student report",
+    "back": "Back to the student",
+    "print": "Print or save as PDF",
+    "printHint": "To get a PDF, choose “Save as PDF” as the destination in the print window.",
+    "options": {
+      "course": "Course",
+      "tasks": "Include each task",
+      "adaptations": "Include adaptations"
+    },
+    "fields": {
+      "student": "Student",
+      "course": "Course",
+      "school": "School",
+      "schoolYear": "School year",
+      "teacher": "Teacher",
+      "date": "Report date",
+      "outcome": "Year outcome"
+    },
+    "left": "No longer in this course",
+    "columns": {
+      "term": "Term",
+      "average": "Task average",
+      "missing": "Tasks not handed in",
+      "attendance": "Attendance",
+      "grade": "Grade"
+    },
+    "finalGrade": "Final grade",
+    "result": "Result",
+    "passMark": "Pass mark: {grade}",
+    "exams": "Exams",
+    "examAbsent": "absent",
+    "adaptation": "Adaptations",
+    "tasks": "Tasks of the {term}",
+    "taskColumns": {
+      "task": "Task",
+      "date": "Date",
+      "score": "Score",
+      "notes": "Notes"
+    },
+    "scores": {
+      "missing": "Not handed in",
+      "excused": "Excused",
+      "none": "Not scored",
+      "adapted": "adapted"
+    },
+    "noClasses": "This course has no classes yet.",
+    "noTerms": "Nothing has been entered yet.",
+    "owedElsewhere": "Classes owed from other years",
+    "owedLine": "{name} ({course}, {year})",
+    "noCourse": "This student is in no course, so there is nothing to report yet.",
+    "footer": "Report generated with Annora on {date}. It reflects what the teacher had entered by that date."
   }
 }
