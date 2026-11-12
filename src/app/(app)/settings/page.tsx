@@ -18,6 +18,7 @@ import { FormDialog } from "@/components/forms/FormDialog";
 import { LanguageSelect } from "@/components/LanguageSelect";
 import { PageHeader } from "@/components/PageHeader";
 import { DeleteAccountButton } from "@/components/settings/DeleteAccountButton";
+import { RetentionForm } from "@/components/settings/RetentionForm";
 import { MinAttendanceForm } from "@/components/settings/MinAttendanceForm";
 import { ThemeSelect } from "@/components/ThemeSelect";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ import { PALETTE_COOKIE, resolvePalette, resolveTheme, THEME_COOKIE } from "@/li
 import { PaletteSelect } from "@/components/PaletteSelect";
 import { getDb } from "@/db";
 import { listSchools } from "@/db/queries/classes";
+import { getRetentionMonths } from "@/db/queries/retention";
 import { getMinAttendance } from "@/db/queries/settings";
 import { requireTeacherId } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -36,9 +38,13 @@ export default async function SettingsPage() {
   const theme = resolveTheme(jar.get(THEME_COOKIE)?.value);
   const palette = resolvePalette(jar.get(PALETTE_COOKIE)?.value);
   const teacherId = isSupabaseConfigured() ? await requireTeacherId() : null;
-  const [schools, minAttendance] = teacherId
-    ? await Promise.all([listSchools(getDb(), teacherId), getMinAttendance(getDb(), teacherId)])
-    : [[], null];
+  const [schools, minAttendance, retention] = teacherId
+    ? await Promise.all([
+        listSchools(getDb(), teacherId),
+        getMinAttendance(getDb(), teacherId),
+        getRetentionMonths(getDb(), teacherId),
+      ])
+    : [[], null, null];
 
   return (
     <PageHeader title={t("title")}>
@@ -145,6 +151,12 @@ export default async function SettingsPage() {
               <Download className="size-4" aria-hidden />
               {t("data.download")}
             </a>
+            {/* KEEP-2 */}
+            {retention !== null && (
+              <div className="mt-2 border-t border-border pt-5">
+                <RetentionForm current={retention} />
+              </div>
+            )}
             <div className="mt-2 grid gap-3 border-t border-border pt-5">
               <h3 className="font-heading text-lg leading-tight font-bold">{t("data.deleteTitle")}</h3>
               <p className="text-sm text-muted-foreground">{t("data.deleteHint")}</p>

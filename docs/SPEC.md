@@ -212,7 +212,8 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 - **STUDENT-4** A student can be deleted from their page, after a
   confirmation. Their scores, cuatrimestre grades, attendance, exams,
   adaptations, own passing standards and places in courses and groups go with
-  them; the courses, classes and tasks stay.
+  them, and the files of their own passing standards (ADAPT-2, FILE-4); the
+  courses, classes and tasks stay.
 - **STUDENT-5** The Students list shows the students the teacher works with:
   everyone but the graduates (YEAR-2, by their newest course) who owe no
   class. A graduate who still owes a class (EXAM-3) stays in it, marked as a
@@ -622,7 +623,7 @@ by hand (Known gaps).*
   loaded, as one Excel file with a sheet for each kind: classes, students,
   units and passing standards, tasks, scores, cuatrimestre grades,
   attendance, days not held, exams, adaptations, groups, school calendars
-  and settings. Rows name things (the school, the course, the student)
+  and settings (KEEP-2's period among them). Rows name things (the school, the course, the student)
   rather than showing ids, and only the teacher's own rows are in it
   (OWNER-1). Attached files are listed by name, not included.
 - **DATA-2** Sheet names, column titles and values such as "presente" are in
@@ -632,6 +633,27 @@ by hand (Known gaps).*
   word to confirm. Everything they loaded, their attached files, their
   settings and their sign-in are deleted; they are signed out and land on the
   public home page. Another teacher's data is untouched.
+
+## KEEP — How long graduates are kept
+
+*Enforced by `src/lib/retention.ts`, `src/db/queries/retention.ts`,
+`src/db/queries/yearEnd.ts`. Covered by `src/lib/retention.test.ts`,
+`src/db/queries/retention.test.ts`.*
+
+- **KEEP-1** A graduate who owes no class (STUDENT-5) is deleted, as in
+  STUDENT-4, once the teacher's period has passed since the day they were
+  marked as graduated — or since their last exam, if that came later. The
+  day an outcome is set is recorded; saving the same outcome again keeps it,
+  and clearing the outcome forgets it. A graduate who still owes a class is
+  never deleted. It happens when the teacher opens Home. Under "Egresados"
+  each graduate shows the day they will be deleted.
+- **KEEP-2** The period is the teacher's to choose in Settings: 6 months, 1,
+  2, 3 or 5 years; 1 year unless changed.
+- **KEEP-3** From 30 days before the first deletion, Home says how many
+  graduates will be deleted and from when, with links to see them and to
+  download a copy of the data (DATA-1).
+- **KEEP-4** After a deletion, Home says how many graduates were deleted and
+  when, until the teacher dismisses it.
 
 ## OWNER — Each teacher's data
 

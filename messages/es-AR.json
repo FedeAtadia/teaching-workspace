@@ -80,6 +80,13 @@
       "pending": "Tomar asistencia de hoy",
       "taken": "Asistencia tomada",
       "notHeld": "No hubo clase"
+    },
+    "graduates": {
+      "soon": "{count, plural, one {# egresado se elimina} other {# egresados se eliminan}} dentro de los próximos 30 días, a partir del {date}. Si querés conservar sus datos, descargá una copia antes.",
+      "soonSee": "Ver egresados",
+      "soonDownload": "Descargar mis datos",
+      "deleted": "{count, plural, one {Se eliminó # egresado} other {Se eliminaron # egresados}} el {date}, al cumplirse el plazo que elegiste en Configuración.",
+      "dismiss": "Entendido"
     }
   },
   "classes": {
@@ -480,7 +487,8 @@
     "graduated": "Egresó",
     "owes": "Debe materias",
     "emptyFilter": "No hay estudiantes con este filtro.",
-    "graduatesHint": "Quienes egresaron y no deben ninguna materia. Ya no aparecen en la lista de trabajo."
+    "graduatesHint": "Quienes egresaron y no deben ninguna materia. Ya no aparecen en la lista de trabajo.",
+    "deleteOn": "Se elimina el {date}"
   },
   "settings": {
     "title": "Configuración",
@@ -531,7 +539,13 @@
       "confirmLabel": "Para confirmar, escribí {word}",
       "confirmWord": "ELIMINAR",
       "deleteConfirm": "Eliminar todo",
-      "deleteFailed": "No se pudo eliminar la cuenta. Recargá la página y probá de nuevo."
+      "deleteFailed": "No se pudo eliminar la cuenta. Recargá la página y probá de nuevo.",
+      "retention": {
+        "label": "Cuánto tiempo se guardan los egresados",
+        "hint": "Un egresado que no debe materias sale de la lista de trabajo y, pasado este plazo, se elimina solo con todo lo que cargaste sobre él. Inicio te avisa 30 días antes y cuando ocurre. Quien todavía debe una materia no se elimina.",
+        "months": "{count, plural, =6 {6 meses} =12 {1 año} =24 {2 años} =36 {3 años} =60 {5 años} other {# meses}}",
+        "saved": "Guardado."
+      }
     }
   },
   "weekdays": {
@@ -863,7 +877,7 @@
       "description": "Qué datos usa Annora, para qué, dónde se guardan y cómo pedir verlos, corregirlos o borrarlos."
     },
     "title": "Política de privacidad",
-    "updated": "Última actualización: 11/11/2026",
+    "updated": "Última actualización: 12/11/2026",
     "intro": "Esta política explica qué datos usa Annora, para qué, dónde se guardan y qué podés hacer con ellos. Está escrita para docentes, que son quienes usan Annora.",
     "sections": [
       {
@@ -907,6 +921,7 @@
         "title": "Cuánto tiempo se guardan y cómo borrarlos",
         "paragraphs": [
           "Tus datos se guardan mientras uses Annora. Desde Configuración podés descargar cuando quieras una copia de todo lo que cargaste, en un archivo de Excel, y eliminar tu cuenta: al hacerlo se borran en el momento tus datos, tus archivos y tu ingreso.",
+          "Los estudiantes que marcás como egresados y no deben ninguna materia se eliminan solos pasado un plazo que elegís en Configuración (un año, si no lo cambiás). Annora te avisa 30 días antes y cuando ocurre.",
           "También podés borrar a un estudiante con todo lo que cargaste sobre él, desde su página. Y podés pedir una copia, una corrección o un borrado escribiendo a {email}: se responde dentro de los 10 días hábiles, y un borrado se completa dentro de los 30 días."
         ]
       },
@@ -1033,7 +1048,8 @@
       "passMark": "Nota de aprobación",
       "maxTermIncrease": "Cuánto puede subir el 2° cuatrimestre",
       "maxTermDecrease": "Cuánto puede bajar el 2° cuatrimestre",
-      "minAttendance": "Asistencia mínima (%)"
+      "minAttendance": "Asistencia mínima (%)",
+      "graduateRetentionMonths": "Meses que se guardan los egresados"
     },
     "yes": "Sí",
     "no": "No"

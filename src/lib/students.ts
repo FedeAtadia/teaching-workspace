@@ -13,6 +13,8 @@ export type StudentCourse = {
   schoolYear: string;
   school: string;
   outcome: YearOutcome | null;
+  /** KEEP-1: the day the outcome was set. */
+  outcomeOn: string | null;
 };
 export type ListedStudent = { id: string; firstName: string; lastName: string; courses: StudentCourse[] };
 
@@ -24,10 +26,14 @@ export function resolveView(value: string | undefined): StudentView {
   return (STUDENT_VIEWS as readonly string[]).includes(value ?? "") ? (value as StudentView) : "current";
 }
 
-/** YEAR-2: the student graduated from their newest course (COURSE-3 puts it first). */
+/** The newest course the student is active in (COURSE-3 puts it first). */
+export function newestCourse(student: Pick<ListedStudent, "courses">): StudentCourse | undefined {
+  return [...student.courses].sort(compareCourses)[0];
+}
+
+/** YEAR-2: the student graduated from their newest course. */
 export function isGraduate(student: Pick<ListedStudent, "courses">): boolean {
-  const [newest] = [...student.courses].sort(compareCourses);
-  return newest?.outcome === "graduated";
+  return newestCourse(student)?.outcome === "graduated";
 }
 
 /**

@@ -85,6 +85,7 @@ export type ExportData = {
     maxTermIncrease: number;
     maxTermDecrease: number;
     minAttendance: number;
+    graduateRetentionMonths: number;
   } | null;
 };
 

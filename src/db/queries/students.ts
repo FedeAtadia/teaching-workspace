@@ -1,6 +1,6 @@
 // Reading and writing students. Scoped to one teacher (OWNER-1).
 
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
 import {
@@ -14,6 +14,7 @@ import {
   exams,
   schools,
   scores,
+  standards,
   studentAdaptations,
   students,
   tasks,
@@ -65,6 +66,7 @@ export async function listStudents(db: Db, teacherId: string): Promise<StudentRo
       schoolYear: academicYears.name,
       school: schools.name,
       outcome: courseStudents.outcome,
+      outcomeOn: courseStudents.outcomeOn,
     })
     .from(students)
     .leftJoin(
@@ -96,6 +98,7 @@ export async function listStudents(db: Db, teacherId: string): Promise<StudentRo
         schoolYear: r.schoolYear,
         school: r.school,
         outcome: r.outcome,
+        outcomeOn: r.outcomeOn,
       });
     }
     byId.set(r.id, s);
@@ -221,16 +224,43 @@ async function hasRecords(tx: Db, studentId: string, classIds: string[]): Promis
   return found.some((rows) => rows.length > 0);
 }
 
-/** STUDENT-4: deletes the student; everything recorded about them goes with them. */
+/**
+ * STUDENT-4: deletes the student; everything recorded about them goes with
+ * them. Answers with the files of their own passing standards (ADAPT-2,
+ * FILE-4), for Storage to delete.
+ */
 export async function deleteStudent(
   db: Db,
   teacherId: string,
   studentId: string,
-): Promise<{ ok: true } | { ok: false; error: "notFound" }> {
+): Promise<{ ok: true; attachmentPaths: string[] } | { ok: false; error: "notFound" }> {
   if (!z.uuid().safeParse(studentId).success) return { ok: false, error: "notFound" };
-  const deleted = await db
-    .delete(students)
-    .where(and(eq(students.id, studentId), eq(students.teacherId, teacherId)))
-    .returning({ id: students.id });
-  return deleted.length > 0 ? { ok: true } : { ok: false, error: "notFound" };
+  const result = await deleteStudents(db, teacherId, [studentId]);
+  return result.deleted > 0 ? { ok: true, attachmentPaths: result.attachmentPaths } : { ok: false, error: "notFound" };
+}
+
+/** STUDENT-4, KEEP-1: deletes these students of the teacher, in one transaction. */
+export async function deleteStudents(
+  db: Db,
+  teacherId: string,
+  studentIds: string[],
+): Promise<{ deleted: number; attachmentPaths: string[] }> {
+  if (studentIds.length === 0) return { deleted: 0, attachmentPaths: [] };
+  return db.transaction(async (tx) => {
+    const files = await tx
+      .select({ path: standards.attachmentPath })
+      .from(standards)
+      .where(
+        and(
+          eq(standards.teacherId, teacherId),
+          inArray(standards.studentId, studentIds),
+          isNotNull(standards.attachmentPath),
+        ),
+      );
+    const deleted = await tx
+      .delete(students)
+      .where(and(inArray(students.id, studentIds), eq(students.teacherId, teacherId)))
+      .returning({ id: students.id });
+    return { deleted: deleted.length, attachmentPaths: deleted.length > 0 ? files.map((f) => f.path!) : [] };
+  });
 }
