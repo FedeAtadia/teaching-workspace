@@ -1,11 +1,11 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Upload } from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Initials } from "@/components/Initials";
 import { PageHeader } from "@/components/PageHeader";
 import { AddStudentDialog } from "@/components/students/AddStudentDialog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -17,11 +17,16 @@ import {
 import { getDb } from "@/db";
 import { listCourses } from "@/db/queries/classes";
 import { listStudents } from "@/db/queries/students";
+import { listOwed } from "@/db/queries/yearEnd";
+import { listGraduateDeletions } from "@/db/queries/retention";
+import { formatDate } from "@/lib/format";
+import { StudentFilters } from "@/components/students/StudentFilters";
+import { filterStudents, isGraduate, resolveView, STUDENT_VIEWS, type StudentView } from "@/lib/students";
 import { requireTeacherId } from "@/lib/auth";
 import { formatCourse, type Shift } from "@/lib/courses";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-export default async function StudentsPage() {
+export default async function StudentsPage({ searchParams }: PageProps<"/students">) {
   const t = await getTranslations("students");
   const tShift = await getTranslations("shifts");
   const tCommon = await getTranslations("common");
@@ -36,7 +41,25 @@ export default async function StudentsPage() {
 
   const db = getDb();
   const teacherId = await requireTeacherId();
-  const [courses, students] = await Promise.all([listCourses(db, teacherId), listStudents(db, teacherId)]);
+  const [courses, everyone, owed, params] = await Promise.all([
+    listCourses(db, teacherId),
+    listStudents(db, teacherId),
+    listOwed(db, teacherId),
+    searchParams,
+  ]);
+
+  // STUDENT-5, STUDENT-6: the view and the course come from the address.
+  const view = resolveView(typeof params.view === "string" ? params.view : undefined);
+  const courseId = courses.find((c) => c.id === params.course)?.id;
+  const owing = new Set(owed.flatMap((c) => c.students.map((s) => s.student.id)));
+  const students = filterStudents(everyone, { view, courseId }, owing);
+  // KEEP-1: under "Egresados", the day each one will be deleted.
+  const deleteOn = new Map(
+    view === "graduates" ? (await listGraduateDeletions(db, teacherId)).map((g) => [g.studentId, g.deleteOn]) : [],
+  );
+  const counts = Object.fromEntries(
+    STUDENT_VIEWS.map((v) => [v, filterStudents(everyone, { view: v, courseId }, owing).length]),
+  ) as Record<StudentView, number>;
 
   // The school only adds noise for a teacher at one school; with two, it tells the courses apart.
   const severalSchools = new Set(courses.map((c) => c.school)).size > 1;
@@ -45,7 +68,17 @@ export default async function StudentsPage() {
 
   const action =
     courses.length > 0 ? (
-      <AddStudentDialog courses={courses.map((c) => ({ id: c.id, label: courseLabel(c) }))} />
+      <div className="flex flex-wrap items-center gap-2">
+        {/* IMPORT-1: a whole course at once; it opens on the course being looked at. */}
+        <Link
+          href={courseId ? `/students/import?course=${courseId}` : "/students/import"}
+          className={buttonVariants({ variant: "outline" })}
+        >
+          <Upload aria-hidden />
+          {t("import")}
+        </Link>
+        <AddStudentDialog courses={courses.map((c) => ({ id: c.id, label: courseLabel(c) }))} />
+      </div>
     ) : (
       <Button disabled>{t("add")}</Button>
     );
@@ -60,8 +93,25 @@ export default async function StudentsPage() {
           </Link>
         </p>
       )}
+      {everyone.length > 0 && (
+        <StudentFilters
+          view={view}
+          courseId={courseId}
+          courses={courses.map((c) => ({ id: c.id, label: courseLabel(c) }))}
+          counts={counts}
+          labels={{
+            label: t("filters.label"),
+            current: t("filters.current"),
+            graduates: t("filters.graduates"),
+            all: t("filters.all"),
+            course: t("filters.course"),
+            allCourses: t("filters.allCourses"),
+          }}
+        />
+      )}
+      {view === "graduates" && <p className="mb-4 text-sm text-muted-foreground">{t("graduatesHint")}</p>}
       {students.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("empty")}</p>
+        <p className="text-sm text-muted-foreground">{everyone.length === 0 ? t("empty") : t("emptyFilter")}</p>
       ) : (
         <>
           {/* Phone: one compact card per student; the whole card is the link (NAV-2). */}
@@ -80,6 +130,21 @@ export default async function StudentsPage() {
                     <span className="block truncate text-sm text-muted-foreground">
                       {s.courses.map(courseLabel).join(", ")}
                     </span>
+                    {deleteOn.has(s.id) && (
+                      <span className="block text-sm text-muted-foreground">
+                        {t("deleteOn", { date: formatDate(deleteOn.get(s.id)!) })}
+                      </span>
+                    )}
+                    {isGraduate(s) && (
+                      <span className="mt-1 flex flex-wrap gap-1.5">
+                        <Badge tone="accent">{t("graduated")}</Badge>
+                        {owing.has(s.id) && (
+                          <Badge tone="alert" dot>
+                            {t("owes")}
+                          </Badge>
+                        )}
+                      </span>
+                    )}
                   </span>
                   <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
                 </Link>
@@ -122,6 +187,17 @@ export default async function StudentsPage() {
                           {s.courses.map(courseLabel).map((label) => (
                             <Badge key={label}>{label}</Badge>
                           ))}
+                          {isGraduate(s) && <Badge tone="accent">{t("graduated")}</Badge>}
+                          {deleteOn.has(s.id) && (
+                            <span className="self-center text-sm text-muted-foreground">
+                              {t("deleteOn", { date: formatDate(deleteOn.get(s.id)!) })}
+                            </span>
+                          )}
+                          {isGraduate(s) && owing.has(s.id) && (
+                            <Badge tone="alert" dot>
+                              {t("owes")}
+                            </Badge>
+                          )}
                         </span>
                         <ChevronRight
                           className="size-5 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-highlight"

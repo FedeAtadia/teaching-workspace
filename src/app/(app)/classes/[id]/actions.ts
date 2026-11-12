@@ -14,7 +14,8 @@ import {
   updateUnit,
 } from "@/db/queries/classDetail";
 import { redirect } from "next/navigation";
-import { deleteClass } from "@/db/queries/classes";
+import { deleteClass, setClassArchived } from "@/db/queries/classes";
+import { todayInArgentina } from "@/lib/calendar";
 import { createGroup, deleteGroup, setStudentGroup, updateGroup } from "@/db/queries/groups";
 import { bringStudents } from "@/db/queries/nextYear";
 import {
@@ -269,6 +270,13 @@ export async function removeAdaptedTaskFile(input: { classId: string; taskId: st
   if (result.previousPath) await deleteStoredFiles(result.previousPath);
   revalidatePath(`/classes/${cls.id}/tasks/${input.taskId}`);
   return { ok: true };
+}
+
+/** CLASS-8: archives the class or brings it back. A form's action, so it answers nothing. */
+export async function archiveClass(input: { classId: string; archived: boolean }): Promise<void> {
+  const result = await setClassArchived(getDb(), await requireTeacherId(), input, todayInArgentina());
+  // Home, Classes and the class's own header all change.
+  if (result.ok) revalidatePath("/", "layout");
 }
 
 /** CLASS-7: deletes the class, its work and its files, then goes back to the list. */

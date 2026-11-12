@@ -4,7 +4,7 @@ import type { Db } from "@/db";
 import { courseStudents } from "@/db/schema";
 import { createTestDb, newTeacher } from "@/test/db";
 import type { ClassInput } from "@/lib/validation";
-import { createClass, listCourses, listSchools } from "./classes";
+import { createClass, listCourses, listSchools, setClassArchived } from "./classes";
 import { getClass, listClassStudents, listTerms } from "./classDetail";
 import { createStudent } from "./students";
 import { createTask, saveScores } from "./tasks";
@@ -180,5 +180,49 @@ describe("today's classes (HOME-4)", () => {
   it("only lists the teacher's own classes (OWNER-1)", async () => {
     await setup();
     expect(await getTodayClasses(db, newTeacher(), MONDAY)).toEqual([]);
+  });
+});
+
+describe("archived classes on Home (CLASS-8)", () => {
+  it("leaves them out of the cards, the counts and today's classes; they show on their own", async () => {
+    const teacher = newTeacher();
+    const old = await createClass(db, teacher, cls({ name: "Matemática", year: 6, weekdays: [1] }));
+    const current = await createClass(db, teacher, cls({ name: "Física", year: 5, weekdays: [1] }));
+    if (!old.ok || !current.ok) throw new Error("createClass failed");
+    const courses = await listCourses(db, teacher);
+    const sixth = courses.find((c) => c.year === 6)!;
+    const fifth = courses.find((c) => c.year === 5)!;
+    await createStudent(db, teacher, { firstName: "Ana", lastName: "Pérez", courseId: sixth.id });
+    await createStudent(db, teacher, { firstName: "Luis", lastName: "Gómez", courseId: sixth.id });
+    await createStudent(db, teacher, { firstName: "Zoe", lastName: "Álvarez", courseId: fifth.id });
+    const [school] = await listSchools(db, teacher);
+    await saveCalendar(db, teacher, {
+      schoolId: school.id,
+      schoolYear: 2026,
+      startsOn: "2026-03-02",
+      term2StartsOn: "2026-07-27",
+      endsOn: "2026-12-11",
+    });
+    const MONDAY = "2026-10-19";
+    const oldClass = (await getClass(db, teacher, old.classId))!;
+    const [term1] = await listTerms(db, teacher, oldClass);
+    // A task nobody is scored on: two notes still to enter in the old class.
+    await createTask(db, teacher, {
+      classId: old.classId, title: "TP", termId: term1.id, unitId: null, dueOn: null, description: null, criteria: null, standardIds: [],
+    });
+
+    expect((await getHomeCards(db, teacher)).stats).toMatchObject({ classes: 2, students: 3, pending: 2 });
+    expect((await getTodayClasses(db, teacher, MONDAY)).map((c) => c.name).sort()).toEqual(["Física", "Matemática"]);
+
+    await setClassArchived(db, teacher, { classId: old.classId, archived: true }, "2026-12-20");
+
+    const home = await getHomeCards(db, teacher);
+    expect(home.cards.map((c) => c.name)).toEqual(["Física"]);
+    expect(home.stats).toMatchObject({ classes: 1, students: 1, pending: 0 });
+    expect((await getTodayClasses(db, teacher, MONDAY)).map((c) => c.name)).toEqual(["Física"]);
+
+    const archived = await getHomeCards(db, teacher, "archived");
+    expect(archived.cards.map((c) => c.name)).toEqual(["Matemática"]);
+    expect(archived.stats).toMatchObject({ classes: 1, students: 2 });
   });
 });

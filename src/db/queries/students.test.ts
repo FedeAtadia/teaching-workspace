@@ -3,7 +3,11 @@ import type { Db } from "@/db";
 import { createTestDb, newTeacher } from "@/test/db";
 import type { ClassInput } from "@/lib/validation";
 import { createClass, listClasses, listCourses } from "./classes";
-import { createStudent, listStudents } from "./students";
+import { eq } from "drizzle-orm";
+import { courseStudents, exams } from "@/db/schema";
+import { classGroupStudents, classGroups, standards } from "@/db/schema";
+import { createStudent, deleteStudent, importStudents, listStudents, moveStudent, updateStudent } from "./students";
+import { getStudentHistory } from "./history";
 
 let db: Db;
 beforeAll(async () => {
@@ -64,7 +68,7 @@ describe("adding students (STUDENT)", () => {
       "Pérez, Luis",
     ]);
     expect(list[0].courses).toEqual([
-      { year: 4, division: "A", shift: "morning", schoolYear: "2026", school: "Escuela 5" },
+      { id: courseId, year: 4, division: "A", shift: "morning", schoolYear: "2026", school: "Escuela 5", outcome: null, outcomeOn: null },
     ]);
   });
 });
@@ -81,5 +85,171 @@ describe("each teacher's students (OWNER-1)", () => {
     await createStudent(db, a, { firstName: "Ana", lastName: "Pérez", courseId });
     expect(await listStudents(db, b)).toEqual([]);
     expect(await listStudents(db, a)).toHaveLength(1);
+  });
+});
+
+describe("deleting a student (STUDENT-4)", () => {
+  it("deletes the student and what was recorded about them, keeping the course and its classes", async () => {
+    const { teacher, courseId } = await teacherWithCourse();
+    await createStudent(db, teacher, { firstName: "Ana", lastName: "Pérez", courseId });
+    await createStudent(db, teacher, { firstName: "Luis", lastName: "Pérez", courseId });
+    const [ana] = await listStudents(db, teacher);
+    const [mate] = (await listClasses(db, teacher)).filter((c) => c.name === "Matemática");
+    await db.insert(exams).values({ teacherId: teacher, classId: mate.id, studentId: ana.id, takenOn: "2026-12-15", value: 6 });
+
+    expect(await deleteStudent(db, teacher, ana.id)).toEqual({ ok: true, attachmentPaths: [] });
+
+    expect((await listStudents(db, teacher)).map((s) => s.firstName)).toEqual(["Luis"]);
+    expect(await db.select().from(exams).where(eq(exams.studentId, ana.id))).toEqual([]);
+    expect(await db.select().from(courseStudents).where(eq(courseStudents.studentId, ana.id))).toEqual([]);
+    expect((await listClasses(db, teacher)).map((c) => [c.name, c.students])).toEqual([
+      ["Física", 1],
+      ["Matemática", 1],
+    ]);
+  });
+
+  it("refuses another teacher's student, or one that doesn't exist (OWNER-1)", async () => {
+    const { teacher, courseId } = await teacherWithCourse();
+    await createStudent(db, teacher, { firstName: "Ana", lastName: "Pérez", courseId });
+    const [ana] = await listStudents(db, teacher);
+
+    expect(await deleteStudent(db, newTeacher(), ana.id)).toEqual({ ok: false, error: "notFound" });
+    expect(await deleteStudent(db, teacher, "nope")).toEqual({ ok: false, error: "notFound" });
+    expect(await listStudents(db, teacher)).toHaveLength(1);
+  });
+});
+
+describe("editing a student (STUDENT-7)", () => {
+  it("changes the name, and only for the teacher's own student (OWNER-1)", async () => {
+    const { teacher, courseId } = await teacherWithCourse();
+    await createStudent(db, teacher, { firstName: "Ana", lastName: "Peres", courseId });
+    const [ana] = await listStudents(db, teacher);
+
+    expect(
+      await updateStudent(db, newTeacher(), { studentId: ana.id, firstName: "Eve", lastName: "Intrusa" }),
+    ).toEqual({ ok: false, error: "notFound" });
+    expect(await updateStudent(db, teacher, { studentId: ana.id, firstName: "Ana", lastName: "Pérez" })).toEqual({
+      ok: true,
+    });
+    expect((await listStudents(db, teacher)).map((s) => `${s.lastName}, ${s.firstName}`)).toEqual(["Pérez, Ana"]);
+  });
+});
+
+describe("moving a student to another course (STUDENT-8)", () => {
+  async function twoCourses() {
+    const { teacher, courseId: a } = await teacherWithCourse();
+    await createClass(db, teacher, cls("Matemática", { division: "B" }));
+    const b = (await listCourses(db, teacher)).find((c) => c.division === "B")!.id;
+    await createStudent(db, teacher, { firstName: "Ana", lastName: "Pérez", courseId: a });
+    const [ana] = await listStudents(db, teacher);
+    const mateA = (await listClasses(db, teacher)).find((c) => c.name === "Matemática" && c.division === "A")!;
+    return { teacher, a, b, ana, mateA };
+  }
+  const coursesOf = async (teacher: string, studentId: string) =>
+    (await getStudentHistory(db, teacher, studentId))!.courses.map((c) => [c.division, c.status]);
+
+  it("with nothing recorded, the old course forgets them", async () => {
+    const { teacher, a, b, ana } = await twoCourses();
+    expect(await moveStudent(db, teacher, { studentId: ana.id, fromCourseId: a, toCourseId: b })).toEqual({ ok: true });
+    expect(await coursesOf(teacher, ana.id)).toEqual([["B", "active"]]);
+  });
+
+  it("with something recorded, they stay in the old course as having left, and leave its groups", async () => {
+    const { teacher, a, b, ana, mateA } = await twoCourses();
+    await db.insert(exams).values({ teacherId: teacher, classId: mateA.id, studentId: ana.id, takenOn: "2026-12-15", value: 6 });
+    const [group] = await db
+      .insert(classGroups)
+      .values({ teacherId: teacher, classId: mateA.id, name: "Martes" })
+      .returning();
+    await db
+      .insert(classGroupStudents)
+      .values({ teacherId: teacher, classId: mateA.id, studentId: ana.id, groupId: group.id });
+
+    expect(await moveStudent(db, teacher, { studentId: ana.id, fromCourseId: a, toCourseId: b })).toEqual({ ok: true });
+
+    expect(await coursesOf(teacher, ana.id)).toEqual([
+      ["A", "withdrawn"],
+      ["B", "active"],
+    ]);
+    expect(await db.select().from(classGroupStudents).where(eq(classGroupStudents.studentId, ana.id))).toEqual([]);
+    // Only the course they are in now shows in the list.
+    expect((await listStudents(db, teacher))[0].courses.map((c) => c.division)).toEqual(["B"]);
+
+    // And back again: the course they had left takes them back.
+    expect(await moveStudent(db, teacher, { studentId: ana.id, fromCourseId: b, toCourseId: a })).toEqual({ ok: true });
+    expect(await coursesOf(teacher, ana.id)).toEqual([["A", "active"]]);
+  });
+
+  it("refuses another school year, the same course, a course they aren't in and another teacher's (OWNER-1)", async () => {
+    const { teacher, a, b, ana } = await twoCourses();
+    await createClass(db, teacher, cls("Matemática", { schoolYear: 2027, year: 5 }));
+    const next = (await listCourses(db, teacher)).find((c) => c.schoolYear === "2027")!.id;
+    const move = (who: string, fromCourseId: string, toCourseId: string) =>
+      moveStudent(db, who, { studentId: ana.id, fromCourseId, toCourseId });
+
+    expect(await move(teacher, a, next)).toEqual({ ok: false, error: "otherYear" });
+    expect(await move(teacher, a, a)).toEqual({ ok: false, error: "notFound" });
+    expect(await move(teacher, b, a)).toEqual({ ok: false, error: "notFound" });
+    expect(await move(newTeacher(), a, b)).toEqual({ ok: false, error: "notFound" });
+    expect(await coursesOf(teacher, ana.id)).toEqual([["A", "active"]]);
+  });
+});
+
+describe("a deleted student's files (STUDENT-4)", () => {
+  it("names the files of their own passing standards, and not the class's", async () => {
+    const { teacher, courseId } = await teacherWithCourse();
+    await createStudent(db, teacher, { firstName: "Ana", lastName: "Pérez", courseId });
+    const [ana] = await listStudents(db, teacher);
+    const [mate] = (await listClasses(db, teacher)).filter((c) => c.name === "Matemática");
+    const base = { teacherId: teacher, scope: "class" as const, classId: mate.id, attachmentName: "x.pdf" };
+    await db.insert(standards).values([
+      { ...base, title: "De la clase", attachmentPath: `${teacher}/standards/a/x.pdf` },
+      { ...base, title: "De Ana", studentId: ana.id, attachmentPath: `${teacher}/standards/b/x.pdf` },
+    ]);
+
+    expect(await deleteStudent(db, teacher, ana.id)).toEqual({
+      ok: true,
+      attachmentPaths: [`${teacher}/standards/b/x.pdf`],
+    });
+    expect((await db.select().from(standards).where(eq(standards.classId, mate.id))).map((s) => s.title)).toEqual([
+      "De la clase",
+    ]);
+  });
+});
+
+describe("importing a list into a course (IMPORT-3)", () => {
+  it("adds everyone new in one go, skipping who is already there and repeats in the list", async () => {
+    const { teacher, courseId } = await teacherWithCourse();
+    await createStudent(db, teacher, { firstName: "Ana", lastName: "Pérez", courseId });
+
+    const result = await importStudents(db, teacher, {
+      courseId,
+      students: [
+        { lastName: "PEREZ", firstName: "ana" },
+        { lastName: "Gómez", firstName: "Luis" },
+        { lastName: "gomez", firstName: "Luis" },
+        { lastName: "Álvarez", firstName: "Zoe" },
+      ],
+    });
+
+    expect(result).toEqual({ ok: true, added: 2, skipped: 2 });
+    expect((await listStudents(db, teacher)).map((s) => `${s.lastName}, ${s.firstName}`)).toEqual([
+      "Álvarez, Zoe",
+      "Gómez, Luis",
+      "Pérez, Ana",
+    ]);
+    // STUDENT-2: they are in every class of the course.
+    expect((await listClasses(db, teacher)).map((c) => c.students)).toEqual([3, 3]);
+  });
+
+  it("refuses another teacher's course (OWNER-1)", async () => {
+    const { teacher, courseId } = await teacherWithCourse();
+    const students = [{ lastName: "Pérez", firstName: "Ana" }];
+    expect(await importStudents(db, newTeacher(), { courseId, students })).toEqual({
+      ok: false,
+      error: "courseNotFound",
+    });
+    expect(await listStudents(db, teacher)).toEqual([]);
+    expect(await importStudents(db, teacher, { courseId, students })).toEqual({ ok: true, added: 1, skipped: 0 });
   });
 });

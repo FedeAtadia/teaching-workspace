@@ -12,7 +12,8 @@
     "menu": "Menú principal",
     "collapse": "Contraer menú",
     "expand": "Expandir menú",
-    "settingsShort": "Ajustes"
+    "settingsShort": "Ajustes",
+    "signOut": "Cerrar sesión"
   },
   "common": {
     "cancel": "Cancelar",
@@ -80,6 +81,13 @@
       "pending": "Tomar asistencia de hoy",
       "taken": "Asistencia tomada",
       "notHeld": "No hubo clase"
+    },
+    "graduates": {
+      "soon": "{count, plural, one {# egresado se elimina} other {# egresados se eliminan}} dentro de los próximos 30 días, a partir del {date}. Si querés conservar sus datos, descargá una copia antes.",
+      "soonSee": "Ver egresados",
+      "soonDownload": "Descargar mis datos",
+      "deleted": "{count, plural, one {Se eliminó # egresado} other {Se eliminaron # egresados}} el {date}, al cumplirse el plazo que elegiste en Configuración.",
+      "dismiss": "Entendido"
     }
   },
   "classes": {
@@ -115,7 +123,14 @@
       "courseExists": "Ya tenés otro curso con esa escuela, año, división, turno y ciclo lectivo.",
       "notFound": "No se encontró este curso. Recargá la página."
     },
-    "count": "{count, plural, one {# curso} other {# cursos}}"
+    "count": "{count, plural, one {# curso} other {# cursos}}",
+    "views": {
+      "label": "Cursos activos o archivados",
+      "active": "Activos",
+      "archived": "Archivados"
+    },
+    "emptyArchived": "No hay cursos archivados.",
+    "archivedHint": "Los cursos que ya no usás, por ejemplo los del año pasado. Siguen completos y en la historia de cada estudiante; abrí uno para desarchivarlo."
   },
   "classPage": {
     "back": "Cursos",
@@ -309,6 +324,12 @@
         "reasonRequired": "Está fuera del rango esperado: escribí el motivo.",
         "reasonTooLong": "El motivo es demasiado largo."
       }
+    },
+    "archive": {
+      "button": "Archivar",
+      "unarchive": "Desarchivar",
+      "badge": "Archivado el {date}",
+      "hint": "Este curso está archivado: no aparece en Inicio ni en Cursos, pero no se perdió nada y sigue en la historia de cada estudiante."
     }
   },
   "groups": {
@@ -362,7 +383,25 @@
     },
     "exams": "Exámenes",
     "absent": "ausente",
-    "attendance": "Asistencia {rate} %"
+    "attendance": "Asistencia {rate} %",
+    "delete": {
+      "button": "Eliminar estudiante",
+      "title": "¿Eliminar a {name}?",
+      "body": "Se borran sus calificaciones, notas de cuatrimestre, asistencia, exámenes y adaptaciones, de todos los años. Los cursos, las clases y las tareas quedan."
+    },
+    "edit": {
+      "button": "Editar",
+      "title": "Editar estudiante",
+      "notFound": "No se encontró al estudiante. Recargá la página."
+    },
+    "move": {
+      "button": "Cambiar de curso",
+      "title": "Cambiar de curso a {name}",
+      "description": "Sale de {course} y pasa a otro curso de {year}. Si ya cargaste algo en este curso, queda en su historial.",
+      "to": "Nuevo curso",
+      "otherYear": "Ese curso es de otro ciclo lectivo.",
+      "notFound": "No se pudo cambiar de curso. Recargá la página y probá de nuevo."
+    }
   },
   "closing": {
     "intro": "El resultado de cada estudiante en la materia, y si promociona o repite el año. La nota final es la del 2° cuatrimestre.",
@@ -450,7 +489,21 @@
     },
     "errors": {
       "courseNotFound": "Ese curso ya no existe. Elegí otro."
-    }
+    },
+    "filters": {
+      "label": "Filtrar estudiantes",
+      "current": "Actuales",
+      "graduates": "Egresados",
+      "all": "Todos",
+      "course": "Curso",
+      "allCourses": "Todos los cursos"
+    },
+    "graduated": "Egresó",
+    "owes": "Debe materias",
+    "emptyFilter": "No hay estudiantes con este filtro.",
+    "graduatesHint": "Quienes egresaron y no deben ninguna materia. Ya no aparecen en la lista de trabajo.",
+    "deleteOn": "Se elimina el {date}",
+    "import": "Importar lista"
   },
   "settings": {
     "title": "Configuración",
@@ -488,7 +541,27 @@
       "hint": "Debajo de este porcentaje en un cuatrimestre, el promedio sugerido se muestra como no aprobado, con «asistencia insuficiente». El número no cambia. Con 0 no se marca nada.",
       "saved": "Guardado."
     },
-    "languageHint": "Idioma de la interfaz"
+    "languageHint": "Idioma de la interfaz",
+    "data": {
+      "title": "Tus datos",
+      "downloadHint": "Descargá una copia de todo lo que cargaste, en un archivo de Excel con una hoja por cada cosa: clases, estudiantes, tareas, calificaciones, asistencia y más. Los archivos adjuntos figuran por nombre, no se incluyen.",
+      "download": "Descargar mis datos",
+      "deleteTitle": "Eliminar mi cuenta",
+      "deleteHint": "Borra para siempre todo lo que cargaste (escuelas, cursos, estudiantes, tareas, calificaciones, asistencia y archivos) y tu ingreso a Annora. Si querés conservar una copia, descargala antes.",
+      "deleteButton": "Eliminar mi cuenta",
+      "deleteDialogTitle": "¿Eliminar tu cuenta y todos tus datos?",
+      "deleteDialogBody": "Se borra todo lo que cargaste y tu ingreso a Annora. No se puede deshacer ni recuperar después.",
+      "confirmLabel": "Para confirmar, escribí {word}",
+      "confirmWord": "ELIMINAR",
+      "deleteConfirm": "Eliminar todo",
+      "deleteFailed": "No se pudo eliminar la cuenta. Recargá la página y probá de nuevo.",
+      "retention": {
+        "label": "Cuánto tiempo se guardan los egresados",
+        "hint": "Un egresado que no debe materias sale de la lista de trabajo y, pasado este plazo, se elimina solo con todo lo que cargaste sobre él. Inicio te avisa 30 días antes y cuando ocurre. Quien todavía debe una materia no se elimina.",
+        "months": "{count, plural, =6 {6 meses} =12 {1 año} =24 {2 años} =36 {3 años} =60 {5 años} other {# meses}}",
+        "saved": "Guardado."
+      }
+    }
   },
   "weekdays": {
     "1": "Lunes",
@@ -819,7 +892,7 @@
       "description": "Qué datos usa Annora, para qué, dónde se guardan y cómo pedir verlos, corregirlos o borrarlos."
     },
     "title": "Política de privacidad",
-    "updated": "Última actualización: 10/11/2026",
+    "updated": "Última actualización: 12/11/2026",
     "intro": "Esta política explica qué datos usa Annora, para qué, dónde se guardan y qué podés hacer con ellos. Está escrita para docentes, que son quienes usan Annora.",
     "sections": [
       {
@@ -862,7 +935,9 @@
       {
         "title": "Cuánto tiempo se guardan y cómo borrarlos",
         "paragraphs": [
-          "Tus datos se guardan mientras uses Annora. Podés pedir una copia, una corrección o que se borren tu cuenta y todo lo que cargaste, escribiendo a {email}. Se responde dentro de los 10 días hábiles, y un borrado se completa dentro de los 30 días."
+          "Tus datos se guardan mientras uses Annora. Desde Configuración podés descargar cuando quieras una copia de todo lo que cargaste, en un archivo de Excel, y eliminar tu cuenta: al hacerlo se borran en el momento tus datos, tus archivos y tu ingreso.",
+          "Los estudiantes que marcás como egresados y no deben ninguna materia se eliminan solos pasado un plazo que elegís en Configuración (un año, si no lo cambiás). Annora te avisa 30 días antes y cuando ocurre.",
+          "También podés borrar a un estudiante con todo lo que cargaste sobre él, desde su página. Y podés pedir una copia, una corrección o un borrado escribiendo a {email}: se responde dentro de los 10 días hábiles, y un borrado se completa dentro de los 30 días."
         ]
       },
       {
@@ -882,5 +957,196 @@
     ],
     "google": "la configuración de tu cuenta de Google",
     "back": "Volver al inicio"
+  },
+  "dataExport": {
+    "fileName": "annora-mis-datos",
+    "sheets": {
+      "classes": "Clases",
+      "students": "Estudiantes",
+      "units": "Unidades",
+      "standards": "Criterios",
+      "tasks": "Tareas",
+      "scores": "Calificaciones",
+      "termGrades": "Notas de cuatrimestre",
+      "attendance": "Asistencia",
+      "notHeld": "Días sin dictar",
+      "exams": "Exámenes",
+      "adaptations": "Adaptaciones",
+      "groups": "Grupos",
+      "calendars": "Calendarios",
+      "daysOff": "Días sin clase",
+      "settings": "Configuración"
+    },
+    "columns": {
+      "schoolYear": "Ciclo lectivo",
+      "school": "Escuela",
+      "course": "Curso",
+      "shift": "Turno",
+      "subject": "Materia",
+      "lastName": "Apellido",
+      "firstName": "Nombre",
+      "passMark": "Nota de aprobación",
+      "weekdays": "Días de la semana",
+      "notes": "Notas",
+      "status": "Estado",
+      "outcome": "Cierre del año",
+      "term": "Cuatrimestre",
+      "unit": "Unidad",
+      "title": "Título",
+      "description": "Descripción",
+      "criteria": "Criterio de la tarea",
+      "assignedOn": "Fecha de entrega de consigna",
+      "dueOn": "Fecha de entrega",
+      "file": "Archivo",
+      "adaptedDescription": "Descripción adaptada",
+      "adaptedCriteria": "Criterio adaptado",
+      "adaptedFile": "Archivo adaptado",
+      "task": "Tarea",
+      "grade": "Nota",
+      "adapted": "Adaptada",
+      "reason": "Motivo",
+      "date": "Fecha",
+      "group": "Grupo",
+      "days": "Horario",
+      "startsOn": "Desde",
+      "term2StartsOn": "Inicio del 2° cuatrimestre",
+      "endsOn": "Hasta",
+      "kind": "Tipo",
+      "name": "Nombre",
+      "setting": "Ajuste",
+      "value": "Valor",
+      "archivedOn": "Archivado el"
+    },
+    "shift": {
+      "morning": "Mañana",
+      "afternoon": "Tarde",
+      "evening": "Vespertino"
+    },
+    "enrollment": {
+      "active": "En el curso",
+      "withdrawn": "Ya no está en el curso"
+    },
+    "outcome": {
+      "promoted": "Promocionó",
+      "repeats": "Repite",
+      "graduated": "Egresó"
+    },
+    "score": {
+      "graded": "Calificada",
+      "missing": "No entregó",
+      "excused": "Eximida"
+    },
+    "attendance": {
+      "present": "Presente",
+      "absent": "Ausente",
+      "late": "Tarde",
+      "excused": "Ausente justificado"
+    },
+    "exam": {
+      "graded": "Rindió",
+      "absent": "Ausente"
+    },
+    "notHeld": {
+      "weather": "Clima",
+      "teacher_absent": "Ausencia docente",
+      "strike": "Paro",
+      "other": "Otro"
+    },
+    "dayOff": {
+      "holiday": "Feriado",
+      "jornada": "Jornada",
+      "recess": "Receso",
+      "other": "Otro"
+    },
+    "settings": {
+      "gradeMin": "Nota mínima",
+      "gradeMax": "Nota máxima",
+      "passMark": "Nota de aprobación",
+      "maxTermIncrease": "Cuánto puede subir el 2° cuatrimestre",
+      "maxTermDecrease": "Cuánto puede bajar el 2° cuatrimestre",
+      "minAttendance": "Asistencia mínima (%)",
+      "graduateRetentionMonths": "Meses que se guardan los egresados"
+    },
+    "yes": "Sí",
+    "no": "No"
+  },
+  "rosterImport": {
+    "title": "Importar una lista de estudiantes",
+    "back": "Estudiantes",
+    "intro": "Cargá un curso entero de una vez, desde una planilla de Excel o de Google.",
+    "guide": {
+      "title": "Cómo preparar la lista",
+      "sheetTitle": "Así tiene que verse la planilla",
+      "lastName": "Apellido",
+      "firstName": "Nombre",
+      "rules": [
+        "Una fila por estudiante.",
+        "El apellido en la columna A y el nombre en la columna B.",
+        "La primera fila puede tener los títulos «Apellido» y «Nombre», o no estar.",
+        "Si la planilla tiene más columnas (número de orden, DNI), no hace falta borrarlas: poné los títulos «Apellido» y «Nombre» en la primera fila y Annora usa solo esas dos.",
+        "Hasta {max} estudiantes por vez."
+      ],
+      "pasteTitle": "La forma más rápida: copiar y pegar",
+      "paste": [
+        "En Excel o Google Sheets, seleccioná las celdas con los apellidos y los nombres.",
+        "Copiá (Ctrl + C).",
+        "Hacé clic en el cuadro «Pegá las celdas» de más abajo y pegá (Ctrl + V)."
+      ],
+      "excelTitle": "Guardar un archivo CSV desde Excel",
+      "excel": [
+        "Abrí la planilla y dejá en la hoja solo la lista.",
+        "Andá a Archivo → Guardar como.",
+        "En «Tipo», elegí «CSV UTF-8 (delimitado por comas) (*.csv)». Si no aparece, sirve «CSV (delimitado por comas)».",
+        "Guardá. Excel avisa que algunas características se pueden perder: aceptá, es normal.",
+        "Elegí ese archivo con «Elegir archivo», más abajo."
+      ],
+      "sheetsTitle": "Desde Google Sheets",
+      "sheets": [
+        "Andá a Archivo → Descargar → Valores separados por comas (.csv).",
+        "Elegí ese archivo más abajo."
+      ],
+      "template": "Descargar una planilla de ejemplo",
+      "templateHint": "Abrila con Excel, reemplazá los ejemplos por tu lista y guardala.",
+      "templateFile": "lista-de-estudiantes.csv"
+    },
+    "course": "Curso al que se agregan",
+    "chooseCourse": "Elegí el curso",
+    "file": "Elegir archivo",
+    "fileHint": "Un archivo .csv",
+    "or": "o",
+    "paste": "Pegá las celdas",
+    "pastePlaceholder": "Pérez\tAna\nGómez\tLuis",
+    "preview": "Vista previa",
+    "empty": "Elegí un archivo o pegá las celdas para ver la lista.",
+    "columns": {
+      "line": "Fila",
+      "lastName": "Apellido",
+      "firstName": "Nombre",
+      "status": "Estado",
+      "include": "Incluir"
+    },
+    "status": {
+      "new": "Se agrega",
+      "inCourse": "Ya está en el curso",
+      "repeated": "Repetido en la lista"
+    },
+    "problems": {
+      "title": "{count, plural, one {# fila no se pudo leer} other {# filas no se pudieron leer}}",
+      "line": "Fila {line}: {problem} ({text})",
+      "missingFirstName": "falta el nombre",
+      "missingLastName": "falta el apellido",
+      "tooLong": "el nombre o el apellido tiene más de 80 letras"
+    },
+    "tooMany": "La lista tiene más de {max} estudiantes: se toman los primeros {max}. Importá el resto después.",
+    "submit": "{count, plural, =0 {No hay nadie para agregar} one {Agregar # estudiante} other {Agregar # estudiantes}}",
+    "submitting": "Agregando…",
+    "done": "{added, plural, =0 {No se agregó a nadie} one {Se agregó # estudiante} other {Se agregaron # estudiantes}} a {course}.",
+    "skipped": "{count, plural, one {# ya estaba y no se duplicó} other {# ya estaban y no se duplicaron}}.",
+    "seeCourse": "Ver el curso",
+    "errors": {
+      "courseNotFound": "Ese curso ya no existe. Elegí otro.",
+      "invalid": "No se pudo importar la lista. Revisala y probá de nuevo.",
+      "unreadable": "No se pudo leer ese archivo. Guardalo como CSV y probá de nuevo."
+    }
   }
 }

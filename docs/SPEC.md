@@ -138,6 +138,12 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   tasks, scores, units and passing standards go with it. Those and the tasks'
   attached files are deleted; the course, its students and its other classes
   stay.
+- **CLASS-8** A class can be archived, and brought back, from its page.
+  Archived, it is left out of Home (its cards, its counts and today's
+  classes, HOME-1, HOME-4) and of the Classes list, where the archived ones
+  have their own view. Nothing of it is deleted: it still opens, says since
+  when it is archived, and stays in each student's history (HISTORY-2), in
+  Previas (EXAM-3) and in the download (DATA-1).
 
 ## COURSE — Courses
 
@@ -199,8 +205,9 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 
 ## STUDENT — Students
 
-*Enforced by `src/lib/validation.ts`, `src/db/queries/students.ts`. Covered by
-`src/lib/validation.test.ts`, `src/db/queries/students.test.ts`.*
+*Enforced by `src/lib/validation.ts`, `src/lib/students.ts`,
+`src/db/queries/students.ts`. Covered by `src/lib/validation.test.ts`,
+`src/lib/students.test.ts`, `src/db/queries/students.test.ts`.*
 
 - **STUDENT-1** A student is added with a first name, a last name and a
   course. Names are trimmed and 1 to 80 characters long.
@@ -208,6 +215,52 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   course — including classes added to it later.
 - **STUDENT-3** Students are listed by last name, then first name, in Spanish
   alphabetical order (accents do not push a name to the end).
+- **STUDENT-4** A student can be deleted from their page, after a
+  confirmation. Their scores, cuatrimestre grades, attendance, exams,
+  adaptations, own passing standards and places in courses and groups go with
+  them, and the files of their own passing standards (ADAPT-2, FILE-4); the
+  courses, classes and tasks stay.
+- **STUDENT-5** The Students list shows the students the teacher works with:
+  everyone but the graduates (YEAR-2, by their newest course) who owe no
+  class. A graduate who still owes a class (EXAM-3) stays in it, marked as a
+  graduate who owes, until they pass it. Those left out show under
+  "Egresados", and "Todos" shows everyone; each says how many it has.
+- **STUDENT-6** The list can be narrowed to the students of one course, in
+  any of those views. The view and the course are kept in the address.
+- **STUDENT-7** A student's first and last name can be changed from their
+  page (as in STUDENT-1).
+- **STUDENT-8** A student can be moved from a course to another of the same
+  school year. With scores, cuatrimestre grades, attendance, exams or an
+  adaptation in the old course's classes, they stay in it as having left
+  (HISTORY-1); with nothing recorded, the old course forgets them. Either
+  way they leave the old course's groups (GROUP-2).
+
+## IMPORT — Adding a whole course from a spreadsheet
+
+*Enforced by `src/lib/rosterImport.ts`, `src/lib/validation.ts`,
+`src/db/queries/students.ts`. Covered by `src/lib/rosterImport.test.ts`,
+`src/db/queries/students.test.ts`.*
+
+- **IMPORT-1** A list of students can be given as a CSV file or as cells
+  pasted from a spreadsheet: one student per line, last name then first
+  name, separated by semicolons, commas or tabs. Quoted cells, empty lines,
+  spaces around a name and Excel's two ways of saving CSV (UTF-8 and the old
+  Windows encoding) are all read.
+- **IMPORT-2** A first line of titles ("Apellido", "Nombre", or in English)
+  is left out, and says which columns hold what when they are in another
+  order or among other columns. A line without a last name or a first name,
+  or with a name over 80 characters, is not imported and is shown with its
+  line number and what is wrong.
+- **IMPORT-3** Before anything is saved the teacher sees the students read,
+  each marked as new, already in the course, or repeated in the list —
+  comparing names without regard to case or accents — and can untick any new
+  one. Saving adds the ticked ones to the chosen course (STUDENT-1,
+  STUDENT-2) in one go; anyone already there is skipped, never duplicated.
+- **IMPORT-4** One import takes up to 200 students; the rest of a longer
+  list is left for another import, and the teacher is told.
+- **IMPORT-5** The import page explains how to prepare the list: what the
+  sheet must look like, copying and pasting the cells, and saving a CSV from
+  Excel or Google Sheets, with an example file to download.
 
 ## ROSTER — A class's students
 
@@ -508,7 +561,9 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 `src/lib/courses.test.ts`.*
 
 - **HOME-1** Home shows how many classes and students the teacher has and how
-  many scores are still to enter, then one card per class (COURSE-3 order)
+  many scores are still to enter, counting only classes that aren't archived
+  (CLASS-8) and the students of their courses, then one card per such class
+  (COURSE-3 order)
   with its subject, course, shift, school and number of active students; the
   whole card opens the class.
 - **HOME-2** Each card shows how much of the class is scored: the scores and
@@ -593,6 +648,50 @@ by hand (Known gaps).*
   link for the keyboard and screen readers.
 - **NAV-3** On a phone, a class's sections open from one button that names
   the current one; elsewhere they are a row of tabs.
+- **NAV-4** The menu has a way to sign out: at its foot on a computer, at the
+  top of the screen on a phone. It ends the session on that device only and
+  goes to the public home page; other devices stay signed in.
+
+## DATA — A teacher's copy of their data, and deleting it
+
+*Enforced by `src/db/queries/account.ts`, `src/lib/dataExport.ts`. Covered by
+`src/db/queries/account.test.ts`, `src/lib/dataExport.test.ts`.*
+
+- **DATA-1** Settings offers a download of everything the teacher has
+  loaded, as one Excel file with a sheet for each kind: classes, students,
+  units and passing standards, tasks, scores, cuatrimestre grades,
+  attendance, days not held, exams, adaptations, groups, school calendars
+  and settings (KEEP-2's period among them). Rows name things (the school, the course, the student)
+  rather than showing ids, and only the teacher's own rows are in it
+  (OWNER-1). Attached files are listed by name, not included.
+- **DATA-2** Sheet names, column titles and values such as "presente" are in
+  the teacher's language; dates are dates and grades are numbers, so the
+  file can be sorted and filtered.
+- **DATA-3** Settings lets the teacher delete their account, after typing a
+  word to confirm. Everything they loaded, their attached files, their
+  settings and their sign-in are deleted; they are signed out and land on the
+  public home page. Another teacher's data is untouched.
+
+## KEEP — How long graduates are kept
+
+*Enforced by `src/lib/retention.ts`, `src/db/queries/retention.ts`,
+`src/db/queries/yearEnd.ts`. Covered by `src/lib/retention.test.ts`,
+`src/db/queries/retention.test.ts`.*
+
+- **KEEP-1** A graduate who owes no class (STUDENT-5) is deleted, as in
+  STUDENT-4, once the teacher's period has passed since the day they were
+  marked as graduated — or since their last exam, if that came later. The
+  day an outcome is set is recorded; saving the same outcome again keeps it,
+  and clearing the outcome forgets it. A graduate who still owes a class is
+  never deleted. It happens when the teacher opens Home. Under "Egresados"
+  each graduate shows the day they will be deleted.
+- **KEEP-2** The period is the teacher's to choose in Settings: 6 months, 1,
+  2, 3 or 5 years; 1 year unless changed.
+- **KEEP-3** From 30 days before the first deletion, Home says how many
+  graduates will be deleted and from when, with links to see them and to
+  download a copy of the data (DATA-1).
+- **KEEP-4** After a deletion, Home says how many graduates were deleted and
+  when, until the teacher dismisses it.
 
 ## OWNER — Each teacher's data
 
@@ -614,12 +713,21 @@ by hand (Known gaps).*
   Supabase project to run against. The forms that call the queries above
   (the add-class and add-student dialogs) are checked by hand for the same
   reason: every page behind them needs a signed-in teacher.
+- **IMPORT-3**'s preview and **IMPORT-5**'s guide are interface, checked by
+  hand; the tests cover how a list is read and what is saved.
+- **NAV-4**'s sign-out runs in Supabase Auth, like sign-in, and is checked by
+  hand.
 - **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and
   **NAV-3**'s section button are interface behaviour, checked by hand in the
   browser; there are no component tests yet.
 - **LAND-3**'s page — its sections, the phone menu (closed until opened) and
   the language switch — is checked by hand in the browser, light and dark, on
   a phone and a computer.
+- **DATA-1**'s Excel file itself is written in the download route and
+  checked by hand; the tests cover what goes into each sheet. **DATA-3**'s
+  removal of the sign-in and of the files runs in Supabase (its `auth` schema
+  and Storage), which the in-memory test database doesn't have; the tests
+  cover the deletion of everything else.
 - **FILE-2**'s folder rules and **FILE-3**'s upload, removal and one-minute
   link run in Supabase Storage, which the in-memory test database doesn't
   have. The rules are in `supabase/storage.sql` and were checked by hand:

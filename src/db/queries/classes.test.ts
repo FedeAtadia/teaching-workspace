@@ -4,7 +4,15 @@ import type { Db } from "@/db";
 import { academicYears, classes, scores, standards, tasks, termGrades, terms, units } from "@/db/schema";
 import { createTestDb, newTeacher } from "@/test/db";
 import type { ClassInput } from "@/lib/validation";
-import { createClass, deleteClass, getClassCounts, listClasses, listCourses, updateClass } from "./classes";
+import {
+  createClass,
+  deleteClass,
+  getClassCounts,
+  listClasses,
+  listCourses,
+  setClassArchived,
+  updateClass,
+} from "./classes";
 import {
   createStandard,
   createUnit,
@@ -257,6 +265,39 @@ describe("deleting a class (CLASS-7)", () => {
     expect(await deleteClass(db, intruder, classId)).toEqual({ ok: false, error: "notFound" });
     expect(await getClassCounts(db, intruder, classId)).toBeNull();
     expect(await deleteClass(db, teacher, "not-an-id")).toEqual({ ok: false, error: "notFound" });
+    expect(await listClasses(db, teacher)).toHaveLength(1);
+  });
+});
+
+describe("archiving a class (CLASS-8)", () => {
+  it("takes it out of the list and into the archived one, and back", async () => {
+    const teacher = newTeacher();
+    const mate = await createClass(db, teacher, cls({ name: "Matemática" }));
+    await createClass(db, teacher, cls({ name: "Física" }));
+    if (!mate.ok) throw new Error("createClass failed");
+    const names = async (which?: "active" | "archived") => (await listClasses(db, teacher, which)).map((c) => c.name);
+
+    expect(await setClassArchived(db, teacher, { classId: mate.classId, archived: true }, "2026-12-20")).toEqual({
+      ok: true,
+    });
+    expect(await names()).toEqual(["Física"]);
+    expect(await names("archived")).toEqual(["Matemática"]);
+    // Nothing of it is lost: the class still opens, and says since when.
+    expect((await getClass(db, teacher, mate.classId))?.archivedOn).toBe("2026-12-20");
+
+    await setClassArchived(db, teacher, { classId: mate.classId, archived: false }, "2027-03-01");
+    expect(await names()).toEqual(["Física", "Matemática"]);
+    expect(await names("archived")).toEqual([]);
+    expect((await getClass(db, teacher, mate.classId))?.archivedOn).toBeNull();
+  });
+
+  it("refuses another teacher's class, or one that doesn't exist (OWNER-1)", async () => {
+    const teacher = newTeacher();
+    const mate = await createClass(db, teacher, cls());
+    if (!mate.ok) throw new Error("createClass failed");
+    const notFound = { ok: false, error: "notFound" };
+    expect(await setClassArchived(db, newTeacher(), { classId: mate.classId, archived: true }, "2026-12-20")).toEqual(notFound);
+    expect(await setClassArchived(db, teacher, { classId: "nope", archived: true }, "2026-12-20")).toEqual(notFound);
     expect(await listClasses(db, teacher)).toHaveLength(1);
   });
 });

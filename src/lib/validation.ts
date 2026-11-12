@@ -3,6 +3,8 @@
 // which field is wrong.
 
 import { z } from "zod";
+import { RETENTION_OPTIONS } from "./retention";
+import { MAX_IMPORT_ROWS } from "./rosterImport";
 import { SESSION_REASONS } from "./attendance";
 import { DAY_OFF_KINDS } from "./calendar";
 import { SHIFTS } from "./courses";
@@ -58,6 +60,21 @@ export const studentInput = z.object({
   courseId: z.uuid(),
 });
 export type StudentInput = z.infer<typeof studentInput>;
+
+/** IMPORT-3, IMPORT-4: a list of students for one course. */
+export const rosterInput = z.object({
+  courseId: z.uuid(),
+  students: z.array(z.object({ firstName: name, lastName: name })).min(1).max(MAX_IMPORT_ROWS),
+});
+export type RosterInput = z.infer<typeof rosterInput>;
+
+/** STUDENT-7 */
+export const studentEdit = z.object({ studentId: z.uuid(), firstName: name, lastName: name });
+export type StudentEdit = z.infer<typeof studentEdit>;
+
+/** STUDENT-8 */
+export const studentMove = z.object({ studentId: z.uuid(), fromCourseId: z.uuid(), toCourseId: z.uuid() });
+export type StudentMove = z.infer<typeof studentMove>;
 
 /** Optional free text: trimmed, and an empty field is stored as null. */
 const optionalText = (max: number) =>
@@ -232,6 +249,15 @@ export const noClassInput = z.object({
   note: optionalText(500),
 });
 export type NoClassInput = z.infer<typeof noClassInput>;
+
+/** KEEP-2: one of the periods on offer. */
+export const retentionInput = z.object({
+  months: z
+    .string()
+    .regex(/^d{1,2}$/)
+    .transform(Number)
+    .refine((n) => (RETENTION_OPTIONS as readonly number[]).includes(n)),
+});
 
 /** SUGGEST-3 */
 export const minAttendanceInput = z.object({

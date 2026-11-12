@@ -12,7 +12,8 @@
     "menu": "Main menu",
     "collapse": "Collapse menu",
     "expand": "Expand menu",
-    "settingsShort": "Settings"
+    "settingsShort": "Settings",
+    "signOut": "Sign out"
   },
   "common": {
     "cancel": "Cancel",
@@ -80,6 +81,13 @@
       "pending": "Take today's attendance",
       "taken": "Attendance taken",
       "notHeld": "Class didn't happen"
+    },
+    "graduates": {
+      "soon": "{count, plural, one {# graduate will be deleted} other {# graduates will be deleted}} within the next 30 days, starting on {date}. If you want to keep their data, download a copy first.",
+      "soonSee": "See graduates",
+      "soonDownload": "Download my data",
+      "deleted": "{count, plural, one {# graduate was deleted} other {# graduates were deleted}} on {date}, at the end of the period you chose in Settings.",
+      "dismiss": "Got it"
     }
   },
   "classes": {
@@ -115,7 +123,14 @@
       "courseExists": "You already have another course with that school, year, division, shift and school year.",
       "notFound": "This class wasn't found. Reload the page."
     },
-    "count": "{count, plural, one {# class} other {# classes}}"
+    "count": "{count, plural, one {# class} other {# classes}}",
+    "views": {
+      "label": "Active or archived classes",
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "emptyArchived": "No archived classes.",
+    "archivedHint": "The classes you no longer use, such as last year's. They are still complete and in each student's history; open one to unarchive it."
   },
   "classPage": {
     "back": "Classes",
@@ -309,6 +324,12 @@
         "reasonRequired": "It's outside the expected range: give the reason.",
         "reasonTooLong": "The reason is too long."
       }
+    },
+    "archive": {
+      "button": "Archive",
+      "unarchive": "Unarchive",
+      "badge": "Archived on {date}",
+      "hint": "This class is archived: it doesn't show on Home or Classes, but nothing was lost and it is still in each student's history."
     }
   },
   "groups": {
@@ -362,7 +383,25 @@
     },
     "exams": "Exams",
     "absent": "absent",
-    "attendance": "Attendance {rate}%"
+    "attendance": "Attendance {rate}%",
+    "delete": {
+      "button": "Delete student",
+      "title": "Delete {name}?",
+      "body": "Their scores, term grades, attendance, exams and adaptations are deleted, for every year. The courses, classes and tasks stay."
+    },
+    "edit": {
+      "button": "Edit",
+      "title": "Edit student",
+      "notFound": "The student wasn't found. Reload the page."
+    },
+    "move": {
+      "button": "Change course",
+      "title": "Change {name}'s course",
+      "description": "They leave {course} and join another course of {year}. Anything you already entered in this course stays in their history.",
+      "to": "New course",
+      "otherYear": "That course belongs to another school year.",
+      "notFound": "The course couldn't be changed. Reload the page and try again."
+    }
   },
   "closing": {
     "intro": "Each student's result in the class, and whether they move up or repeat the year. The final grade is the 2nd term's.",
@@ -450,7 +489,21 @@
     },
     "errors": {
       "courseNotFound": "That course no longer exists. Choose another."
-    }
+    },
+    "filters": {
+      "label": "Filter students",
+      "current": "Current",
+      "graduates": "Graduates",
+      "all": "All",
+      "course": "Course",
+      "allCourses": "All courses"
+    },
+    "graduated": "Graduated",
+    "owes": "Owes classes",
+    "emptyFilter": "No students match this filter.",
+    "graduatesHint": "Those who graduated and owe no class. They no longer show in the working list.",
+    "deleteOn": "To be deleted on {date}",
+    "import": "Import a list"
   },
   "settings": {
     "title": "Settings",
@@ -488,7 +541,27 @@
       "hint": "Below this percentage in a cuatrimestre, the suggested average shows as not passing, with “attendance too low”. The number doesn't change. 0 turns it off.",
       "saved": "Saved."
     },
-    "languageHint": "Interface language"
+    "languageHint": "Interface language",
+    "data": {
+      "title": "Your data",
+      "downloadHint": "Download a copy of everything you have entered, as an Excel file with a sheet for each kind: classes, students, tasks, scores, attendance and more. Attached files are listed by name, not included.",
+      "download": "Download my data",
+      "deleteTitle": "Delete my account",
+      "deleteHint": "Permanently deletes everything you have entered (schools, courses, students, tasks, scores, attendance and files) and your Annora sign-in. If you want to keep a copy, download it first.",
+      "deleteButton": "Delete my account",
+      "deleteDialogTitle": "Delete your account and all your data?",
+      "deleteDialogBody": "Everything you entered and your Annora sign-in are deleted. This can't be undone or recovered later.",
+      "confirmLabel": "To confirm, type {word}",
+      "confirmWord": "DELETE",
+      "deleteConfirm": "Delete everything",
+      "deleteFailed": "The account couldn't be deleted. Reload the page and try again.",
+      "retention": {
+        "label": "How long graduates are kept",
+        "hint": "A graduate who owes no class leaves the working list and, after this period, is deleted automatically with everything you entered about them. Home warns you 30 days before and when it happens. Someone who still owes a class is not deleted.",
+        "months": "{count, plural, =6 {6 months} =12 {1 year} =24 {2 years} =36 {3 years} =60 {5 years} other {# months}}",
+        "saved": "Saved."
+      }
+    }
   },
   "weekdays": {
     "1": "Monday",
@@ -819,7 +892,7 @@
       "description": "What data Annora uses, what for, where it is stored and how to ask to see, correct or delete it."
     },
     "title": "Privacy policy",
-    "updated": "Last updated: 10/11/2026",
+    "updated": "Last updated: 12/11/2026",
     "intro": "This policy explains what data Annora uses, what for, where it is stored and what you can do about it. It is written for teachers, who are the people who use Annora. The Spanish version is the one that applies.",
     "sections": [
       {
@@ -862,7 +935,9 @@
       {
         "title": "How long it is kept and how to delete it",
         "paragraphs": [
-          "Your data is kept while you use Annora. You can ask for a copy, a correction, or for your account and everything you entered to be deleted, by writing to {email}. You get an answer within 10 business days, and a deletion is completed within 30 days."
+          "Your data is kept while you use Annora. From Settings you can download a copy of everything you have entered at any time, as an Excel file, and delete your account: doing so deletes your data, your files and your sign-in right away.",
+          "Students you mark as graduated and who owe no class are deleted automatically after a period you choose in Settings (one year, unless you change it). Annora warns you 30 days before and when it happens.",
+          "You can also delete a student, with everything you entered about them, from their page. And you can ask for a copy, a correction or a deletion by writing to {email}: you get an answer within 10 business days, and a deletion is completed within 30 days."
         ]
       },
       {
@@ -882,5 +957,196 @@
     ],
     "google": "your Google account settings",
     "back": "Back to the home page"
+  },
+  "dataExport": {
+    "fileName": "annora-my-data",
+    "sheets": {
+      "classes": "Classes",
+      "students": "Students",
+      "units": "Units",
+      "standards": "Passing standards",
+      "tasks": "Tasks",
+      "scores": "Scores",
+      "termGrades": "Term grades",
+      "attendance": "Attendance",
+      "notHeld": "Days not held",
+      "exams": "Exams",
+      "adaptations": "Adaptations",
+      "groups": "Groups",
+      "calendars": "Calendars",
+      "daysOff": "Days without class",
+      "settings": "Settings"
+    },
+    "columns": {
+      "schoolYear": "School year",
+      "school": "School",
+      "course": "Course",
+      "shift": "Shift",
+      "subject": "Subject",
+      "lastName": "Last name",
+      "firstName": "First name",
+      "passMark": "Pass mark",
+      "weekdays": "Days of the week",
+      "notes": "Notes",
+      "status": "Status",
+      "outcome": "Year outcome",
+      "term": "Term",
+      "unit": "Unit",
+      "title": "Title",
+      "description": "Description",
+      "criteria": "Task standard",
+      "assignedOn": "Assigned on",
+      "dueOn": "Due on",
+      "file": "File",
+      "adaptedDescription": "Adapted description",
+      "adaptedCriteria": "Adapted standard",
+      "adaptedFile": "Adapted file",
+      "task": "Task",
+      "grade": "Grade",
+      "adapted": "Adapted",
+      "reason": "Reason",
+      "date": "Date",
+      "group": "Group",
+      "days": "Schedule",
+      "startsOn": "From",
+      "term2StartsOn": "Second term starts",
+      "endsOn": "To",
+      "kind": "Kind",
+      "name": "Name",
+      "setting": "Setting",
+      "value": "Value",
+      "archivedOn": "Archived on"
+    },
+    "shift": {
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening"
+    },
+    "enrollment": {
+      "active": "In the course",
+      "withdrawn": "No longer in the course"
+    },
+    "outcome": {
+      "promoted": "Promoted",
+      "repeats": "Repeats",
+      "graduated": "Graduated"
+    },
+    "score": {
+      "graded": "Graded",
+      "missing": "Not handed in",
+      "excused": "Excused"
+    },
+    "attendance": {
+      "present": "Present",
+      "absent": "Absent",
+      "late": "Late",
+      "excused": "Excused absence"
+    },
+    "exam": {
+      "graded": "Sat the exam",
+      "absent": "Absent"
+    },
+    "notHeld": {
+      "weather": "Weather",
+      "teacher_absent": "Teacher absent",
+      "strike": "Strike",
+      "other": "Other"
+    },
+    "dayOff": {
+      "holiday": "Holiday",
+      "jornada": "Staff day",
+      "recess": "Recess",
+      "other": "Other"
+    },
+    "settings": {
+      "gradeMin": "Lowest grade",
+      "gradeMax": "Highest grade",
+      "passMark": "Pass mark",
+      "maxTermIncrease": "How far the second term may go up",
+      "maxTermDecrease": "How far the second term may go down",
+      "minAttendance": "Minimum attendance (%)",
+      "graduateRetentionMonths": "Months graduates are kept"
+    },
+    "yes": "Yes",
+    "no": "No"
+  },
+  "rosterImport": {
+    "title": "Import a list of students",
+    "back": "Students",
+    "intro": "Add a whole course at once, from an Excel or Google spreadsheet.",
+    "guide": {
+      "title": "How to prepare the list",
+      "sheetTitle": "What the spreadsheet should look like",
+      "lastName": "Last name",
+      "firstName": "First name",
+      "rules": [
+        "One row per student.",
+        "The last name in column A and the first name in column B.",
+        "The first row may hold the titles “Last name” and “First name”, or be left out.",
+        "If the sheet has more columns (a number, an ID), you don't need to delete them: put the titles “Last name” and “First name” in the first row and Annora uses only those two.",
+        "Up to {max} students at a time."
+      ],
+      "pasteTitle": "The quickest way: copy and paste",
+      "paste": [
+        "In Excel or Google Sheets, select the cells with the last and first names.",
+        "Copy (Ctrl + C).",
+        "Click the “Paste the cells” box below and paste (Ctrl + V)."
+      ],
+      "excelTitle": "Saving a CSV file from Excel",
+      "excel": [
+        "Open the spreadsheet and leave only the list on the sheet.",
+        "Go to File → Save As.",
+        "Under “Save as type”, choose “CSV UTF-8 (Comma delimited) (*.csv)”. If it isn't there, “CSV (Comma delimited)” works too.",
+        "Save. Excel warns that some features may be lost: accept, that is normal.",
+        "Pick that file with “Choose file”, below."
+      ],
+      "sheetsTitle": "From Google Sheets",
+      "sheets": [
+        "Go to File → Download → Comma-separated values (.csv).",
+        "Pick that file below."
+      ],
+      "template": "Download an example sheet",
+      "templateHint": "Open it in Excel, replace the examples with your list and save it.",
+      "templateFile": "student-list.csv"
+    },
+    "course": "Course they are added to",
+    "chooseCourse": "Choose the course",
+    "file": "Choose file",
+    "fileHint": "A .csv file",
+    "or": "or",
+    "paste": "Paste the cells",
+    "pastePlaceholder": "Pérez\tAna\nGómez\tLuis",
+    "preview": "Preview",
+    "empty": "Choose a file or paste the cells to see the list.",
+    "columns": {
+      "line": "Row",
+      "lastName": "Last name",
+      "firstName": "First name",
+      "status": "Status",
+      "include": "Include"
+    },
+    "status": {
+      "new": "Will be added",
+      "inCourse": "Already in the course",
+      "repeated": "Repeated in the list"
+    },
+    "problems": {
+      "title": "{count, plural, one {# row couldn't be read} other {# rows couldn't be read}}",
+      "line": "Row {line}: {problem} ({text})",
+      "missingFirstName": "the first name is missing",
+      "missingLastName": "the last name is missing",
+      "tooLong": "the first or last name is over 80 letters"
+    },
+    "tooMany": "The list has more than {max} students: the first {max} are taken. Import the rest afterwards.",
+    "submit": "{count, plural, =0 {Nobody to add} one {Add # student} other {Add # students}}",
+    "submitting": "Adding…",
+    "done": "{added, plural, =0 {Nobody was added} one {# student was added} other {# students were added}} to {course}.",
+    "skipped": "{count, plural, one {# was already there and wasn't duplicated} other {# were already there and weren't duplicated}}.",
+    "seeCourse": "See the course",
+    "errors": {
+      "courseNotFound": "That course no longer exists. Choose another.",
+      "invalid": "The list couldn't be imported. Check it and try again.",
+      "unreadable": "That file couldn't be read. Save it as CSV and try again."
+    }
   }
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "classes" ADD COLUMN "archived_on" date;
