@@ -229,6 +229,33 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   (HISTORY-1); with nothing recorded, the old course forgets them. Either
   way they leave the old course's groups (GROUP-2).
 
+## IMPORT — Adding a whole course from a spreadsheet
+
+*Enforced by `src/lib/rosterImport.ts`, `src/lib/validation.ts`,
+`src/db/queries/students.ts`. Covered by `src/lib/rosterImport.test.ts`,
+`src/db/queries/students.test.ts`.*
+
+- **IMPORT-1** A list of students can be given as a CSV file or as cells
+  pasted from a spreadsheet: one student per line, last name then first
+  name, separated by semicolons, commas or tabs. Quoted cells, empty lines,
+  spaces around a name and Excel's two ways of saving CSV (UTF-8 and the old
+  Windows encoding) are all read.
+- **IMPORT-2** A first line of titles ("Apellido", "Nombre", or in English)
+  is left out, and says which columns hold what when they are in another
+  order or among other columns. A line without a last name or a first name,
+  or with a name over 80 characters, is not imported and is shown with its
+  line number and what is wrong.
+- **IMPORT-3** Before anything is saved the teacher sees the students read,
+  each marked as new, already in the course, or repeated in the list —
+  comparing names without regard to case or accents — and can untick any new
+  one. Saving adds the ticked ones to the chosen course (STUDENT-1,
+  STUDENT-2) in one go; anyone already there is skipped, never duplicated.
+- **IMPORT-4** One import takes up to 200 students; the rest of a longer
+  list is left for another import, and the teacher is told.
+- **IMPORT-5** The import page explains how to prepare the list: what the
+  sheet must look like, copying and pasting the cells, and saving a CSV from
+  Excel or Google Sheets, with an example file to download.
+
 ## ROSTER — A class's students
 
 *Enforced by `src/db/queries/classDetail.ts`. Covered by
@@ -678,6 +705,8 @@ by hand (Known gaps).*
   Supabase project to run against. The forms that call the queries above
   (the add-class and add-student dialogs) are checked by hand for the same
   reason: every page behind them needs a signed-in teacher.
+- **IMPORT-3**'s preview and **IMPORT-5**'s guide are interface, checked by
+  hand; the tests cover how a list is read and what is saved.
 - **NAV-4**'s sign-out runs in Supabase Auth, like sign-in, and is checked by
   hand.
 - **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and

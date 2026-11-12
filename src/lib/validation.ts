@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import { RETENTION_OPTIONS } from "./retention";
+import { MAX_IMPORT_ROWS } from "./rosterImport";
 import { SESSION_REASONS } from "./attendance";
 import { DAY_OFF_KINDS } from "./calendar";
 import { SHIFTS } from "./courses";
@@ -59,6 +60,13 @@ export const studentInput = z.object({
   courseId: z.uuid(),
 });
 export type StudentInput = z.infer<typeof studentInput>;
+
+/** IMPORT-3, IMPORT-4: a list of students for one course. */
+export const rosterInput = z.object({
+  courseId: z.uuid(),
+  students: z.array(z.object({ firstName: name, lastName: name })).min(1).max(MAX_IMPORT_ROWS),
+});
+export type RosterInput = z.infer<typeof rosterInput>;
 
 /** STUDENT-7 */
 export const studentEdit = z.object({ studentId: z.uuid(), firstName: name, lastName: name });

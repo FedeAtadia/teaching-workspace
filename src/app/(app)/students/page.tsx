@@ -1,11 +1,11 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Upload } from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Initials } from "@/components/Initials";
 import { PageHeader } from "@/components/PageHeader";
 import { AddStudentDialog } from "@/components/students/AddStudentDialog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -68,7 +68,17 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
 
   const action =
     courses.length > 0 ? (
-      <AddStudentDialog courses={courses.map((c) => ({ id: c.id, label: courseLabel(c) }))} />
+      <div className="flex flex-wrap items-center gap-2">
+        {/* IMPORT-1: a whole course at once; it opens on the course being looked at. */}
+        <Link
+          href={courseId ? `/students/import?course=${courseId}` : "/students/import"}
+          className={buttonVariants({ variant: "outline" })}
+        >
+          <Upload aria-hidden />
+          {t("import")}
+        </Link>
+        <AddStudentDialog courses={courses.map((c) => ({ id: c.id, label: courseLabel(c) }))} />
+      </div>
     ) : (
       <Button disabled>{t("add")}</Button>
     );

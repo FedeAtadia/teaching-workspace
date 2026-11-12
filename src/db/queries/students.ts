@@ -22,7 +22,8 @@ import {
 } from "@/db/schema";
 import { compareCourses, compareStudents } from "@/lib/courses";
 import type { ListedStudent } from "@/lib/students";
-import type { StudentEdit, StudentInput, StudentMove } from "@/lib/validation";
+import { rosterStatus } from "@/lib/rosterImport";
+import type { RosterInput, StudentEdit, StudentInput, StudentMove } from "@/lib/validation";
 
 export type CreateStudentResult =
   | { ok: true; studentId: string }
@@ -47,6 +48,43 @@ export async function createStudent(
       .returning({ id: students.id });
     await tx.insert(courseStudents).values({ teacherId, courseId: course.id, studentId: student.id });
     return { ok: true, studentId: student.id } as const;
+  });
+}
+
+/**
+ * IMPORT-3: adds the students of a list to a course, in one transaction.
+ * Whoever is already active in the course under the same name, or is a
+ * second copy within the list, is skipped.
+ */
+export async function importStudents(
+  db: Db,
+  teacherId: string,
+  input: RosterInput,
+): Promise<{ ok: true; added: number; skipped: number } | { ok: false; error: "courseNotFound" }> {
+  return db.transaction(async (tx) => {
+    const [course] = await tx
+      .select({ id: courses.id })
+      .from(courses)
+      .where(and(eq(courses.id, input.courseId), eq(courses.teacherId, teacherId)));
+    if (!course) return { ok: false, error: "courseNotFound" } as const;
+
+    const inCourse = await tx
+      .select({ firstName: students.firstName, lastName: students.lastName })
+      .from(courseStudents)
+      .innerJoin(students, eq(courseStudents.studentId, students.id))
+      .where(and(eq(courseStudents.courseId, course.id), eq(courseStudents.status, "active")));
+    const status = rosterStatus(input.students, inCourse);
+    const fresh = input.students.filter((_, i) => status[i] === "new");
+    if (fresh.length > 0) {
+      const created = await tx
+        .insert(students)
+        .values(fresh.map((s) => ({ teacherId, firstName: s.firstName, lastName: s.lastName })))
+        .returning({ id: students.id });
+      await tx
+        .insert(courseStudents)
+        .values(created.map((s) => ({ teacherId, courseId: course.id, studentId: s.id })));
+    }
+    return { ok: true, added: fresh.length, skipped: input.students.length - fresh.length } as const;
   });
 }
 

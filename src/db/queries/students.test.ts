@@ -6,7 +6,7 @@ import { createClass, listClasses, listCourses } from "./classes";
 import { eq } from "drizzle-orm";
 import { courseStudents, exams } from "@/db/schema";
 import { classGroupStudents, classGroups, standards } from "@/db/schema";
-import { createStudent, deleteStudent, listStudents, moveStudent, updateStudent } from "./students";
+import { createStudent, deleteStudent, importStudents, listStudents, moveStudent, updateStudent } from "./students";
 import { getStudentHistory } from "./history";
 
 let db: Db;
@@ -214,5 +214,42 @@ describe("a deleted student's files (STUDENT-4)", () => {
     expect((await db.select().from(standards).where(eq(standards.classId, mate.id))).map((s) => s.title)).toEqual([
       "De la clase",
     ]);
+  });
+});
+
+describe("importing a list into a course (IMPORT-3)", () => {
+  it("adds everyone new in one go, skipping who is already there and repeats in the list", async () => {
+    const { teacher, courseId } = await teacherWithCourse();
+    await createStudent(db, teacher, { firstName: "Ana", lastName: "Pérez", courseId });
+
+    const result = await importStudents(db, teacher, {
+      courseId,
+      students: [
+        { lastName: "PEREZ", firstName: "ana" },
+        { lastName: "Gómez", firstName: "Luis" },
+        { lastName: "gomez", firstName: "Luis" },
+        { lastName: "Álvarez", firstName: "Zoe" },
+      ],
+    });
+
+    expect(result).toEqual({ ok: true, added: 2, skipped: 2 });
+    expect((await listStudents(db, teacher)).map((s) => `${s.lastName}, ${s.firstName}`)).toEqual([
+      "Álvarez, Zoe",
+      "Gómez, Luis",
+      "Pérez, Ana",
+    ]);
+    // STUDENT-2: they are in every class of the course.
+    expect((await listClasses(db, teacher)).map((c) => c.students)).toEqual([3, 3]);
+  });
+
+  it("refuses another teacher's course (OWNER-1)", async () => {
+    const { teacher, courseId } = await teacherWithCourse();
+    const students = [{ lastName: "Pérez", firstName: "Ana" }];
+    expect(await importStudents(db, newTeacher(), { courseId, students })).toEqual({
+      ok: false,
+      error: "courseNotFound",
+    });
+    expect(await listStudents(db, teacher)).toEqual([]);
+    expect(await importStudents(db, teacher, { courseId, students })).toEqual({ ok: true, added: 1, skipped: 0 });
   });
 });
