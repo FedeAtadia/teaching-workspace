@@ -1,11 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getDb } from "@/db";
+import { redirect } from "next/navigation";
+import { getDb, type Db } from "@/db";
+import { deleteSignIn, deleteTeacherData } from "@/db/queries/account";
 import { addDayOff, addNationalHolidays, deleteDayOff, saveCalendar, updateDayOff } from "@/db/queries/calendar";
 import { renameSchool } from "@/db/queries/classes";
 import { setMinAttendance } from "@/db/queries/settings";
+import { ATTACHMENT_BUCKET } from "@/lib/attachments";
 import { requireTeacherId } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import type { FormState } from "@/lib/formState";
 import {
   calendarInput,
@@ -100,4 +104,38 @@ export async function saveMinAttendanceAction(_prev: FormState, formData: FormDa
   // The gradebooks, cuatrimestre grades and attendance tabs use it.
   revalidatePath("/", "layout");
   return { status: "saved" };
+}
+
+/**
+ * DATA-3: deletes everything the teacher loaded and their sign-in in one
+ * transaction, then their files, signs them out and goes to the home page.
+ */
+export async function deleteAccountAction(): Promise<{ ok: false }> {
+  const teacherId = await requireTeacherId();
+  let paths: string[];
+  try {
+    paths = await getDb().transaction(async (tx) => {
+      const { attachmentPaths } = await deleteTeacherData(tx as unknown as Db, teacherId);
+      await deleteSignIn(tx as unknown as Db, teacherId);
+      return attachmentPaths;
+    });
+  } catch (error) {
+    console.error("Deleting an account failed", error);
+    return { ok: false };
+  }
+
+  // The session's token still opens the teacher's own folder, so the files
+  // go now. Neither step may undo a deletion that already happened.
+  const supabase = await createClient();
+  try {
+    if (paths.length > 0) await supabase.storage.from(ATTACHMENT_BUCKET).remove(paths);
+  } catch (error) {
+    console.error("Deleting a deleted account's files failed", error);
+  }
+  try {
+    await supabase.auth.signOut({ scope: "local" });
+  } catch {
+    // The sign-in is gone already; the cookie is what matters.
+  }
+  redirect("/");
 }

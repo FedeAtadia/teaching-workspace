@@ -362,7 +362,12 @@
     },
     "exams": "Exams",
     "absent": "absent",
-    "attendance": "Attendance {rate}%"
+    "attendance": "Attendance {rate}%",
+    "delete": {
+      "button": "Delete student",
+      "title": "Delete {name}?",
+      "body": "Their scores, term grades, attendance, exams and adaptations are deleted, for every year. The courses, classes and tasks stay."
+    }
   },
   "closing": {
     "intro": "Each student's result in the class, and whether they move up or repeat the year. The final grade is the 2nd term's.",
@@ -488,7 +493,21 @@
       "hint": "Below this percentage in a cuatrimestre, the suggested average shows as not passing, with “attendance too low”. The number doesn't change. 0 turns it off.",
       "saved": "Saved."
     },
-    "languageHint": "Interface language"
+    "languageHint": "Interface language",
+    "data": {
+      "title": "Your data",
+      "downloadHint": "Download a copy of everything you have entered, as an Excel file with a sheet for each kind: classes, students, tasks, scores, attendance and more. Attached files are listed by name, not included.",
+      "download": "Download my data",
+      "deleteTitle": "Delete my account",
+      "deleteHint": "Permanently deletes everything you have entered (schools, courses, students, tasks, scores, attendance and files) and your Annora sign-in. If you want to keep a copy, download it first.",
+      "deleteButton": "Delete my account",
+      "deleteDialogTitle": "Delete your account and all your data?",
+      "deleteDialogBody": "Everything you entered and your Annora sign-in are deleted. This can't be undone or recovered later.",
+      "confirmLabel": "To confirm, type {word}",
+      "confirmWord": "DELETE",
+      "deleteConfirm": "Delete everything",
+      "deleteFailed": "The account couldn't be deleted. Reload the page and try again."
+    }
   },
   "weekdays": {
     "1": "Monday",
@@ -819,7 +838,7 @@
       "description": "What data Annora uses, what for, where it is stored and how to ask to see, correct or delete it."
     },
     "title": "Privacy policy",
-    "updated": "Last updated: 10/11/2026",
+    "updated": "Last updated: 11/11/2026",
     "intro": "This policy explains what data Annora uses, what for, where it is stored and what you can do about it. It is written for teachers, who are the people who use Annora. The Spanish version is the one that applies.",
     "sections": [
       {
@@ -862,7 +881,8 @@
       {
         "title": "How long it is kept and how to delete it",
         "paragraphs": [
-          "Your data is kept while you use Annora. You can ask for a copy, a correction, or for your account and everything you entered to be deleted, by writing to {email}. You get an answer within 10 business days, and a deletion is completed within 30 days."
+          "Your data is kept while you use Annora. From Settings you can download a copy of everything you have entered at any time, as an Excel file, and delete your account: doing so deletes your data, your files and your sign-in right away.",
+          "You can also delete a student, with everything you entered about them, from their page. And you can ask for a copy, a correction or a deletion by writing to {email}: you get an answer within 10 business days, and a deletion is completed within 30 days."
         ]
       },
       {
@@ -882,5 +902,115 @@
     ],
     "google": "your Google account settings",
     "back": "Back to the home page"
+  },
+  "dataExport": {
+    "fileName": "annora-my-data",
+    "sheets": {
+      "classes": "Classes",
+      "students": "Students",
+      "units": "Units",
+      "standards": "Passing standards",
+      "tasks": "Tasks",
+      "scores": "Scores",
+      "termGrades": "Term grades",
+      "attendance": "Attendance",
+      "notHeld": "Days not held",
+      "exams": "Exams",
+      "adaptations": "Adaptations",
+      "groups": "Groups",
+      "calendars": "Calendars",
+      "daysOff": "Days without class",
+      "settings": "Settings"
+    },
+    "columns": {
+      "schoolYear": "School year",
+      "school": "School",
+      "course": "Course",
+      "shift": "Shift",
+      "subject": "Subject",
+      "lastName": "Last name",
+      "firstName": "First name",
+      "passMark": "Pass mark",
+      "weekdays": "Days of the week",
+      "notes": "Notes",
+      "status": "Status",
+      "outcome": "Year outcome",
+      "term": "Term",
+      "unit": "Unit",
+      "title": "Title",
+      "description": "Description",
+      "criteria": "Task standard",
+      "assignedOn": "Assigned on",
+      "dueOn": "Due on",
+      "file": "File",
+      "adaptedDescription": "Adapted description",
+      "adaptedCriteria": "Adapted standard",
+      "adaptedFile": "Adapted file",
+      "task": "Task",
+      "grade": "Grade",
+      "adapted": "Adapted",
+      "reason": "Reason",
+      "date": "Date",
+      "group": "Group",
+      "days": "Schedule",
+      "startsOn": "From",
+      "term2StartsOn": "Second term starts",
+      "endsOn": "To",
+      "kind": "Kind",
+      "name": "Name",
+      "setting": "Setting",
+      "value": "Value"
+    },
+    "shift": {
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening"
+    },
+    "enrollment": {
+      "active": "In the course",
+      "withdrawn": "No longer in the course"
+    },
+    "outcome": {
+      "promoted": "Promoted",
+      "repeats": "Repeats",
+      "graduated": "Graduated"
+    },
+    "score": {
+      "graded": "Graded",
+      "missing": "Not handed in",
+      "excused": "Excused"
+    },
+    "attendance": {
+      "present": "Present",
+      "absent": "Absent",
+      "late": "Late",
+      "excused": "Excused absence"
+    },
+    "exam": {
+      "graded": "Sat the exam",
+      "absent": "Absent"
+    },
+    "notHeld": {
+      "weather": "Weather",
+      "teacher_absent": "Teacher absent",
+      "strike": "Strike",
+      "other": "Other"
+    },
+    "dayOff": {
+      "holiday": "Holiday",
+      "jornada": "Staff day",
+      "recess": "Recess",
+      "other": "Other"
+    },
+    "settings": {
+      "gradeMin": "Lowest grade",
+      "gradeMax": "Highest grade",
+      "passMark": "Pass mark",
+      "maxTermIncrease": "How far the second term may go up",
+      "maxTermDecrease": "How far the second term may go down",
+      "minAttendance": "Minimum attendance (%)"
+    },
+    "yes": "Yes",
+    "no": "No"
   }
 }

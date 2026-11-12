@@ -1,6 +1,7 @@
 // Reading and writing students. Scoped to one teacher (OWNER-1).
 
 import { and, eq } from "drizzle-orm";
+import { z } from "zod";
 import type { Db } from "@/db";
 import { academicYears, courseStudents, courses, schools, students } from "@/db/schema";
 import { compareCourses, compareStudents, type Shift } from "@/lib/courses";
@@ -75,4 +76,18 @@ export async function listStudents(db: Db, teacherId: string): Promise<StudentRo
   const list = [...byId.values()];
   for (const s of list) s.courses.sort(compareCourses);
   return list.sort(compareStudents);
+}
+
+/** STUDENT-4: deletes the student; everything recorded about them goes with them. */
+export async function deleteStudent(
+  db: Db,
+  teacherId: string,
+  studentId: string,
+): Promise<{ ok: true } | { ok: false; error: "notFound" }> {
+  if (!z.uuid().safeParse(studentId).success) return { ok: false, error: "notFound" };
+  const deleted = await db
+    .delete(students)
+    .where(and(eq(students.id, studentId), eq(students.teacherId, teacherId)))
+    .returning({ id: students.id });
+  return deleted.length > 0 ? { ok: true } : { ok: false, error: "notFound" };
 }

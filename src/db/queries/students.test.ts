@@ -3,7 +3,9 @@ import type { Db } from "@/db";
 import { createTestDb, newTeacher } from "@/test/db";
 import type { ClassInput } from "@/lib/validation";
 import { createClass, listClasses, listCourses } from "./classes";
-import { createStudent, listStudents } from "./students";
+import { eq } from "drizzle-orm";
+import { courseStudents, exams } from "@/db/schema";
+import { createStudent, deleteStudent, listStudents } from "./students";
 
 let db: Db;
 beforeAll(async () => {
@@ -81,5 +83,36 @@ describe("each teacher's students (OWNER-1)", () => {
     await createStudent(db, a, { firstName: "Ana", lastName: "Pérez", courseId });
     expect(await listStudents(db, b)).toEqual([]);
     expect(await listStudents(db, a)).toHaveLength(1);
+  });
+});
+
+describe("deleting a student (STUDENT-4)", () => {
+  it("deletes the student and what was recorded about them, keeping the course and its classes", async () => {
+    const { teacher, courseId } = await teacherWithCourse();
+    await createStudent(db, teacher, { firstName: "Ana", lastName: "Pérez", courseId });
+    await createStudent(db, teacher, { firstName: "Luis", lastName: "Pérez", courseId });
+    const [ana] = await listStudents(db, teacher);
+    const [mate] = (await listClasses(db, teacher)).filter((c) => c.name === "Matemática");
+    await db.insert(exams).values({ teacherId: teacher, classId: mate.id, studentId: ana.id, takenOn: "2026-12-15", value: 6 });
+
+    expect(await deleteStudent(db, teacher, ana.id)).toEqual({ ok: true });
+
+    expect((await listStudents(db, teacher)).map((s) => s.firstName)).toEqual(["Luis"]);
+    expect(await db.select().from(exams).where(eq(exams.studentId, ana.id))).toEqual([]);
+    expect(await db.select().from(courseStudents).where(eq(courseStudents.studentId, ana.id))).toEqual([]);
+    expect((await listClasses(db, teacher)).map((c) => [c.name, c.students])).toEqual([
+      ["Física", 1],
+      ["Matemática", 1],
+    ]);
+  });
+
+  it("refuses another teacher's student, or one that doesn't exist (OWNER-1)", async () => {
+    const { teacher, courseId } = await teacherWithCourse();
+    await createStudent(db, teacher, { firstName: "Ana", lastName: "Pérez", courseId });
+    const [ana] = await listStudents(db, teacher);
+
+    expect(await deleteStudent(db, newTeacher(), ana.id)).toEqual({ ok: false, error: "notFound" });
+    expect(await deleteStudent(db, teacher, "nope")).toEqual({ ok: false, error: "notFound" });
+    expect(await listStudents(db, teacher)).toHaveLength(1);
   });
 });
