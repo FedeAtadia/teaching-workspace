@@ -368,6 +368,19 @@
       "button": "Delete student",
       "title": "Delete {name}?",
       "body": "Their scores, term grades, attendance, exams and adaptations are deleted, for every year. The courses, classes and tasks stay."
+    },
+    "edit": {
+      "button": "Edit",
+      "title": "Edit student",
+      "notFound": "The student wasn't found. Reload the page."
+    },
+    "move": {
+      "button": "Change course",
+      "title": "Change {name}'s course",
+      "description": "They leave {course} and join another course of {year}. Anything you already entered in this course stays in their history.",
+      "to": "New course",
+      "otherYear": "That course belongs to another school year.",
+      "notFound": "The course couldn't be changed. Reload the page and try again."
     }
   },
   "closing": {
@@ -456,7 +469,19 @@
     },
     "errors": {
       "courseNotFound": "That course no longer exists. Choose another."
-    }
+    },
+    "filters": {
+      "label": "Filter students",
+      "current": "Current",
+      "graduates": "Graduates",
+      "all": "All",
+      "course": "Course",
+      "allCourses": "All courses"
+    },
+    "graduated": "Graduated",
+    "owes": "Owes classes",
+    "emptyFilter": "No students match this filter.",
+    "graduatesHint": "Those who graduated and owe no class. They no longer show in the working list."
   },
   "settings": {
     "title": "Settings",

@@ -59,6 +59,14 @@ export const studentInput = z.object({
 });
 export type StudentInput = z.infer<typeof studentInput>;
 
+/** STUDENT-7 */
+export const studentEdit = z.object({ studentId: z.uuid(), firstName: name, lastName: name });
+export type StudentEdit = z.infer<typeof studentEdit>;
+
+/** STUDENT-8 */
+export const studentMove = z.object({ studentId: z.uuid(), fromCourseId: z.uuid(), toCourseId: z.uuid() });
+export type StudentMove = z.infer<typeof studentMove>;
+
 /** Optional free text: trimmed, and an empty field is stored as null. */
 const optionalText = (max: number) =>
   z

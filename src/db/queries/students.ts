@@ -1,11 +1,27 @@
 // Reading and writing students. Scoped to one teacher (OWNER-1).
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
-import { academicYears, courseStudents, courses, schools, students } from "@/db/schema";
-import { compareCourses, compareStudents, type Shift } from "@/lib/courses";
-import type { StudentInput } from "@/lib/validation";
+import {
+  academicYears,
+  attendance,
+  classGroupStudents,
+  classSessions,
+  classes,
+  courseStudents,
+  courses,
+  exams,
+  schools,
+  scores,
+  studentAdaptations,
+  students,
+  tasks,
+  termGrades,
+} from "@/db/schema";
+import { compareCourses, compareStudents } from "@/lib/courses";
+import type { ListedStudent } from "@/lib/students";
+import type { StudentEdit, StudentInput, StudentMove } from "@/lib/validation";
 
 export type CreateStudentResult =
   | { ok: true; studentId: string }
@@ -33,26 +49,22 @@ export async function createStudent(
   });
 }
 
-export type StudentCourse = { year: number; division: string; shift: Shift; schoolYear: string; school: string };
-export type StudentRow = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  courses: StudentCourse[];
-};
+export type StudentRow = ListedStudent;
 
-/** STUDENT-3 */
+/** STUDENT-3: every student, with the courses they are active in (newest first, COURSE-3). */
 export async function listStudents(db: Db, teacherId: string): Promise<StudentRow[]> {
   const rows = await db
     .select({
       id: students.id,
       firstName: students.firstName,
       lastName: students.lastName,
+      courseId: courses.id,
       year: courses.year,
       division: courses.division,
       shift: courses.shift,
       schoolYear: academicYears.name,
       school: schools.name,
+      outcome: courseStudents.outcome,
     })
     .from(students)
     .leftJoin(
@@ -68,14 +80,145 @@ export async function listStudents(db: Db, teacherId: string): Promise<StudentRo
   const byId = new Map<string, StudentRow>();
   for (const r of rows) {
     const s = byId.get(r.id) ?? { id: r.id, firstName: r.firstName, lastName: r.lastName, courses: [] };
-    if (r.year !== null && r.division !== null && r.shift !== null && r.schoolYear !== null && r.school !== null) {
-      s.courses.push({ year: r.year, division: r.division, shift: r.shift, schoolYear: r.schoolYear, school: r.school });
+    if (
+      r.courseId !== null &&
+      r.year !== null &&
+      r.division !== null &&
+      r.shift !== null &&
+      r.schoolYear !== null &&
+      r.school !== null
+    ) {
+      s.courses.push({
+        id: r.courseId,
+        year: r.year,
+        division: r.division,
+        shift: r.shift,
+        schoolYear: r.schoolYear,
+        school: r.school,
+        outcome: r.outcome,
+      });
     }
     byId.set(r.id, s);
   }
   const list = [...byId.values()];
   for (const s of list) s.courses.sort(compareCourses);
   return list.sort(compareStudents);
+}
+
+type NotFound = { ok: false; error: "notFound" };
+const notFound: NotFound = { ok: false, error: "notFound" };
+
+/** STUDENT-7: changes the student's name. */
+export async function updateStudent(db: Db, teacherId: string, input: StudentEdit): Promise<{ ok: true } | NotFound> {
+  const updated = await db
+    .update(students)
+    .set({ firstName: input.firstName, lastName: input.lastName })
+    .where(and(eq(students.id, input.studentId), eq(students.teacherId, teacherId)))
+    .returning({ id: students.id });
+  return updated.length > 0 ? { ok: true } : notFound;
+}
+
+/**
+ * STUDENT-8: takes the student out of one course and puts them in another of
+ * the same school year. With something recorded in the old course they stay
+ * in it as having left, so their history keeps it; with nothing, it was a
+ * mistake and the old course forgets them.
+ */
+export async function moveStudent(
+  db: Db,
+  teacherId: string,
+  input: StudentMove,
+): Promise<{ ok: true } | NotFound | { ok: false; error: "otherYear" }> {
+  if (input.fromCourseId === input.toCourseId) return notFound;
+  return db.transaction(async (tx) => {
+    const [[enrollment], courseRows] = await Promise.all([
+      tx
+        .select({ status: courseStudents.status })
+        .from(courseStudents)
+        .where(
+          and(
+            eq(courseStudents.courseId, input.fromCourseId),
+            eq(courseStudents.studentId, input.studentId),
+            eq(courseStudents.teacherId, teacherId),
+          ),
+        ),
+      tx
+        .select({ id: courses.id, academicYearId: courses.academicYearId })
+        .from(courses)
+        .where(and(inArray(courses.id, [input.fromCourseId, input.toCourseId]), eq(courses.teacherId, teacherId))),
+    ]);
+    const from = courseRows.find((c) => c.id === input.fromCourseId);
+    const to = courseRows.find((c) => c.id === input.toCourseId);
+    if (!enrollment || enrollment.status !== "active" || !from || !to) return notFound;
+    if (from.academicYearId !== to.academicYearId) return { ok: false, error: "otherYear" } as const;
+
+    const oldClasses = (
+      await tx.select({ id: classes.id }).from(classes).where(eq(classes.courseId, from.id))
+    ).map((c) => c.id);
+    const inOldCourse = and(
+      eq(courseStudents.courseId, from.id),
+      eq(courseStudents.studentId, input.studentId),
+      eq(courseStudents.teacherId, teacherId),
+    );
+
+    if (await hasRecords(tx, input.studentId, oldClasses)) {
+      await tx.update(courseStudents).set({ status: "withdrawn" }).where(inOldCourse);
+    } else {
+      await tx.delete(courseStudents).where(inOldCourse);
+    }
+    // GROUP-2: they no longer attend the old course's groups.
+    if (oldClasses.length > 0) {
+      await tx
+        .delete(classGroupStudents)
+        .where(
+          and(eq(classGroupStudents.studentId, input.studentId), inArray(classGroupStudents.classId, oldClasses)),
+        );
+    }
+    await tx
+      .insert(courseStudents)
+      .values({ teacherId, courseId: to.id, studentId: input.studentId })
+      // Coming back to a course they had left.
+      .onConflictDoUpdate({
+        target: [courseStudents.courseId, courseStudents.studentId],
+        set: { status: "active" },
+      });
+    return { ok: true } as const;
+  });
+}
+
+/** Whether anything was recorded about the student in these classes. */
+async function hasRecords(tx: Db, studentId: string, classIds: string[]): Promise<boolean> {
+  if (classIds.length === 0) return false;
+  const found = await Promise.all([
+    tx
+      .select({ id: scores.id })
+      .from(scores)
+      .innerJoin(tasks, eq(scores.taskId, tasks.id))
+      .where(and(eq(scores.studentId, studentId), inArray(tasks.classId, classIds)))
+      .limit(1),
+    tx
+      .select({ id: termGrades.id })
+      .from(termGrades)
+      .where(and(eq(termGrades.studentId, studentId), inArray(termGrades.classId, classIds)))
+      .limit(1),
+    tx
+      .select({ id: classSessions.id })
+      .from(attendance)
+      .innerJoin(classSessions, eq(attendance.sessionId, classSessions.id))
+      .where(and(eq(attendance.studentId, studentId), inArray(classSessions.classId, classIds)))
+      .limit(1),
+    tx
+      .select({ id: exams.id })
+      .from(exams)
+      .where(and(eq(exams.studentId, studentId), inArray(exams.classId, classIds)))
+      .limit(1),
+    tx
+      .select({ id: studentAdaptations.classId })
+      .from(studentAdaptations)
+      .where(and(eq(studentAdaptations.studentId, studentId), inArray(studentAdaptations.classId, classIds)))
+      .limit(1),
+  ]);
+  return found.some((rows) => rows.length > 0);
 }
 
 /** STUDENT-4: deletes the student; everything recorded about them goes with them. */

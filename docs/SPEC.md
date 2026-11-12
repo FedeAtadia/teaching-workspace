@@ -199,8 +199,9 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 
 ## STUDENT — Students
 
-*Enforced by `src/lib/validation.ts`, `src/db/queries/students.ts`. Covered by
-`src/lib/validation.test.ts`, `src/db/queries/students.test.ts`.*
+*Enforced by `src/lib/validation.ts`, `src/lib/students.ts`,
+`src/db/queries/students.ts`. Covered by `src/lib/validation.test.ts`,
+`src/lib/students.test.ts`, `src/db/queries/students.test.ts`.*
 
 - **STUDENT-1** A student is added with a first name, a last name and a
   course. Names are trimmed and 1 to 80 characters long.
@@ -212,6 +213,20 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   confirmation. Their scores, cuatrimestre grades, attendance, exams,
   adaptations, own passing standards and places in courses and groups go with
   them; the courses, classes and tasks stay.
+- **STUDENT-5** The Students list shows the students the teacher works with:
+  everyone but the graduates (YEAR-2, by their newest course) who owe no
+  class. A graduate who still owes a class (EXAM-3) stays in it, marked as a
+  graduate who owes, until they pass it. Those left out show under
+  "Egresados", and "Todos" shows everyone; each says how many it has.
+- **STUDENT-6** The list can be narrowed to the students of one course, in
+  any of those views. The view and the course are kept in the address.
+- **STUDENT-7** A student's first and last name can be changed from their
+  page (as in STUDENT-1).
+- **STUDENT-8** A student can be moved from a course to another of the same
+  school year. With scores, cuatrimestre grades, attendance, exams or an
+  adaptation in the old course's classes, they stay in it as having left
+  (HISTORY-1); with nothing recorded, the old course forgets them. Either
+  way they leave the old course's groups (GROUP-2).
 
 ## ROSTER — A class's students
 
