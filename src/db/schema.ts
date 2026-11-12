@@ -144,6 +144,8 @@ export const classes = pgTable(
     passMark: grade("pass_mark"),
     notes: text("notes"),
     weekdays: weekdays(), // CAL-4
+    // CLASS-8: the day it was archived; null while the teacher works with it.
+    archivedOn: date("archived_on"),
     createdAt: createdAt(),
   },
   (t) => [unique().on(t.courseId, t.name)], // CLASS-5

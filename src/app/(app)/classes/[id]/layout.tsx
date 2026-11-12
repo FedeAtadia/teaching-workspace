@@ -5,7 +5,11 @@ import { EditClassDialog } from "@/components/classes/AddClassDialog";
 import { ClassTabs } from "@/components/classes/ClassTabs";
 import { getClassCounts, listSchools } from "@/db/queries/classes";
 import { formatCourse } from "@/lib/courses";
-import { removeClass } from "./actions";
+import { Archive, ArchiveRestore } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/format";
+import { archiveClass, removeClass } from "./actions";
 import { loadClass } from "./data";
 
 export default async function ClassLayout({ children, params }: LayoutProps<"/classes/[id]">) {
@@ -45,6 +49,13 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
             schools={schools.map((s) => s.name)}
             otherClasses={counts?.otherClasses ?? []}
           />
+          {/* CLASS-8: it can be undone, so it doesn't ask first. */}
+          <form action={archiveClass.bind(null, { classId: id, archived: !cls.archivedOn })}>
+            <Button type="submit" variant="outline" size="sm">
+              {cls.archivedOn ? <ArchiveRestore aria-hidden /> : <Archive aria-hidden />}
+              {cls.archivedOn ? t("archive.unarchive") : t("archive.button")}
+            </Button>
+          </form>
           <ConfirmDeleteButton
             label={t("deleteClass.button")}
             title={t("deleteClass.title", { name: cls.name, course })}
@@ -72,6 +83,12 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
           .filter(Boolean)
           .join(" · ")}
       </p>
+      {cls.archivedOn && (
+        <p role="status" className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-muted p-4 text-sm">
+          <Badge tone="outline">{t("archive.badge", { date: formatDate(cls.archivedOn) })}</Badge>
+          <span className="min-w-0 flex-1 basis-64 text-muted-foreground">{t("archive.hint")}</span>
+        </p>
+      )}
       <ClassTabs
         title={t("tabs.title")}
         tabs={[

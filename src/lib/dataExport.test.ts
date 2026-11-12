@@ -103,10 +103,11 @@ describe("a teacher's download (DATA)", () => {
 
   it("writes a class's days of the week by name, and its settings one per row (DATA-1)", () => {
     const data: Partial<ExportData> = {
-      classes: [{ ...cls, passMark: null, weekdays: [2, 5], notes: null }],
+      classes: [{ ...cls, passMark: null, weekdays: [2, 5], notes: null, archivedOn: "2026-12-20" }],
       settings: { gradeMin: 1, gradeMax: 10, passMark: 7, maxTermIncrease: 3, maxTermDecrease: 3, minAttendance: 75, graduateRetentionMonths: 12 },
     };
     expect(sheetOf(data, "classes").rows[0][6]).toBe("Martes, Viernes");
+    expect(sheetOf(data, "classes").rows[0][8]).toEqual(new Date(Date.UTC(2026, 11, 20)));
     expect(sheetOf(data, "settings").rows).toContainEqual(["Asistencia mínima (%)", 75]);
     expect(sheetOf(data, "settings").rows).toHaveLength(7);
   });

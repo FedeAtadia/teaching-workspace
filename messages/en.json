@@ -123,7 +123,14 @@
       "courseExists": "You already have another course with that school, year, division, shift and school year.",
       "notFound": "This class wasn't found. Reload the page."
     },
-    "count": "{count, plural, one {# class} other {# classes}}"
+    "count": "{count, plural, one {# class} other {# classes}}",
+    "views": {
+      "label": "Active or archived classes",
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "emptyArchived": "No archived classes.",
+    "archivedHint": "The classes you no longer use, such as last year's. They are still complete and in each student's history; open one to unarchive it."
   },
   "classPage": {
     "back": "Classes",
@@ -317,6 +324,12 @@
         "reasonRequired": "It's outside the expected range: give the reason.",
         "reasonTooLong": "The reason is too long."
       }
+    },
+    "archive": {
+      "button": "Archive",
+      "unarchive": "Unarchive",
+      "badge": "Archived on {date}",
+      "hint": "This class is archived: it doesn't show on Home or Classes, but nothing was lost and it is still in each student's history."
     }
   },
   "groups": {
@@ -1001,7 +1014,8 @@
       "kind": "Kind",
       "name": "Name",
       "setting": "Setting",
-      "value": "Value"
+      "value": "Value",
+      "archivedOn": "Archived on"
     },
     "shift": {
       "morning": "Morning",

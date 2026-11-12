@@ -138,6 +138,12 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   tasks, scores, units and passing standards go with it. Those and the tasks'
   attached files are deleted; the course, its students and its other classes
   stay.
+- **CLASS-8** A class can be archived, and brought back, from its page.
+  Archived, it is left out of Home (its cards, its counts and today's
+  classes, HOME-1, HOME-4) and of the Classes list, where the archived ones
+  have their own view. Nothing of it is deleted: it still opens, says since
+  when it is archived, and stays in each student's history (HISTORY-2), in
+  Previas (EXAM-3) and in the download (DATA-1).
 
 ## COURSE — Courses
 
@@ -555,7 +561,9 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 `src/lib/courses.test.ts`.*
 
 - **HOME-1** Home shows how many classes and students the teacher has and how
-  many scores are still to enter, then one card per class (COURSE-3 order)
+  many scores are still to enter, counting only classes that aren't archived
+  (CLASS-8) and the students of their courses, then one card per such class
+  (COURSE-3 order)
   with its subject, course, shift, school and number of active students; the
   whole card opens the class.
 - **HOME-2** Each card shows how much of the class is scored: the scores and

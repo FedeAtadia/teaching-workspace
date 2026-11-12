@@ -15,7 +15,13 @@ type ClassRef = {
 type StudentRef = { lastName: string; firstName: string };
 
 export type ExportData = {
-  classes: (ClassRef & { passMark: number | null; weekdays: number[]; notes: string | null })[];
+  classes: (ClassRef & {
+    passMark: number | null;
+    weekdays: number[];
+    notes: string | null;
+    /** CLASS-8 */
+    archivedOn: string | null;
+  })[];
   /** One row per course a student is or was in; a student in no course has the course fields null. */
   students: (StudentRef & {
     schoolYear: string | null;
@@ -119,6 +125,7 @@ export const COLUMN_KEYS = [
   "passMark",
   "weekdays",
   "notes",
+  "archivedOn",
   "status",
   "outcome",
   "term",
@@ -225,8 +232,14 @@ export function toSheets(data: ExportData, labels: ExportLabels): Sheet[] {
   return [
     sheet(
       "classes",
-      [...CLASS, "passMark", "weekdays", "notes"],
-      sorted(data.classes, byClass).map((r) => [...cls(r), r.passMark, days(r.weekdays), r.notes]),
+      [...CLASS, "passMark", "weekdays", "notes", "archivedOn"],
+      sorted(data.classes, byClass).map((r) => [
+        ...cls(r),
+        r.passMark,
+        days(r.weekdays),
+        r.notes,
+        toDate(r.archivedOn),
+      ]),
     ),
     sheet(
       "students",

@@ -126,7 +126,7 @@ export async function loadExport(db: Db, teacherId: string): Promise<ExportData>
 
   return {
     classes: present(
-      classRows.map((c) => inClass(c.id, { passMark: c.passMark, weekdays: c.weekdays, notes: c.notes })),
+      classRows.map((c) => inClass(c.id, { passMark: c.passMark, weekdays: c.weekdays, notes: c.notes, archivedOn: c.archivedOn })),
     ),
     students: [
       ...present(

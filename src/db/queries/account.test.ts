@@ -121,7 +121,7 @@ describe("a teacher's download (DATA-1)", () => {
     const { teacherId } = await seed();
     const data = await loadExport(db, teacherId);
 
-    expect(data.classes).toEqual([{ ...CLS, passMark: null, weekdays: [], notes: null }]);
+    expect(data.classes).toEqual([{ ...CLS, passMark: null, weekdays: [], notes: null, archivedOn: null }]);
     expect(data.students).toEqual([
       { ...ANA, schoolYear: "2026", school: "EPET 30", year: 5, division: "1°", shift: "morning", status: "active", outcome: null },
     ]);

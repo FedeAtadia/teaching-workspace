@@ -2,7 +2,7 @@
 // teacher (OWNER-1). Five queries, all at once: about one round trip's wait
 // (the owed classes take two).
 
-import { and, asc, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import {
   classGroups,
@@ -39,9 +39,14 @@ export type Home = {
   cards: HomeCard[];
 };
 
-export async function getHomeCards(db: Db, teacherId: string): Promise<Home> {
+/** CLASS-8: of the classes the teacher works with, or of the archived ones. */
+export async function getHomeCards(
+  db: Db,
+  teacherId: string,
+  which: "active" | "archived" = "active",
+): Promise<Home> {
   const [classRows, taskRows, scoredRows, [{ students }], owedClasses] = await Promise.all([
-    listClasses(db, teacherId),
+    listClasses(db, teacherId, which),
     db
       .select({
         id: tasks.id,
@@ -86,7 +91,17 @@ export async function getHomeCards(db: Db, teacherId: string): Promise<Home> {
     db
       .select({ students: sql<number>`count(distinct ${courseStudents.studentId})::int` })
       .from(courseStudents)
-      .where(and(eq(courseStudents.teacherId, teacherId), eq(courseStudents.status, "active"))),
+      .where(
+        and(
+          eq(courseStudents.teacherId, teacherId),
+          eq(courseStudents.status, "active"),
+          // CLASS-8: only students of a course with a class of that kind.
+          // Plain names: in a one-table query the columns would lose their table.
+          which === "archived"
+            ? sql`exists (select 1 from classes c where c.course_id = course_students.course_id and c.archived_on is not null)`
+            : sql`exists (select 1 from classes c where c.course_id = course_students.course_id and c.archived_on is null)`,
+        ),
+      ),
     listOwed(db, teacherId),
   ]);
   const owed = owedClasses.reduce((n, c) => n + c.students.length, 0);
@@ -150,7 +165,13 @@ export async function getTodayClasses(db: Db, teacherId: string, today: string):
       ),
     )
     .where(
-      and(eq(classes.teacherId, teacherId), lte(schoolCalendars.startsOn, today), gte(schoolCalendars.endsOn, today)),
+      and(
+        eq(classes.teacherId, teacherId),
+        // CLASS-8
+        isNull(classes.archivedOn),
+        lte(schoolCalendars.startsOn, today),
+        gte(schoolCalendars.endsOn, today),
+      ),
     );
   if (rows.length === 0) return [];
 
