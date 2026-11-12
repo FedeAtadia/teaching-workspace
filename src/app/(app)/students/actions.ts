@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
-import { createStudent, deleteStudent, moveStudent, updateStudent } from "@/db/queries/students";
+import { createStudent, deleteStudent, importStudents, moveStudent, updateStudent } from "@/db/queries/students";
 import { requireTeacherId } from "@/lib/auth";
 import { removeStoredFiles } from "@/lib/supabase/storage";
 import type { FormState } from "@/lib/formState";
-import { studentEdit, studentInput, studentMove, toFieldErrors, type FieldError } from "@/lib/validation";
+import { rosterInput, studentEdit, studentInput, studentMove, toFieldErrors, type FieldError } from "@/lib/validation";
 
 export type AddStudentState = {
   status: "idle" | "saved" | "error";
@@ -34,6 +34,20 @@ export async function addStudent(_prev: AddStudentState, formData: FormData): Pr
   const { firstName, lastName, courseId } = parsed.data;
   // Keep the course picked: a whole course is usually typed in one go.
   return { status: "saved", added: { firstName, lastName }, values: { courseId }, savedAt: Date.now() };
+}
+
+/** IMPORT-3, IMPORT-4: adds the students the teacher left ticked in the preview. */
+export async function importRosterAction(input: {
+  courseId: string;
+  students: { firstName: string; lastName: string }[];
+}): Promise<{ ok: true; added: number; skipped: number } | { ok: false; error: "courseNotFound" | "invalid" }> {
+  const parsed = rosterInput.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  const result = await importStudents(getDb(), await requireTeacherId(), parsed.data);
+  if (!result.ok) return result;
+  // Class pages, gradebooks, attendance and Home count them.
+  revalidatePath("/", "layout");
+  return result;
 }
 
 /** STUDENT-4: deletes the student and everything recorded about them, then goes back to the list. */

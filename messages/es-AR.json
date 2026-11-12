@@ -489,7 +489,8 @@
     "owes": "Debe materias",
     "emptyFilter": "No hay estudiantes con este filtro.",
     "graduatesHint": "Quienes egresaron y no deben ninguna materia. Ya no aparecen en la lista de trabajo.",
-    "deleteOn": "Se elimina el {date}"
+    "deleteOn": "Se elimina el {date}",
+    "import": "Importar lista"
   },
   "settings": {
     "title": "Configuración",
@@ -1054,5 +1055,84 @@
     },
     "yes": "Sí",
     "no": "No"
+  },
+  "rosterImport": {
+    "title": "Importar una lista de estudiantes",
+    "back": "Estudiantes",
+    "intro": "Cargá un curso entero de una vez, desde una planilla de Excel o de Google.",
+    "guide": {
+      "title": "Cómo preparar la lista",
+      "sheetTitle": "Así tiene que verse la planilla",
+      "lastName": "Apellido",
+      "firstName": "Nombre",
+      "rules": [
+        "Una fila por estudiante.",
+        "El apellido en la columna A y el nombre en la columna B.",
+        "La primera fila puede tener los títulos «Apellido» y «Nombre», o no estar.",
+        "Si la planilla tiene más columnas (número de orden, DNI), no hace falta borrarlas: poné los títulos «Apellido» y «Nombre» en la primera fila y Annora usa solo esas dos.",
+        "Hasta {max} estudiantes por vez."
+      ],
+      "pasteTitle": "La forma más rápida: copiar y pegar",
+      "paste": [
+        "En Excel o Google Sheets, seleccioná las celdas con los apellidos y los nombres.",
+        "Copiá (Ctrl + C).",
+        "Hacé clic en el cuadro «Pegá las celdas» de más abajo y pegá (Ctrl + V)."
+      ],
+      "excelTitle": "Guardar un archivo CSV desde Excel",
+      "excel": [
+        "Abrí la planilla y dejá en la hoja solo la lista.",
+        "Andá a Archivo → Guardar como.",
+        "En «Tipo», elegí «CSV UTF-8 (delimitado por comas) (*.csv)». Si no aparece, sirve «CSV (delimitado por comas)».",
+        "Guardá. Excel avisa que algunas características se pueden perder: aceptá, es normal.",
+        "Elegí ese archivo con «Elegir archivo», más abajo."
+      ],
+      "sheetsTitle": "Desde Google Sheets",
+      "sheets": [
+        "Andá a Archivo → Descargar → Valores separados por comas (.csv).",
+        "Elegí ese archivo más abajo."
+      ],
+      "template": "Descargar una planilla de ejemplo",
+      "templateHint": "Abrila con Excel, reemplazá los ejemplos por tu lista y guardala.",
+      "templateFile": "lista-de-estudiantes.csv"
+    },
+    "course": "Curso al que se agregan",
+    "chooseCourse": "Elegí el curso",
+    "file": "Elegir archivo",
+    "fileHint": "Un archivo .csv",
+    "or": "o",
+    "paste": "Pegá las celdas",
+    "pastePlaceholder": "Pérez\tAna\nGómez\tLuis",
+    "preview": "Vista previa",
+    "empty": "Elegí un archivo o pegá las celdas para ver la lista.",
+    "columns": {
+      "line": "Fila",
+      "lastName": "Apellido",
+      "firstName": "Nombre",
+      "status": "Estado",
+      "include": "Incluir"
+    },
+    "status": {
+      "new": "Se agrega",
+      "inCourse": "Ya está en el curso",
+      "repeated": "Repetido en la lista"
+    },
+    "problems": {
+      "title": "{count, plural, one {# fila no se pudo leer} other {# filas no se pudieron leer}}",
+      "line": "Fila {line}: {problem} ({text})",
+      "missingFirstName": "falta el nombre",
+      "missingLastName": "falta el apellido",
+      "tooLong": "el nombre o el apellido tiene más de 80 letras"
+    },
+    "tooMany": "La lista tiene más de {max} estudiantes: se toman los primeros {max}. Importá el resto después.",
+    "submit": "{count, plural, =0 {No hay nadie para agregar} one {Agregar # estudiante} other {Agregar # estudiantes}}",
+    "submitting": "Agregando…",
+    "done": "{added, plural, =0 {No se agregó a nadie} one {Se agregó # estudiante} other {Se agregaron # estudiantes}} a {course}.",
+    "skipped": "{count, plural, one {# ya estaba y no se duplicó} other {# ya estaban y no se duplicaron}}.",
+    "seeCourse": "Ver el curso",
+    "errors": {
+      "courseNotFound": "Ese curso ya no existe. Elegí otro.",
+      "invalid": "No se pudo importar la lista. Revisala y probá de nuevo.",
+      "unreadable": "No se pudo leer ese archivo. Guardalo como CSV y probá de nuevo."
+    }
   }
 }

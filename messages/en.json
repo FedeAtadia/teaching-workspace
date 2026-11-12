@@ -489,7 +489,8 @@
     "owes": "Owes classes",
     "emptyFilter": "No students match this filter.",
     "graduatesHint": "Those who graduated and owe no class. They no longer show in the working list.",
-    "deleteOn": "To be deleted on {date}"
+    "deleteOn": "To be deleted on {date}",
+    "import": "Import a list"
   },
   "settings": {
     "title": "Settings",
@@ -1054,5 +1055,84 @@
     },
     "yes": "Yes",
     "no": "No"
+  },
+  "rosterImport": {
+    "title": "Import a list of students",
+    "back": "Students",
+    "intro": "Add a whole course at once, from an Excel or Google spreadsheet.",
+    "guide": {
+      "title": "How to prepare the list",
+      "sheetTitle": "What the spreadsheet should look like",
+      "lastName": "Last name",
+      "firstName": "First name",
+      "rules": [
+        "One row per student.",
+        "The last name in column A and the first name in column B.",
+        "The first row may hold the titles “Last name” and “First name”, or be left out.",
+        "If the sheet has more columns (a number, an ID), you don't need to delete them: put the titles “Last name” and “First name” in the first row and Annora uses only those two.",
+        "Up to {max} students at a time."
+      ],
+      "pasteTitle": "The quickest way: copy and paste",
+      "paste": [
+        "In Excel or Google Sheets, select the cells with the last and first names.",
+        "Copy (Ctrl + C).",
+        "Click the “Paste the cells” box below and paste (Ctrl + V)."
+      ],
+      "excelTitle": "Saving a CSV file from Excel",
+      "excel": [
+        "Open the spreadsheet and leave only the list on the sheet.",
+        "Go to File → Save As.",
+        "Under “Save as type”, choose “CSV UTF-8 (Comma delimited) (*.csv)”. If it isn't there, “CSV (Comma delimited)” works too.",
+        "Save. Excel warns that some features may be lost: accept, that is normal.",
+        "Pick that file with “Choose file”, below."
+      ],
+      "sheetsTitle": "From Google Sheets",
+      "sheets": [
+        "Go to File → Download → Comma-separated values (.csv).",
+        "Pick that file below."
+      ],
+      "template": "Download an example sheet",
+      "templateHint": "Open it in Excel, replace the examples with your list and save it.",
+      "templateFile": "student-list.csv"
+    },
+    "course": "Course they are added to",
+    "chooseCourse": "Choose the course",
+    "file": "Choose file",
+    "fileHint": "A .csv file",
+    "or": "or",
+    "paste": "Paste the cells",
+    "pastePlaceholder": "Pérez\tAna\nGómez\tLuis",
+    "preview": "Preview",
+    "empty": "Choose a file or paste the cells to see the list.",
+    "columns": {
+      "line": "Row",
+      "lastName": "Last name",
+      "firstName": "First name",
+      "status": "Status",
+      "include": "Include"
+    },
+    "status": {
+      "new": "Will be added",
+      "inCourse": "Already in the course",
+      "repeated": "Repeated in the list"
+    },
+    "problems": {
+      "title": "{count, plural, one {# row couldn't be read} other {# rows couldn't be read}}",
+      "line": "Row {line}: {problem} ({text})",
+      "missingFirstName": "the first name is missing",
+      "missingLastName": "the last name is missing",
+      "tooLong": "the first or last name is over 80 letters"
+    },
+    "tooMany": "The list has more than {max} students: the first {max} are taken. Import the rest afterwards.",
+    "submit": "{count, plural, =0 {Nobody to add} one {Add # student} other {Add # students}}",
+    "submitting": "Adding…",
+    "done": "{added, plural, =0 {Nobody was added} one {# student was added} other {# students were added}} to {course}.",
+    "skipped": "{count, plural, one {# was already there and wasn't duplicated} other {# were already there and weren't duplicated}}.",
+    "seeCourse": "See the course",
+    "errors": {
+      "courseNotFound": "That course no longer exists. Choose another.",
+      "invalid": "The list couldn't be imported. Check it and try again.",
+      "unreadable": "That file couldn't be read. Save it as CSV and try again."
+    }
   }
 }
