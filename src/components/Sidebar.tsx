@@ -4,6 +4,7 @@ import {
   BookOpen,
   ClipboardCheck,
   House,
+  LogOut,
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
@@ -14,6 +15,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "cn";
+import { signOutAction } from "@/app/(app)/actions";
 import { Logo, LogoMark } from "@/components/Logo";
 import { setSidebar } from "@/i18n/actions";
 import type { SidebarState } from "@/lib/theme";
@@ -30,6 +32,7 @@ type Labels = {
   settings: string;
   /** "Configuración" doesn't fit under an icon in the phone's bar. */
   settingsShort: string;
+  signOut: string;
 };
 
 const ITEMS: { href: string; key: keyof Labels; icon: LucideIcon }[] = [
@@ -60,6 +63,16 @@ export function Sidebar({ initial, labels }: { initial: SidebarState; labels: La
       {/* Phones and small tablets: the name on top, the menu at the bottom. */}
       <header className="flex h-14 items-center border-b border-sidebar-border bg-sidebar px-4 md:hidden">
         <Logo name={labels.appName} />
+        {/* NAV-4: the bottom bar has no room for it. */}
+        <form action={signOutAction} className="ml-auto">
+          <button
+            type="submit"
+            className="flex h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-sidebar-foreground"
+          >
+            <LogOut className="size-5" aria-hidden />
+            {labels.signOut}
+          </button>
+        </form>
       </header>
       <nav
         aria-label={labels.menu}
@@ -126,6 +139,21 @@ export function Sidebar({ initial, labels }: { initial: SidebarState; labels: La
             compact={collapsed}
           />
         </nav>
+        {/* NAV-4 */}
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            title={collapsed ? labels.signOut : undefined}
+            aria-label={collapsed ? labels.signOut : undefined}
+            className={cn(
+              "flex h-11 w-full items-center gap-3 rounded-xl text-[15px] font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-sidebar-foreground",
+              collapsed ? "justify-center" : "px-4",
+            )}
+          >
+            <LogOut className="size-5 shrink-0" aria-hidden />
+            {!collapsed && <span>{labels.signOut}</span>}
+          </button>
+        </form>
       </aside>
     </>
   );

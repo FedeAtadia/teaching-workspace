@@ -593,6 +593,9 @@ by hand (Known gaps).*
   link for the keyboard and screen readers.
 - **NAV-3** On a phone, a class's sections open from one button that names
   the current one; elsewhere they are a row of tabs.
+- **NAV-4** The menu has a way to sign out: at its foot on a computer, at the
+  top of the screen on a phone. It ends the session on that device only and
+  goes to the public home page; other devices stay signed in.
 
 ## OWNER — Each teacher's data
 
@@ -614,6 +617,8 @@ by hand (Known gaps).*
   Supabase project to run against. The forms that call the queries above
   (the add-class and add-student dialogs) are checked by hand for the same
   reason: every page behind them needs a signed-in teacher.
+- **NAV-4**'s sign-out runs in Supabase Auth, like sign-in, and is checked by
+  hand.
 - **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and
   **NAV-3**'s section button are interface behaviour, checked by hand in the
   browser; there are no component tests yet.
