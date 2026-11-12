@@ -83,8 +83,12 @@ export default async function StudentReportPage({ params, searchParams }: PagePr
 
   return (
     <>
-      {/* The page's own margins on paper. */}
-      <style>{"@page { size: A4; margin: 14mm; } @media print { html, body { background: #fff !important; } }"}</style>
+      {/*
+        REPORT-4: with no page margin the browser has nowhere to print its own
+        header and footer (the date, the title, the address). The margins are
+        drawn by the report instead: see the spacer rows below.
+      */}
+      <style>{"@page { size: A4; margin: 0; } @media print { html, body { background: #fff !important; } }"}</style>
       <div className="grid gap-4 print:hidden">
         <BackLink href={`/students/${id}`} label={t("back")} />
         <ReportControls
@@ -103,7 +107,26 @@ export default async function StudentReportPage({ params, searchParams }: PagePr
         />
       </div>
 
-      <article className="mt-6 bg-white p-6 text-[13px] leading-snug text-neutral-900 shadow-sm ring-1 ring-neutral-200 sm:p-10 print:mt-0 print:p-0 print:shadow-none print:ring-0">
+      <article className="mt-6 bg-white p-6 text-[13px] leading-snug text-neutral-900 shadow-sm ring-1 ring-neutral-200 sm:p-10 print:mt-0 print:px-[14mm] print:py-0 print:shadow-none print:ring-0">
+        {/*
+          A table only for its header and footer rows: a browser repeats them
+          on every printed page, which gives each page its top and bottom
+          margin. On screen they don't show.
+        */}
+        <table className="w-full border-collapse">
+          <thead className="hidden print:table-header-group">
+            <tr>
+              <td className="h-[14mm] p-0" />
+            </tr>
+          </thead>
+          <tfoot className="hidden print:table-footer-group">
+            <tr>
+              <td className="h-[14mm] p-0" />
+            </tr>
+          </tfoot>
+          <tbody>
+            <tr>
+              <td className="p-0">
         <header className="flex flex-wrap items-end justify-between gap-4 border-b-2 border-neutral-900 pb-3">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.14em] text-neutral-500 uppercase">{t("title")}</p>
@@ -244,6 +267,10 @@ export default async function StudentReportPage({ params, searchParams }: PagePr
         <footer className="mt-8 border-t border-neutral-300 pt-2 text-[11px] text-neutral-500">
           {t("footer", { date: formatDate(today) })}
         </footer>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </article>
     </>
   );
