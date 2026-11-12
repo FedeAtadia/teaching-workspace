@@ -7,7 +7,8 @@ import { deleteSignIn, deleteTeacherData } from "@/db/queries/account";
 import { addDayOff, addNationalHolidays, deleteDayOff, saveCalendar, updateDayOff } from "@/db/queries/calendar";
 import { renameSchool } from "@/db/queries/classes";
 import { setRetentionMonths } from "@/db/queries/retention";
-import { setMinAttendance } from "@/db/queries/settings";
+import { setMinAttendance, setRules } from "@/db/queries/settings";
+import { checkRules, type RulesProblem } from "@/lib/grading";
 import { ATTACHMENT_BUCKET } from "@/lib/attachments";
 import { requireTeacherId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -18,6 +19,7 @@ import {
   dayOffInput,
   minAttendanceInput,
   retentionInput,
+  rulesInput,
   schoolInput,
   toFieldErrors,
 } from "@/lib/validation";
@@ -106,6 +108,25 @@ export async function saveMinAttendanceAction(_prev: FormState, formData: FormDa
   // The gradebooks, cuatrimestre grades and attendance tabs use it.
   revalidatePath("/", "layout");
   return { status: "saved" };
+}
+
+export type RulesState = FormState & {
+  /** Per field, what doesn't fit with the other rules. */
+  ruleErrors?: Partial<Record<string, RulesProblem>>;
+};
+
+/** GRADE-4 */
+export async function saveRulesAction(_prev: RulesState, formData: FormData): Promise<RulesState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = rulesInput.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+  const ruleErrors = checkRules(parsed.data);
+  if (Object.keys(ruleErrors).length > 0) return { status: "error", ruleErrors, values };
+
+  await setRules(getDb(), await requireTeacherId(), parsed.data);
+  // Every gradebook, cuatrimestre sheet, Cierre, Previas and history reads them.
+  revalidatePath("/", "layout");
+  return { status: "saved", values };
 }
 
 /** KEEP-2 */

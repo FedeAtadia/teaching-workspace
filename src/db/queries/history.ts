@@ -24,11 +24,12 @@ import {
 } from "@/db/schema";
 import { attendanceRate, type AttendanceStatus } from "@/lib/attendance";
 import { compareCourses, type Shift } from "@/lib/courses";
-import { DEFAULT_RULES, suggestTermGrade, type Suggestion } from "@/lib/grading";
+import { suggestTermGrade, type Suggestion } from "@/lib/grading";
 import { isAssessed } from "@/lib/groups";
 import type { ScoreStatus } from "@/lib/scoresForm";
 import { classResult, type ClassResult, type YearOutcome } from "@/lib/yearEnd";
 import { getTaskGroups } from "./groups";
+import { getRules } from "./settings";
 import { toExamRow, type ExamRow } from "./yearEnd";
 
 export type HistoryTask = {
@@ -87,6 +88,8 @@ export async function getStudentHistory(
 ): Promise<StudentHistory | null> {
   if (!z.uuid().safeParse(studentId).success) return null;
 
+  // GRADE-4: started first, so it travels with wave 1.
+  const rules = getRules(db, teacherId);
   // Wave 1: the student, their courses, all their scores, cuatrimestre grades, exams and attendance.
   const [[student], memberships, saved, grades, examRows, adaptations, marks] = await Promise.all([
     db
@@ -161,6 +164,7 @@ export async function getStudentHistory(
       .where(and(eq(attendance.studentId, studentId), eq(attendance.teacherId, teacherId))),
   ]);
   if (!student) return null;
+  const teacherPassMark = (await rules).passMark;
   if (memberships.length === 0) return { student, courses: [] };
 
   // Wave 2: the classes of those courses, their tasks, and the student's groups in them.
@@ -220,7 +224,7 @@ export async function getStudentHistory(
     const attendanceAt = (position: number) =>
       attendanceRate(classMarks.filter((m) => m.position === position).map((m) => m.status as AttendanceStatus)).rate;
     const gradeAt = (position: number) => classGrades.find((g) => g.position === position)?.value ?? null;
-    const passMark = c.passMark ?? DEFAULT_RULES.passMark;
+    const passMark = c.passMark ?? teacherPassMark;
     const classExams = examRows.filter((e) => e.classId === c.id).map(toExamRow);
     return {
       id: c.id,

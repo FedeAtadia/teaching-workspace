@@ -27,7 +27,7 @@ import { getStudentGroups, listGroups } from "@/db/queries/groups";
 import { getTask, listTaskScores } from "@/db/queries/tasks";
 import { progress } from "@/lib/courses";
 import { formatDate, formatGrade } from "@/lib/format";
-import { DEFAULT_RULES, isPassing } from "@/lib/grading";
+import { isPassing } from "@/lib/grading";
 import { isAssessed } from "@/lib/groups";
 import { deleteTaskAction, editTask } from "../../actions";
 import { loadClass } from "../../data";
@@ -36,7 +36,7 @@ import { taskFields } from "../fields";
 export default async function TaskPage({ params, searchParams }: PageProps<"/classes/[id]/tasks/[taskId]">) {
   const { id, taskId } = await params;
   const { group } = await searchParams;
-  const { db, teacherId, cls } = await loadClass(id);
+  const { db, teacherId, cls, rules } = await loadClass(id);
   const [task, roster, saved, terms, units, standards, groups, studentGroups, adaptations] = await Promise.all([
     getTask(db, teacherId, cls, taskId),
     listClassStudents(db, teacherId, cls),
@@ -69,7 +69,6 @@ export default async function TaskPage({ params, searchParams }: PageProps<"/cla
   const tTerm = await getTranslations("terms");
   const tScoring = await getTranslations("classPage.scoring");
   const locale = await getLocale();
-  const rules = { ...DEFAULT_RULES, passMark: cls.passMark ?? DEFAULT_RULES.passMark };
   const byStudent = new Map(saved.map((s) => [s.studentId, s]));
 
   // The sheet's progress, for the students it shows.

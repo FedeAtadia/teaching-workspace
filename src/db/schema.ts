@@ -26,8 +26,8 @@ const id = () => uuid("id").primaryKey().defaultRandom();
 const teacherId = () => uuid("teacher_id").notNull();
 const createdAt = () =>
   timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
-// Grades live on a 1–10 scale with at most two decimals (7,5 is common).
-const grade = (name: string) => numeric(name, { precision: 4, scale: 2, mode: "number" });
+// Grades have at most two decimals (7,5 is common) and go up to 100 (GRADE-4).
+const grade = (name: string) => numeric(name, { precision: 5, scale: 2, mode: "number" });
 // CAL-4: days of the week, 1 = lunes … 6 = sábado.
 const weekdays = () =>
   smallint("weekdays")

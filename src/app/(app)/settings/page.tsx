@@ -1,6 +1,7 @@
 import {
   CalendarDays,
   ClipboardCheck,
+  GraduationCap,
   Download,
   HardDriveDownload,
   Landmark,
@@ -18,6 +19,7 @@ import { FormDialog } from "@/components/forms/FormDialog";
 import { LanguageSelect } from "@/components/LanguageSelect";
 import { PageHeader } from "@/components/PageHeader";
 import { DeleteAccountButton } from "@/components/settings/DeleteAccountButton";
+import { GradingRulesForm } from "@/components/settings/GradingRulesForm";
 import { RetentionForm } from "@/components/settings/RetentionForm";
 import { MinAttendanceForm } from "@/components/settings/MinAttendanceForm";
 import { ThemeSelect } from "@/components/ThemeSelect";
@@ -27,7 +29,7 @@ import { PaletteSelect } from "@/components/PaletteSelect";
 import { getDb } from "@/db";
 import { listSchools } from "@/db/queries/classes";
 import { getRetentionMonths } from "@/db/queries/retention";
-import { getMinAttendance } from "@/db/queries/settings";
+import { getMinAttendance, getRules } from "@/db/queries/settings";
 import { requireTeacherId } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { renameSchoolAction } from "./actions";
@@ -38,13 +40,14 @@ export default async function SettingsPage() {
   const theme = resolveTheme(jar.get(THEME_COOKIE)?.value);
   const palette = resolvePalette(jar.get(PALETTE_COOKIE)?.value);
   const teacherId = isSupabaseConfigured() ? await requireTeacherId() : null;
-  const [schools, minAttendance, retention] = teacherId
+  const [schools, minAttendance, retention, rules] = teacherId
     ? await Promise.all([
         listSchools(getDb(), teacherId),
         getMinAttendance(getDb(), teacherId),
         getRetentionMonths(getDb(), teacherId),
+        getRules(getDb(), teacherId),
       ])
-    : [[], null, null];
+    : [[], null, null, null];
 
   return (
     <PageHeader title={t("title")}>
@@ -78,6 +81,13 @@ export default async function SettingsPage() {
             }}
           />
         </SettingsCard>
+
+        {/* GRADE-4 */}
+        {rules && (
+          <SettingsCard icon={GraduationCap} title={t("grading.title")}>
+            <GradingRulesForm current={rules} />
+          </SettingsCard>
+        )}
 
         {minAttendance !== null && (
           <SettingsCard icon={ClipboardCheck} title={t("attendance.title")}>

@@ -274,7 +274,7 @@
         "excused": "Excused"
       },
       "errors": {
-        "invalidScore": "Must be a score from 1 to 10 (e.g. 7.5).",
+        "invalidScore": "Not a score on your scale. Up to two decimals, e.g. 7.5.",
         "notesTooLong": "The notes are too long."
       },
       "adapted": "Adapted",
@@ -318,7 +318,7 @@
       "notFound": "This term wasn't found. Reload the page.",
       "noStudents": "This course has no students yet.",
       "errors": {
-        "invalidGrade": "Must be a grade from 1 to 10 (e.g. 7.5).",
+        "invalidGrade": "Not a grade on your scale. Up to two decimals, e.g. 7.5.",
         "needsGrade": "Enter a grade or clear the notes.",
         "notesTooLong": "The notes are too long.",
         "reasonRequired": "It's outside the expected range: give the reason.",
@@ -562,6 +562,31 @@
         "months": "{count, plural, =6 {6 months} =12 {1 year} =24 {2 years} =36 {3 years} =60 {5 years} other {# months}}",
         "saved": "Saved."
       }
+    },
+    "grading": {
+      "title": "Grading",
+      "intro": "The scale you grade on and the rules Annora applies to it. They hold for all your classes; if your school or province uses others, change them here.",
+      "fields": {
+        "gradeMin": "Lowest grade",
+        "gradeMax": "Highest grade",
+        "passMark": "Pass mark",
+        "maxTermIncrease": "How far the second term may go up",
+        "maxTermDecrease": "How far the second term may go down"
+      },
+      "hints": {
+        "gradeMin": "The lowest that can be given.",
+        "gradeMax": "The highest, up to 100.",
+        "passMark": "This grade and above pass.",
+        "maxTermIncrease": "Points above the first term's grade.",
+        "maxTermDecrease": "Points below the first term's grade."
+      },
+      "problems": {
+        "scale": "The highest grade must be above the lowest, and at most 100.",
+        "passMark": "It must be between the lowest and the highest grade.",
+        "termChange": "It can't be more than the distance between the lowest and the highest grade."
+      },
+      "saved": "Saved.",
+      "note": "Changing the scale doesn't alter grades you already entered: they stay as they are. A different pass mark does change who shows as passing or owing a class."
     }
   },
   "weekdays": {

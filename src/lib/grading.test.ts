@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  checkRules,
+  classRules,
   DEFAULT_RULES,
   checkSecondTermGrade,
   isPassing,
@@ -95,5 +97,39 @@ describe("typing a grade (INPUT)", () => {
     for (const bad of ["", "abc", "7,555", "7,5,1", "-3", "1e1"]) {
       expect(parseGrade(bad, rules)).toBeNull();
     }
+  });
+});
+
+describe("the teacher's own rules (GRADE-3, GRADE-4)", () => {
+  const hundred = { gradeMin: 0, gradeMax: 100, passMark: 60, maxTermIncrease: 30, maxTermDecrease: 30 };
+
+  it("uses a class's own pass mark over the teacher's, and the teacher's without one (GRADE-3)", () => {
+    expect(classRules(hundred, null)).toEqual(hundred);
+    expect(classRules(hundred, 70)).toEqual({ ...hundred, passMark: 70 });
+  });
+
+  it("accepts the default rules and another scale that fits together (GRADE-4)", () => {
+    expect(checkRules(DEFAULT_RULES)).toEqual({});
+    expect(checkRules(hundred)).toEqual({});
+    expect(checkRules({ ...DEFAULT_RULES, maxTermIncrease: 0, maxTermDecrease: 9 })).toEqual({});
+  });
+
+  it("says which rule doesn't fit, on its field (GRADE-4)", () => {
+    expect(checkRules({ ...DEFAULT_RULES, gradeMax: 1 })).toMatchObject({ gradeMax: "scale" });
+    expect(checkRules({ ...DEFAULT_RULES, gradeMax: 101 })).toMatchObject({ gradeMax: "scale" });
+    expect(checkRules({ ...DEFAULT_RULES, passMark: 11 })).toEqual({ passMark: "passMark" });
+    expect(checkRules({ ...DEFAULT_RULES, passMark: 0.5 })).toEqual({ passMark: "passMark" });
+    // A limit wider than the scale would mean nothing.
+    expect(checkRules({ ...DEFAULT_RULES, maxTermIncrease: 10 })).toEqual({ maxTermIncrease: "termChange" });
+    expect(checkRules({ ...DEFAULT_RULES, maxTermDecrease: 9.5 })).toEqual({ maxTermDecrease: "termChange" });
+  });
+
+  it("works every rule from the teacher's scale: passing, the 2° range and typed grades (GRADE-4)", () => {
+    expect(isPassing(60, hundred)).toBe(true);
+    expect(isPassing(59.99, hundred)).toBe(false);
+    expect(secondTermRange(80, hundred)).toEqual({ min: 50, max: 100 });
+    expect(parseGrade("85,5", hundred)).toBe(85.5);
+    expect(parseGrade("0", hundred)).toBe(0);
+    expect(parseGrade("0", DEFAULT_RULES)).toBeNull();
   });
 });

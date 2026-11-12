@@ -274,7 +274,7 @@
         "excused": "Justificado"
       },
       "errors": {
-        "invalidScore": "Tiene que ser una nota del 1 al 10 (por ejemplo 7,5).",
+        "invalidScore": "No es una nota de tu escala. Se escribe con hasta dos decimales, por ejemplo 7,5.",
         "notesTooLong": "Las observaciones son demasiado largas."
       },
       "adapted": "Adaptada",
@@ -318,7 +318,7 @@
       "notFound": "No se encontró este cuatrimestre. Recargá la página.",
       "noStudents": "Este curso todavía no tiene estudiantes.",
       "errors": {
-        "invalidGrade": "Tiene que ser una nota del 1 al 10 (por ejemplo 7,5).",
+        "invalidGrade": "No es una nota de tu escala. Se escribe con hasta dos decimales, por ejemplo 7,5.",
         "needsGrade": "Poné una nota o borrá las observaciones.",
         "notesTooLong": "Las observaciones son demasiado largas.",
         "reasonRequired": "Está fuera del rango esperado: escribí el motivo.",
@@ -562,6 +562,31 @@
         "months": "{count, plural, =6 {6 meses} =12 {1 año} =24 {2 años} =36 {3 años} =60 {5 años} other {# meses}}",
         "saved": "Guardado."
       }
+    },
+    "grading": {
+      "title": "Calificaciones",
+      "intro": "La escala con la que calificás y las reglas que Annora aplica sobre ella. Rigen para todos tus cursos; si tu escuela o tu provincia usan otras, cambialas acá.",
+      "fields": {
+        "gradeMin": "Nota mínima",
+        "gradeMax": "Nota máxima",
+        "passMark": "Nota de aprobación",
+        "maxTermIncrease": "Cuánto puede subir el 2° cuatrimestre",
+        "maxTermDecrease": "Cuánto puede bajar el 2° cuatrimestre"
+      },
+      "hints": {
+        "gradeMin": "La más baja que se puede poner.",
+        "gradeMax": "La más alta, hasta 100.",
+        "passMark": "Desde esta nota se aprueba.",
+        "maxTermIncrease": "Puntos por encima de la nota del 1°.",
+        "maxTermDecrease": "Puntos por debajo de la nota del 1°."
+      },
+      "problems": {
+        "scale": "La nota máxima tiene que ser mayor que la mínima, y hasta 100.",
+        "passMark": "Tiene que estar entre la nota mínima y la máxima.",
+        "termChange": "No puede ser más que la distancia entre la nota mínima y la máxima."
+      },
+      "saved": "Guardado.",
+      "note": "Cambiar la escala no modifica las notas que ya cargaste: quedan como están. Con otra nota de aprobación, sí cambia quién figura como aprobado o debe la materia."
     }
   },
   "weekdays": {

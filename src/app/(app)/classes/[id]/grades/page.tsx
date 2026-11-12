@@ -11,14 +11,14 @@ import { getMinAttendance } from "@/db/queries/settings";
 import { getGradebook, listTasks } from "@/db/queries/tasks";
 import { belowMinimum } from "@/lib/attendance";
 import { formatGrade } from "@/lib/format";
-import { DEFAULT_RULES, isPassing } from "@/lib/grading";
+import { isPassing } from "@/lib/grading";
 import { loadClass } from "../data";
 
 /** BOOK-1..3, TERM-7: one cuatrimestre at a time, chosen with ?term=1 or ?term=2. */
 export default async function GradesPage({ params, searchParams }: PageProps<"/classes/[id]/grades">) {
   const { id } = await params;
   const { term: termParam, group } = await searchParams;
-  const { db, teacherId, cls } = await loadClass(id);
+  const { db, teacherId, cls, rules } = await loadClass(id);
   const [terms, tasks, groups, adaptations] = await Promise.all([
     listTerms(db, teacherId, cls),
     listTasks(db, teacherId, cls),
@@ -37,7 +37,6 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
   const t = await getTranslations("classPage.grades");
   const tTerm = await getTranslations("terms");
   const locale = await getLocale();
-  const rules = { ...DEFAULT_RULES, passMark: cls.passMark ?? DEFAULT_RULES.passMark };
   const [book, rates, minimum] = await Promise.all([
     term ? getGradebook(db, teacherId, cls, term.id, groupId) : { tasks: [], rows: [] },
     // SUGGEST-3

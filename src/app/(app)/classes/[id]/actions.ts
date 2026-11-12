@@ -33,12 +33,13 @@ import { ATTACHMENT_BUCKET } from "@/lib/attachments";
 import { requireTeacherId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { FormState } from "@/lib/formState";
-import { DEFAULT_RULES } from "@/lib/grading";
+import { getRules } from "@/db/queries/settings";
+import { classRules } from "@/lib/grading";
 import { parseScoresForm, rowsInForm, type ScoreEntryError } from "@/lib/scoresForm";
 import { parseTermGradesForm, type TermGradeEntryError } from "@/lib/termGradesForm";
 import {
   adaptationInput,
-  examInput,
+  examInputFor,
   groupEdit,
   groupInput,
   outcomeInput,
@@ -318,7 +319,7 @@ export async function saveTaskScores(_prev: ScoresState, formData: FormData): Pr
   if (!cls) return { status: "error", formError: "notFound", values };
 
   const roster = await listClassStudents(db, teacherId, cls);
-  const rules = { ...DEFAULT_RULES, passMark: cls.passMark ?? DEFAULT_RULES.passMark };
+  const rules = classRules(await getRules(db, teacherId), cls.passMark);
   const parsed = parseScoresForm(
     (name) => {
       const v = formData.get(name);
@@ -354,7 +355,7 @@ export async function saveTermGradesAction(_prev: TermGradesState, formData: For
   const sheet = cls && (await getTermGradeSheet(db, teacherId, cls, values.termId ?? ""));
   if (!cls || !sheet) return { status: "error", formError: "notFound", values };
 
-  const rules = { ...DEFAULT_RULES, passMark: cls.passMark ?? DEFAULT_RULES.passMark };
+  const rules = classRules(await getRules(db, teacherId), cls.passMark);
   // TERM-6: the 2° grades are checked against the 1° ones as saved.
   const firstTerm = new Map(sheet.rows.flatMap((r) => (r.firstTerm === null ? [] : [[r.student.id, r.firstTerm]])));
   const parsed = parseTermGradesForm(
@@ -400,10 +401,12 @@ export async function setOutcomeAction(input: {
 /** EXAM-1 */
 export async function recordExamAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const values = Object.fromEntries(formData) as Record<string, string>;
-  const parsed = examInput.safeParse(values);
+  const teacherId = await requireTeacherId();
+  // GRADE-4: an exam's grade is on the teacher's scale.
+  const parsed = examInputFor(await getRules(getDb(), teacherId)).safeParse(values);
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
 
-  const result = await recordExam(getDb(), await requireTeacherId(), parsed.data);
+  const result = await recordExam(getDb(), teacherId, parsed.data);
   if (!result.ok) return { status: "error", formError: result.error, values };
 
   refreshYearEnd(parsed.data.classId);

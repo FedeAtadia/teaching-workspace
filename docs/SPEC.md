@@ -24,13 +24,25 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 
 ## GRADE — Scale and passing
 
-*Enforced by `src/lib/grading.ts`. Covered by `src/lib/grading.test.ts`.*
+*Enforced by `src/lib/grading.ts`, `src/lib/validation.ts`,
+`src/db/queries/settings.ts`. Covered by `src/lib/grading.test.ts`,
+`src/lib/validation.test.ts`, `src/db/queries/settings.test.ts`,
+`src/db/queries/yearEnd.test.ts`.*
 
-- **GRADE-1** Grades are on a 1 to 10 scale by default.
+- **GRADE-1** Grades are on a 1 to 10 scale by default; the scale is the
+  teacher's to set (GRADE-4).
 - **GRADE-2** A grade passes when it is at or above the pass mark, which is 7 by
   default.
 - **GRADE-3** A class can set its own pass mark; when it does, that mark is used
   instead of the teacher's default.
+- **GRADE-4** In Settings the teacher sets their lowest and highest grade, the
+  pass mark and how far the 2° cuatrimestre may go above and below the 1°
+  (TERM-2), typed with a comma or a point. The highest grade is above the
+  lowest and at most 100; the pass mark is on the scale; neither limit is
+  wider than the scale. What doesn't fit is refused, saying which and why.
+  From then on every grade typed (INPUT-1), every pass or fail, the 2°
+  cuatrimestre's range and each class's result (YEAR-1) go by those rules.
+  Grades already saved are never changed.
 
 ## TERM — Cuatrimestres
 

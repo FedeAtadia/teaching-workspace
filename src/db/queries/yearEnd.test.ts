@@ -9,6 +9,7 @@ import { getClass, listClassStudents, listTerms, type ClassDetail } from "./clas
 import { getStudentHistory } from "./history";
 import { getHomeCards } from "./home";
 import { createStudent } from "./students";
+import { setRules } from "./settings";
 import { saveTermGrades } from "./termGrades";
 import { deleteExam, getClosingSheet, listOwed, recordExam, setOutcome } from "./yearEnd";
 
@@ -236,5 +237,26 @@ describe("the student's history (HISTORY-4)", () => {
       result: { kind: "passedByExam", exam: { takenOn: "2026-12-10", value: 8 } },
       exams: [{ takenOn: "2026-12-10", status: "graded", value: 8 }],
     });
+  });
+});
+
+describe("results on the teacher's own pass mark (GRADE-4)", () => {
+  it("passes a 6 once the teacher's pass mark is 6, on Cierre, Previas and the history", async () => {
+    const s = await setup({ Pérez: 6, Álvarez: 5 });
+    const results = async () =>
+      Object.fromEntries((await getClosingSheet(db, s.teacher, s.cls)).rows.map((r) => [r.student.lastName, r.result.kind]));
+    const owing = async () => (await listOwed(db, s.teacher)).flatMap((c) => c.students.map((x) => x.student.lastName));
+
+    expect(await results()).toEqual({ Pérez: "owed", Álvarez: "owed" });
+    expect(await owing()).toEqual(["Álvarez", "Pérez"]);
+
+    await setRules(db, s.teacher, { gradeMin: 1, gradeMax: 10, passMark: 6, maxTermIncrease: 3, maxTermDecrease: 3 });
+
+    expect(await results()).toEqual({ Pérez: "passed", Álvarez: "owed" });
+    expect(await owing()).toEqual(["Álvarez"]);
+    const history = (await getStudentHistory(db, s.teacher, s.students.Pérez))!;
+    expect(history.courses[0].classes[0]).toMatchObject({ passMark: 6, result: { kind: "passed" } });
+    // No longer owed, so no exam is taken for it.
+    expect(await exam(s, s.students.Pérez, "2026-12-10", 7)).toEqual({ ok: false, error: "notOwed" });
   });
 });
