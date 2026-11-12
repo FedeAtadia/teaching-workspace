@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { createStudent, deleteStudent, moveStudent, updateStudent } from "@/db/queries/students";
 import { requireTeacherId } from "@/lib/auth";
+import { removeStoredFiles } from "@/lib/supabase/storage";
 import type { FormState } from "@/lib/formState";
 import { studentEdit, studentInput, studentMove, toFieldErrors, type FieldError } from "@/lib/validation";
 
@@ -39,6 +40,7 @@ export async function addStudent(_prev: AddStudentState, formData: FormData): Pr
 export async function removeStudent(input: { studentId: string }): Promise<{ ok: boolean }> {
   const result = await deleteStudent(getDb(), await requireTeacherId(), input.studentId);
   if (!result.ok) return { ok: false };
+  await removeStoredFiles(result.attachmentPaths);
   // Class pages, gradebooks, attendance, Previas and Home all showed them.
   revalidatePath("/", "layout");
   redirect("/students");

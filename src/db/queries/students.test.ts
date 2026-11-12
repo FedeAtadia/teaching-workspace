@@ -5,7 +5,7 @@ import type { ClassInput } from "@/lib/validation";
 import { createClass, listClasses, listCourses } from "./classes";
 import { eq } from "drizzle-orm";
 import { courseStudents, exams } from "@/db/schema";
-import { classGroupStudents, classGroups } from "@/db/schema";
+import { classGroupStudents, classGroups, standards } from "@/db/schema";
 import { createStudent, deleteStudent, listStudents, moveStudent, updateStudent } from "./students";
 import { getStudentHistory } from "./history";
 
@@ -68,7 +68,7 @@ describe("adding students (STUDENT)", () => {
       "Pérez, Luis",
     ]);
     expect(list[0].courses).toEqual([
-      { id: courseId, year: 4, division: "A", shift: "morning", schoolYear: "2026", school: "Escuela 5", outcome: null },
+      { id: courseId, year: 4, division: "A", shift: "morning", schoolYear: "2026", school: "Escuela 5", outcome: null, outcomeOn: null },
     ]);
   });
 });
@@ -97,7 +97,7 @@ describe("deleting a student (STUDENT-4)", () => {
     const [mate] = (await listClasses(db, teacher)).filter((c) => c.name === "Matemática");
     await db.insert(exams).values({ teacherId: teacher, classId: mate.id, studentId: ana.id, takenOn: "2026-12-15", value: 6 });
 
-    expect(await deleteStudent(db, teacher, ana.id)).toEqual({ ok: true });
+    expect(await deleteStudent(db, teacher, ana.id)).toEqual({ ok: true, attachmentPaths: [] });
 
     expect((await listStudents(db, teacher)).map((s) => s.firstName)).toEqual(["Luis"]);
     expect(await db.select().from(exams).where(eq(exams.studentId, ana.id))).toEqual([]);
@@ -192,5 +192,27 @@ describe("moving a student to another course (STUDENT-8)", () => {
     expect(await move(teacher, b, a)).toEqual({ ok: false, error: "notFound" });
     expect(await move(newTeacher(), a, b)).toEqual({ ok: false, error: "notFound" });
     expect(await coursesOf(teacher, ana.id)).toEqual([["A", "active"]]);
+  });
+});
+
+describe("a deleted student's files (STUDENT-4)", () => {
+  it("names the files of their own passing standards, and not the class's", async () => {
+    const { teacher, courseId } = await teacherWithCourse();
+    await createStudent(db, teacher, { firstName: "Ana", lastName: "Pérez", courseId });
+    const [ana] = await listStudents(db, teacher);
+    const [mate] = (await listClasses(db, teacher)).filter((c) => c.name === "Matemática");
+    const base = { teacherId: teacher, scope: "class" as const, classId: mate.id, attachmentName: "x.pdf" };
+    await db.insert(standards).values([
+      { ...base, title: "De la clase", attachmentPath: `${teacher}/standards/a/x.pdf` },
+      { ...base, title: "De Ana", studentId: ana.id, attachmentPath: `${teacher}/standards/b/x.pdf` },
+    ]);
+
+    expect(await deleteStudent(db, teacher, ana.id)).toEqual({
+      ok: true,
+      attachmentPaths: [`${teacher}/standards/b/x.pdf`],
+    });
+    expect((await db.select().from(standards).where(eq(standards.classId, mate.id))).map((s) => s.title)).toEqual([
+      "De la clase",
+    ]);
   });
 });

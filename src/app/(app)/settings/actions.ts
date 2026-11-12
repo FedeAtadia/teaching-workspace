@@ -6,6 +6,7 @@ import { getDb, type Db } from "@/db";
 import { deleteSignIn, deleteTeacherData } from "@/db/queries/account";
 import { addDayOff, addNationalHolidays, deleteDayOff, saveCalendar, updateDayOff } from "@/db/queries/calendar";
 import { renameSchool } from "@/db/queries/classes";
+import { setRetentionMonths } from "@/db/queries/retention";
 import { setMinAttendance } from "@/db/queries/settings";
 import { ATTACHMENT_BUCKET } from "@/lib/attachments";
 import { requireTeacherId } from "@/lib/auth";
@@ -16,6 +17,7 @@ import {
   dayOffEdit,
   dayOffInput,
   minAttendanceInput,
+  retentionInput,
   schoolInput,
   toFieldErrors,
 } from "@/lib/validation";
@@ -104,6 +106,17 @@ export async function saveMinAttendanceAction(_prev: FormState, formData: FormDa
   // The gradebooks, cuatrimestre grades and attendance tabs use it.
   revalidatePath("/", "layout");
   return { status: "saved" };
+}
+
+/** KEEP-2 */
+export async function saveRetentionAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = retentionInput.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+  await setRetentionMonths(getDb(), await requireTeacherId(), parsed.data.months);
+  // Home's notices and the graduates' dates use it.
+  revalidatePath("/", "layout");
+  return { status: "saved", values };
 }
 
 /**

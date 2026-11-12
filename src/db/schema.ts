@@ -49,6 +49,11 @@ export const teacherSettings = pgTable("teacher_settings", {
   maxTermDecrease: grade("max_term_decrease").notNull().default(3),
   // SUGGEST-3: below this attendance %, a suggestion shows as not passing. 0 turns it off.
   minAttendance: integer("min_attendance").notNull().default(75),
+  // KEEP-1: how long a graduate who owes nothing is kept before being deleted.
+  graduateRetentionMonths: integer("graduate_retention_months").notNull().default(12),
+  // KEEP-4: graduates deleted since the teacher last dismissed the notice, and when.
+  graduatesDeleted: integer("graduates_deleted").notNull().default(0),
+  graduatesDeletedOn: date("graduates_deleted_on"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }).enableRLS();
 
@@ -175,6 +180,8 @@ export const courseStudents = pgTable(
     joinedOn: date("joined_on").default(sql`current_date`),
     // YEAR-2: null until the teacher decides.
     outcome: yearOutcome("outcome"),
+    // KEEP-1: the day the outcome was set; null with no outcome.
+    outcomeOn: date("outcome_on"),
   },
   (t) => [primaryKey({ columns: [t.courseId, t.studentId] })],
 ).enableRLS();

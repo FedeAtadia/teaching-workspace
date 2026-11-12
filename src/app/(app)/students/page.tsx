@@ -18,6 +18,8 @@ import { getDb } from "@/db";
 import { listCourses } from "@/db/queries/classes";
 import { listStudents } from "@/db/queries/students";
 import { listOwed } from "@/db/queries/yearEnd";
+import { listGraduateDeletions } from "@/db/queries/retention";
+import { formatDate } from "@/lib/format";
 import { StudentFilters } from "@/components/students/StudentFilters";
 import { filterStudents, isGraduate, resolveView, STUDENT_VIEWS, type StudentView } from "@/lib/students";
 import { requireTeacherId } from "@/lib/auth";
@@ -51,6 +53,10 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
   const courseId = courses.find((c) => c.id === params.course)?.id;
   const owing = new Set(owed.flatMap((c) => c.students.map((s) => s.student.id)));
   const students = filterStudents(everyone, { view, courseId }, owing);
+  // KEEP-1: under "Egresados", the day each one will be deleted.
+  const deleteOn = new Map(
+    view === "graduates" ? (await listGraduateDeletions(db, teacherId)).map((g) => [g.studentId, g.deleteOn]) : [],
+  );
   const counts = Object.fromEntries(
     STUDENT_VIEWS.map((v) => [v, filterStudents(everyone, { view: v, courseId }, owing).length]),
   ) as Record<StudentView, number>;
@@ -114,6 +120,11 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
                     <span className="block truncate text-sm text-muted-foreground">
                       {s.courses.map(courseLabel).join(", ")}
                     </span>
+                    {deleteOn.has(s.id) && (
+                      <span className="block text-sm text-muted-foreground">
+                        {t("deleteOn", { date: formatDate(deleteOn.get(s.id)!) })}
+                      </span>
+                    )}
                     {isGraduate(s) && (
                       <span className="mt-1 flex flex-wrap gap-1.5">
                         <Badge tone="accent">{t("graduated")}</Badge>
@@ -167,6 +178,11 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
                             <Badge key={label}>{label}</Badge>
                           ))}
                           {isGraduate(s) && <Badge tone="accent">{t("graduated")}</Badge>}
+                          {deleteOn.has(s.id) && (
+                            <span className="self-center text-sm text-muted-foreground">
+                              {t("deleteOn", { date: formatDate(deleteOn.get(s.id)!) })}
+                            </span>
+                          )}
                           {isGraduate(s) && owing.has(s.id) && (
                             <Badge tone="alert" dot>
                               {t("owes")}

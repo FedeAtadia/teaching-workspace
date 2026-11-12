@@ -1,7 +1,7 @@
 // Closing the school year and owed classes (YEAR-1..3, EXAM-1..3). Scoped to
 // one teacher (OWNER-1).
 
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
 import {
@@ -16,6 +16,7 @@ import {
   terms,
 } from "@/db/schema";
 import { compareCourses, compareStudents, type Shift } from "@/lib/courses";
+import { todayInArgentina } from "@/lib/calendar";
 import { DEFAULT_RULES } from "@/lib/grading";
 import type { ExamInput, OutcomeInput } from "@/lib/validation";
 import { allowedOutcomes, classResult, type ClassResult, type ExamStatus, type YearOutcome } from "@/lib/yearEnd";
@@ -106,6 +107,7 @@ export async function setOutcome(
   db: Db,
   teacherId: string,
   input: OutcomeInput,
+  today: string = todayInArgentina(),
 ): Promise<{ ok: true } | NotFound | { ok: false; error: "notAllowed" }> {
   if (!isUuid(input.studentId)) return notFound;
   const cls = await getClass(db, teacherId, input.classId);
@@ -113,7 +115,13 @@ export async function setOutcome(
   if (input.outcome && !allowedOutcomes(cls.year).includes(input.outcome)) return { ok: false, error: "notAllowed" };
   const updated = await db
     .update(courseStudents)
-    .set({ outcome: input.outcome })
+    .set({
+      outcome: input.outcome,
+      // KEEP-1: the day it was set; saving the same outcome again keeps the first day.
+      outcomeOn: input.outcome
+        ? sql`case when ${courseStudents.outcome} is distinct from ${input.outcome}::year_outcome then ${today}::date else ${courseStudents.outcomeOn} end`
+        : null,
+    })
     .where(
       and(
         eq(courseStudents.courseId, cls.courseId),

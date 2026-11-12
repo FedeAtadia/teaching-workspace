@@ -1,4 +1,4 @@
-import { BookOpen, CalendarCheck, CalendarX, Check, ClipboardCheck, PencilLine, Users } from "lucide-react";
+import { BookOpen, CalendarCheck, CalendarX, Check, ClipboardCheck, Info, PencilLine, Users } from "lucide-react";
 import Link from "next/link";
 import { cn } from "cn";
 import { getTranslations } from "next-intl/server";
@@ -9,6 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { getDb } from "@/db";
 import { listSchools } from "@/db/queries/classes";
 import { getHomeCards, getTodayClasses, type TodayClass } from "@/db/queries/home";
+import { runRetention } from "@/db/queries/retention";
+import { removeStoredFiles } from "@/lib/supabase/storage";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { dismissGraduatesNotice } from "./actions";
 import { requireTeacherId } from "@/lib/auth";
 import { todayInArgentina, weekdayOf } from "@/lib/calendar";
 import { classCardProps } from "@/lib/classCards";
@@ -33,6 +37,9 @@ export default async function DashboardPage() {
   const db = getDb();
   const teacherId = await requireTeacherId();
   const today = todayInArgentina();
+  // KEEP-1: graduates whose day has come are deleted before anything is counted.
+  const retention = await runRetention(db, teacherId, today);
+  await removeStoredFiles(retention.attachmentPaths);
   const [home, schools, cardProps, todayClasses] = await Promise.all([
     getHomeCards(db, teacherId),
     listSchools(db, teacherId),
@@ -49,6 +56,43 @@ export default async function DashboardPage() {
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{t("greeting")}</h1>
         <p className="mt-2 text-lg text-muted-foreground">{t("subtitle")}</p>
       </header>
+
+      {/* KEEP-3, KEEP-4 */}
+      {(retention.soon || retention.deleted) && (
+        <div className="grid gap-3">
+          {retention.soon && (
+            <div role="status" className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl bg-alert-soft p-4 ring-1 ring-destructive/30">
+              <Info className="size-5 shrink-0 text-destructive" aria-hidden />
+              <p className="min-w-0 flex-1 basis-64">
+                {t("graduates.soon", { count: retention.soon.count, date: formatDate(retention.soon.firstOn) })}
+              </p>
+              <span className="flex flex-wrap gap-2">
+                <Link href="/students?view=graduates" className={buttonVariants({ variant: "outline", size: "sm" })}>
+                  {t("graduates.soonSee")}
+                </Link>
+                <a href="/settings/export" download className={buttonVariants({ variant: "outline", size: "sm" })}>
+                  {t("graduates.soonDownload")}
+                </a>
+              </span>
+            </div>
+          )}
+          {retention.deleted && (
+            <form
+              action={dismissGraduatesNotice}
+              role="status"
+              className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl bg-card p-4 ring-1 ring-border"
+            >
+              <Info className="size-5 shrink-0 text-highlight" aria-hidden />
+              <p className="min-w-0 flex-1 basis-64">
+                {t("graduates.deleted", { count: retention.deleted.count, date: formatDate(retention.deleted.on) })}
+              </p>
+              <Button type="submit" variant="outline" size="sm">
+                {t("graduates.dismiss")}
+              </Button>
+            </form>
+          )}
+        </div>
+      )}
 
       <dl className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatTile label={t("statLabels.classes")} value={stats.classes} unit={t("stats.classes", { count: stats.classes })} icon={BookOpen} />

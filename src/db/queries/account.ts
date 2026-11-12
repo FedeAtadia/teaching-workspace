@@ -259,6 +259,7 @@ export async function loadExport(db: Db, teacherId: string): Promise<ExportData>
           maxTermIncrease: settingsRows[0].maxTermIncrease,
           maxTermDecrease: settingsRows[0].maxTermDecrease,
           minAttendance: settingsRows[0].minAttendance,
+          graduateRetentionMonths: settingsRows[0].graduateRetentionMonths,
         }
       : null,
   };

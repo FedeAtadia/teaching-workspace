@@ -81,6 +81,13 @@
       "pending": "Take today's attendance",
       "taken": "Attendance taken",
       "notHeld": "Class didn't happen"
+    },
+    "graduates": {
+      "soon": "{count, plural, one {# graduate will be deleted} other {# graduates will be deleted}} within the next 30 days, starting on {date}. If you want to keep their data, download a copy first.",
+      "soonSee": "See graduates",
+      "soonDownload": "Download my data",
+      "deleted": "{count, plural, one {# graduate was deleted} other {# graduates were deleted}} on {date}, at the end of the period you chose in Settings.",
+      "dismiss": "Got it"
     }
   },
   "classes": {
@@ -481,7 +488,8 @@
     "graduated": "Graduated",
     "owes": "Owes classes",
     "emptyFilter": "No students match this filter.",
-    "graduatesHint": "Those who graduated and owe no class. They no longer show in the working list."
+    "graduatesHint": "Those who graduated and owe no class. They no longer show in the working list.",
+    "deleteOn": "To be deleted on {date}"
   },
   "settings": {
     "title": "Settings",
@@ -532,7 +540,13 @@
       "confirmLabel": "To confirm, type {word}",
       "confirmWord": "DELETE",
       "deleteConfirm": "Delete everything",
-      "deleteFailed": "The account couldn't be deleted. Reload the page and try again."
+      "deleteFailed": "The account couldn't be deleted. Reload the page and try again.",
+      "retention": {
+        "label": "How long graduates are kept",
+        "hint": "A graduate who owes no class leaves the working list and, after this period, is deleted automatically with everything you entered about them. Home warns you 30 days before and when it happens. Someone who still owes a class is not deleted.",
+        "months": "{count, plural, =6 {6 months} =12 {1 year} =24 {2 years} =36 {3 years} =60 {5 years} other {# months}}",
+        "saved": "Saved."
+      }
     }
   },
   "weekdays": {
@@ -864,7 +878,7 @@
       "description": "What data Annora uses, what for, where it is stored and how to ask to see, correct or delete it."
     },
     "title": "Privacy policy",
-    "updated": "Last updated: 11/11/2026",
+    "updated": "Last updated: 12/11/2026",
     "intro": "This policy explains what data Annora uses, what for, where it is stored and what you can do about it. It is written for teachers, who are the people who use Annora. The Spanish version is the one that applies.",
     "sections": [
       {
@@ -908,6 +922,7 @@
         "title": "How long it is kept and how to delete it",
         "paragraphs": [
           "Your data is kept while you use Annora. From Settings you can download a copy of everything you have entered at any time, as an Excel file, and delete your account: doing so deletes your data, your files and your sign-in right away.",
+          "Students you mark as graduated and who owe no class are deleted automatically after a period you choose in Settings (one year, unless you change it). Annora warns you 30 days before and when it happens.",
           "You can also delete a student, with everything you entered about them, from their page. And you can ask for a copy, a correction or a deletion by writing to {email}: you get an answer within 10 business days, and a deletion is completed within 30 days."
         ]
       },
@@ -1034,7 +1049,8 @@
       "passMark": "Pass mark",
       "maxTermIncrease": "How far the second term may go up",
       "maxTermDecrease": "How far the second term may go down",
-      "minAttendance": "Minimum attendance (%)"
+      "minAttendance": "Minimum attendance (%)",
+      "graduateRetentionMonths": "Months graduates are kept"
     },
     "yes": "Yes",
     "no": "No"

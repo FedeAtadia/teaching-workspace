@@ -9,6 +9,7 @@ const course = (over: Partial<StudentCourse> = {}): StudentCourse => ({
   schoolYear: "2026",
   school: "EPET 30",
   outcome: null,
+  outcomeOn: null,
   ...over,
 });
 const student = (id: string, courses: StudentCourse[]): ListedStudent => ({ id, firstName: id, lastName: "Pérez", courses });

@@ -3,6 +3,7 @@
 // which field is wrong.
 
 import { z } from "zod";
+import { RETENTION_OPTIONS } from "./retention";
 import { SESSION_REASONS } from "./attendance";
 import { DAY_OFF_KINDS } from "./calendar";
 import { SHIFTS } from "./courses";
@@ -240,6 +241,15 @@ export const noClassInput = z.object({
   note: optionalText(500),
 });
 export type NoClassInput = z.infer<typeof noClassInput>;
+
+/** KEEP-2: one of the periods on offer. */
+export const retentionInput = z.object({
+  months: z
+    .string()
+    .regex(/^d{1,2}$/)
+    .transform(Number)
+    .refine((n) => (RETENTION_OPTIONS as readonly number[]).includes(n)),
+});
 
 /** SUGGEST-3 */
 export const minAttendanceInput = z.object({
