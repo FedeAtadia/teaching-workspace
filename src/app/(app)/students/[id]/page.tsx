@@ -3,7 +3,10 @@ import Link from "next/link";
 import { BackLink } from "@/components/BackLink";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { FormDialog } from "@/components/forms/FormDialog";
+import { FollowUpReasons } from "@/components/students/FollowUpReasons";
 import { listCourses } from "@/db/queries/classes";
+import { getFollowUp } from "@/db/queries/followUp";
+import { todayInArgentina } from "@/lib/calendar";
 import { editStudentAction, moveStudentAction, removeStudent } from "../actions";
 import { Initials } from "@/components/Initials";
 import { Badge } from "@/components/ui/badge";
@@ -25,13 +28,16 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
   const { id } = await params;
   if (!isSupabaseConfigured()) notFound();
   const teacherId = await requireTeacherId();
-  const [history, allCourses] = await Promise.all([
+  const [history, allCourses, followUp] = await Promise.all([
     getStudentHistory(getDb(), teacherId, id),
     listCourses(getDb(), teacherId),
+    getFollowUp(getDb(), teacherId, todayInArgentina()),
   ]);
   if (!history) notFound();
 
   const t = await getTranslations("studentPage");
+  const tFollow = await getTranslations("followUp");
+  const following = followUp.students.find((s) => s.studentId === id);
   const tShift = await getTranslations("shifts");
   const tTerm = await getTranslations("terms");
   const tGrades = await getTranslations("classPage.grades");
@@ -111,6 +117,24 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
           />
         </div>
       </header>
+
+      {/* FOLLOW-3: why this student is worth following, class by class. */}
+      {following && (
+        <section className="relative mb-8 overflow-hidden rounded-2xl bg-alert-soft p-5 pl-6 ring-1 ring-destructive/30">
+          <span className="absolute inset-y-0 left-0 w-1.5 bg-alert" aria-hidden />
+          <h2 className="text-lg font-bold">{tFollow("boxTitle")}</h2>
+          <ul className="mt-2 grid gap-1 text-sm">
+            {following.classes.map((c) => (
+              <li key={c.classId}>
+                <Link href={`/classes/${c.classId}/grades`} className="font-bold underline-offset-4 hover:underline">
+                  {tFollow("classLine", { name: c.name, term: tTerm(String(c.term)) })}
+                </Link>
+                : <FollowUpReasons reasons={c.reasons} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {courses.length === 0 && <p className="text-sm text-muted-foreground">{t("noCourses")}</p>}
 

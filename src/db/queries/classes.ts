@@ -371,6 +371,8 @@ export type SchoolRow = {
   courses: number;
   /** The school years it has courses in, newest first: one calendar each (CAL-1). */
   years: string[];
+  /** GRADE-5: its own pass mark, or null for the teacher's. */
+  passMark: number | null;
 };
 
 /** The teacher's schools, by name, with how many courses each has and in which school years. */
@@ -379,6 +381,7 @@ export async function listSchools(db: Db, teacherId: string): Promise<SchoolRow[
     .select({
       id: schools.id,
       name: schools.name,
+      passMark: schools.passMark,
       // Spelled out: drizzle writes ${schools.id} as a bare "id" here, which
       // inside the subquery would be the course's own id.
       courses: sql<number>`(select count(*)::int from ${courses} c where c.school_id = "schools"."id")`,
@@ -392,6 +395,21 @@ export async function listSchools(db: Db, teacherId: string): Promise<SchoolRow[
     .from(schools)
     .where(eq(schools.teacherId, teacherId));
   return rows.sort((a, b) => collator.compare(a.name, b.name));
+}
+
+/** GRADE-5: sets the school's own pass mark, or with null goes back to the teacher's. */
+export async function setSchoolPassMark(
+  db: Db,
+  teacherId: string,
+  input: { schoolId: string; passMark: number | null },
+): Promise<{ ok: true } | { ok: false; error: "notFound" }> {
+  if (!isUuid(input.schoolId)) return { ok: false, error: "notFound" };
+  const updated = await db
+    .update(schools)
+    .set({ passMark: input.passMark })
+    .where(and(eq(schools.id, input.schoolId), eq(schools.teacherId, teacherId)))
+    .returning({ id: schools.id });
+  return updated.length > 0 ? { ok: true } : { ok: false, error: "notFound" };
 }
 
 export type RenameSchoolResult = { ok: true } | { ok: false; error: "notFound" | "duplicate" };

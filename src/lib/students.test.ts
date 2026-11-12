@@ -57,3 +57,13 @@ describe("the Students list (STUDENT-5, STUDENT-6)", () => {
     expect(resolveView("graduates")).toBe("graduates");
   });
 });
+
+describe("the students to follow up, as a view (FOLLOW-3)", () => {
+  it("shows only them, within the course chosen", () => {
+    const following = new Set(["promoted", "owes"]);
+    expect(ids(filterStudents(all, { view: "followUp" }, owing, following))).toEqual(["promoted", "owes"]);
+    expect(ids(filterStudents(all, { view: "followUp", courseId: "c-2026" }, owing, following))).toEqual(["promoted"]);
+    expect(filterStudents(all, { view: "followUp" }, owing)).toEqual([]);
+    expect(resolveView("followUp")).toBe("followUp");
+  });
+});

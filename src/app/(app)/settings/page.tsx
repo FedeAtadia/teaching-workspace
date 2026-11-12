@@ -1,6 +1,7 @@
 import {
   CalendarDays,
   ClipboardCheck,
+  Eye,
   GraduationCap,
   Download,
   HardDriveDownload,
@@ -19,6 +20,7 @@ import { FormDialog } from "@/components/forms/FormDialog";
 import { LanguageSelect } from "@/components/LanguageSelect";
 import { PageHeader } from "@/components/PageHeader";
 import { DeleteAccountButton } from "@/components/settings/DeleteAccountButton";
+import { FollowUpForm } from "@/components/settings/FollowUpForm";
 import { GradingRulesForm } from "@/components/settings/GradingRulesForm";
 import { RetentionForm } from "@/components/settings/RetentionForm";
 import { MinAttendanceForm } from "@/components/settings/MinAttendanceForm";
@@ -28,26 +30,30 @@ import { PALETTE_COOKIE, resolvePalette, resolveTheme, THEME_COOKIE } from "@/li
 import { PaletteSelect } from "@/components/PaletteSelect";
 import { getDb } from "@/db";
 import { listSchools } from "@/db/queries/classes";
+import { getFollowUpSettings } from "@/db/queries/followUp";
 import { getRetentionMonths } from "@/db/queries/retention";
 import { getMinAttendance, getRules } from "@/db/queries/settings";
 import { requireTeacherId } from "@/lib/auth";
+import { formatGrade } from "@/lib/format";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { renameSchoolAction } from "./actions";
 
 export default async function SettingsPage() {
   const t = await getTranslations("settings");
+  const locale = await getLocale();
   const jar = await cookies();
   const theme = resolveTheme(jar.get(THEME_COOKIE)?.value);
   const palette = resolvePalette(jar.get(PALETTE_COOKIE)?.value);
   const teacherId = isSupabaseConfigured() ? await requireTeacherId() : null;
-  const [schools, minAttendance, retention, rules] = teacherId
+  const [schools, minAttendance, retention, rules, followUp] = teacherId
     ? await Promise.all([
         listSchools(getDb(), teacherId),
         getMinAttendance(getDb(), teacherId),
         getRetentionMonths(getDb(), teacherId),
         getRules(getDb(), teacherId),
+        getFollowUpSettings(getDb(), teacherId),
       ])
-    : [[], null, null, null];
+    : [[], null, null, null, null];
 
   return (
     <PageHeader title={t("title")}>
@@ -95,6 +101,13 @@ export default async function SettingsPage() {
           </SettingsCard>
         )}
 
+        {/* FOLLOW-4 */}
+        {followUp && (
+          <SettingsCard icon={Eye} title={t("followUp.title")}>
+            <FollowUpForm current={followUp} />
+          </SettingsCard>
+        )}
+
         <SettingsCard icon={Landmark} title={t("schools.title")}>
           <p className="text-sm text-muted-foreground">{t("schools.intro")}</p>
           {schools.length === 0 ? (
@@ -116,6 +129,9 @@ export default async function SettingsPage() {
                     <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                       <p className="min-w-0 font-heading text-lg leading-tight font-bold">{s.name}</p>
                       <Badge tone="accent">{t("schools.courses", { count: s.courses })}</Badge>
+                      {s.passMark !== null && (
+                        <Badge tone="outline">{t("schools.passMarkBadge", { grade: formatGrade(s.passMark, locale) })}</Badge>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -128,6 +144,15 @@ export default async function SettingsPage() {
                       formErrors={{ duplicate: t("schools.duplicate"), notFound: t("schools.notFound") }}
                       fields={[
                         { kind: "text", name: "name", label: t("schools.name"), maxLength: 120, defaultValue: s.name },
+                        // GRADE-5
+                        {
+                          kind: "text",
+                          name: "passMark",
+                          label: t("schools.passMark"),
+                          maxLength: 6,
+                          placeholder: rules ? t("schools.passMarkPlaceholder", { grade: formatGrade(rules.passMark, locale) }) : undefined,
+                          defaultValue: s.passMark === null ? "" : formatGrade(s.passMark, locale),
+                        },
                       ]}
                     />
                     {/* CAL-1: one calendar per school year the school has courses in. */}

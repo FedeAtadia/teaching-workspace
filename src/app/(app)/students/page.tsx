@@ -18,6 +18,8 @@ import { getDb } from "@/db";
 import { listCourses } from "@/db/queries/classes";
 import { listStudents } from "@/db/queries/students";
 import { listOwed } from "@/db/queries/yearEnd";
+import { getFollowUp } from "@/db/queries/followUp";
+import { todayInArgentina } from "@/lib/calendar";
 import { listGraduateDeletions } from "@/db/queries/retention";
 import { formatDate } from "@/lib/format";
 import { StudentFilters } from "@/components/students/StudentFilters";
@@ -30,6 +32,7 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
   const t = await getTranslations("students");
   const tShift = await getTranslations("shifts");
   const tCommon = await getTranslations("common");
+  const tFollow = await getTranslations("followUp");
 
   if (!isSupabaseConfigured()) {
     return (
@@ -41,24 +44,29 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
 
   const db = getDb();
   const teacherId = await requireTeacherId();
-  const [courses, everyone, owed, params] = await Promise.all([
+  const [courses, everyone, owed, followUp, params] = await Promise.all([
     listCourses(db, teacherId),
     listStudents(db, teacherId),
     listOwed(db, teacherId),
+    getFollowUp(db, teacherId, todayInArgentina()),
     searchParams,
   ]);
 
   // STUDENT-5, STUDENT-6: the view and the course come from the address.
-  const view = resolveView(typeof params.view === "string" ? params.view : undefined);
+  // FOLLOW-3, FOLLOW-4: with follow-up off, its view isn't on offer.
+  const views = STUDENT_VIEWS.filter((v) => v !== "followUp" || followUp.enabled);
+  const asked = resolveView(typeof params.view === "string" ? params.view : undefined);
+  const view = views.includes(asked) ? asked : "current";
+  const following = new Set(followUp.students.map((s) => s.studentId));
   const courseId = courses.find((c) => c.id === params.course)?.id;
   const owing = new Set(owed.flatMap((c) => c.students.map((s) => s.student.id)));
-  const students = filterStudents(everyone, { view, courseId }, owing);
+  const students = filterStudents(everyone, { view, courseId }, owing, following);
   // KEEP-1: under "Egresados", the day each one will be deleted.
   const deleteOn = new Map(
     view === "graduates" ? (await listGraduateDeletions(db, teacherId)).map((g) => [g.studentId, g.deleteOn]) : [],
   );
   const counts = Object.fromEntries(
-    STUDENT_VIEWS.map((v) => [v, filterStudents(everyone, { view: v, courseId }, owing).length]),
+    STUDENT_VIEWS.map((v) => [v, filterStudents(everyone, { view: v, courseId }, owing, following).length]),
   ) as Record<StudentView, number>;
 
   // The school only adds noise for a teacher at one school; with two, it tells the courses apart.
@@ -96,12 +104,14 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
       {everyone.length > 0 && (
         <StudentFilters
           view={view}
+          views={views}
           courseId={courseId}
           courses={courses.map((c) => ({ id: c.id, label: courseLabel(c) }))}
           counts={counts}
           labels={{
             label: t("filters.label"),
             current: t("filters.current"),
+            followUp: t("filters.followUp"),
             graduates: t("filters.graduates"),
             all: t("filters.all"),
             course: t("filters.course"),
@@ -133,6 +143,13 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
                     {deleteOn.has(s.id) && (
                       <span className="block text-sm text-muted-foreground">
                         {t("deleteOn", { date: formatDate(deleteOn.get(s.id)!) })}
+                      </span>
+                    )}
+                    {following.has(s.id) && (
+                      <span className="mt-1 block">
+                        <Badge tone="alert" dot>
+                          {tFollow("badge")}
+                        </Badge>
                       </span>
                     )}
                     {isGraduate(s) && (
@@ -187,6 +204,11 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
                           {s.courses.map(courseLabel).map((label) => (
                             <Badge key={label}>{label}</Badge>
                           ))}
+                          {following.has(s.id) && (
+                            <Badge tone="alert" dot>
+                              {tFollow("badge")}
+                            </Badge>
+                          )}
                           {isGraduate(s) && <Badge tone="accent">{t("graduated")}</Badge>}
                           {deleteOn.has(s.id) && (
                             <span className="self-center text-sm text-muted-foreground">

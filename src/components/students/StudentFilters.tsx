@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { STUDENT_VIEWS, type StudentView } from "@/lib/students";
+import type { StudentView } from "@/lib/students";
 
 /** The Students page's address for a view and a course. The defaults leave the address clean. */
 export function studentsHref(view: StudentView, courseId: string | undefined): string {
@@ -21,12 +21,15 @@ export function studentsHref(view: StudentView, courseId: string | undefined): s
  */
 export function StudentFilters({
   view,
+  views,
   courseId,
   courses,
   counts,
   labels,
 }: {
   view: StudentView;
+  /** The views on offer, in order: follow-up is left out when it is off (FOLLOW-4). */
+  views: readonly StudentView[];
   courseId: string | undefined;
   courses: { id: string; label: string }[];
   /** How many students each view has, for the chosen course. */
@@ -39,7 +42,7 @@ export function StudentFilters({
   return (
     <div className="mb-4 flex flex-wrap items-center gap-3">
       <nav aria-label={labels.label} className="inline-flex max-w-full flex-wrap gap-1 rounded-xl bg-muted p-1 ring-1 ring-border">
-        {STUDENT_VIEWS.map((v) => (
+        {views.map((v) => (
           <Link key={v} href={studentsHref(v, courseId)} aria-current={view === v ? "page" : undefined} className={chip}>
             {labels[v]}
             <span className="text-xs font-normal tabular-nums opacity-70">{counts[v]}</span>

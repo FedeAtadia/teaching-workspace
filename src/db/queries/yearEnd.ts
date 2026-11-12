@@ -216,7 +216,8 @@ export async function listOwed(db: Db, teacherId: string): Promise<OwedClass[]> 
     .select({
       classId: classes.id,
       name: classes.name,
-      passMark: classes.passMark,
+      // GRADE-3, GRADE-5
+      passMark: sql<number | null>`coalesce(${classes.passMark}, ${schools.passMark})::float8`,
       schoolYear: academicYears.name,
       school: schools.name,
       year: courses.year,

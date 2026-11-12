@@ -3,6 +3,7 @@
 // which field is wrong.
 
 import { z } from "zod";
+import { FOLLOW_UP_MISSING_RANGE } from "./followUp";
 import { RETENTION_OPTIONS } from "./retention";
 import { MAX_IMPORT_ROWS } from "./rosterImport";
 import { SESSION_REASONS } from "./attendance";
@@ -50,6 +51,8 @@ export type ClassEdit = z.infer<typeof classEdit>;
 export const schoolInput = z.object({
   schoolId: z.uuid(),
   name: schoolName,
+  /** GRADE-5: as typed; empty means the teacher's pass mark. The action reads it on the teacher's scale. */
+  passMark: z.string().trim().optional(),
 });
 export type SchoolInput = z.infer<typeof schoolInput>;
 
@@ -278,6 +281,17 @@ export const rulesInput = z.object({
   passMark: typedNumber,
   maxTermIncrease: typedNumber,
   maxTermDecrease: typedNumber,
+});
+
+/** FOLLOW-4: a ticked box arrives as "on", an unticked one not at all. */
+export const followUpInput = z.object({
+  enabled: z.literal("on").optional(),
+  missing: z
+    .string()
+    .trim()
+    .regex(/^[0-9]{1,2}$/)
+    .transform(Number)
+    .pipe(z.number().int().min(FOLLOW_UP_MISSING_RANGE.min).max(FOLLOW_UP_MISSING_RANGE.max)),
 });
 
 /** SUGGEST-3 */
