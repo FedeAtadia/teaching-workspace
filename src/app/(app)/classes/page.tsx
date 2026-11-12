@@ -4,13 +4,14 @@ import { ClassCard } from "@/components/classes/ClassCard";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { getDb } from "@/db";
-import { listSchools } from "@/db/queries/classes";
+import Link from "next/link";
+import { listClasses, listSchools } from "@/db/queries/classes";
 import { getHomeCards, type HomeCard } from "@/db/queries/home";
 import { requireTeacherId } from "@/lib/auth";
 import { classCardProps } from "@/lib/classCards";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-export default async function ClassesPage() {
+export default async function ClassesPage({ searchParams }: PageProps<"/classes">) {
   const t = await getTranslations("classes");
   const tCommon = await getTranslations("common");
 
@@ -24,11 +25,20 @@ export default async function ClassesPage() {
 
   const db = getDb();
   const teacherId = await requireTeacherId();
-  const [home, schools, cardProps] = await Promise.all([
-    getHomeCards(db, teacherId),
+  // CLASS-8: the archived classes have their own view, kept in the address.
+  const view = (await searchParams).view === "archived" ? "archived" : "active";
+  const [home, others, schools, cardProps] = await Promise.all([
+    getHomeCards(db, teacherId, view),
+    listClasses(db, teacherId, view === "archived" ? "active" : "archived"),
     listSchools(db, teacherId),
     classCardProps(),
   ]);
+  const counts = {
+    active: view === "active" ? home.cards.length : others.length,
+    archived: view === "archived" ? home.cards.length : others.length,
+  };
+  const chip =
+    "flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-sm font-semibold text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 aria-[current=page]:bg-card aria-[current=page]:text-foreground aria-[current=page]:shadow-sm";
 
   // One section per school, in name order; within it, COURSE-3 order.
   const bySchool = new Map<string, HomeCard[]>();
@@ -40,8 +50,27 @@ export default async function ClassesPage() {
       title={t("title")}
       action={<AddClassDialog defaultSchoolYear={new Date().getFullYear()} schools={schools.map((s) => s.name)} />}
     >
+      {counts.archived > 0 && (
+        <nav
+          aria-label={t("views.label")}
+          className="mb-6 inline-flex max-w-full flex-wrap gap-1 rounded-xl bg-muted p-1 ring-1 ring-border"
+        >
+          {(["active", "archived"] as const).map((v) => (
+            <Link
+              key={v}
+              href={v === "archived" ? "/classes?view=archived" : "/classes"}
+              aria-current={view === v ? "page" : undefined}
+              className={chip}
+            >
+              {t(`views.${v}`)}
+              <span className="text-xs font-normal tabular-nums opacity-70">{counts[v]}</span>
+            </Link>
+          ))}
+        </nav>
+      )}
+      {view === "archived" && <p className="mb-6 max-w-prose text-sm text-muted-foreground">{t("archivedHint")}</p>}
       {home.cards.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("empty")}</p>
+        <p className="text-sm text-muted-foreground">{view === "archived" ? t("emptyArchived") : t("empty")}</p>
       ) : (
         <div className="grid gap-10">
           {[...bySchool.entries()]

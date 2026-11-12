@@ -123,7 +123,14 @@
       "courseExists": "Ya tenés otro curso con esa escuela, año, división, turno y ciclo lectivo.",
       "notFound": "No se encontró este curso. Recargá la página."
     },
-    "count": "{count, plural, one {# curso} other {# cursos}}"
+    "count": "{count, plural, one {# curso} other {# cursos}}",
+    "views": {
+      "label": "Cursos activos o archivados",
+      "active": "Activos",
+      "archived": "Archivados"
+    },
+    "emptyArchived": "No hay cursos archivados.",
+    "archivedHint": "Los cursos que ya no usás, por ejemplo los del año pasado. Siguen completos y en la historia de cada estudiante; abrí uno para desarchivarlo."
   },
   "classPage": {
     "back": "Cursos",
@@ -317,6 +324,12 @@
         "reasonRequired": "Está fuera del rango esperado: escribí el motivo.",
         "reasonTooLong": "El motivo es demasiado largo."
       }
+    },
+    "archive": {
+      "button": "Archivar",
+      "unarchive": "Desarchivar",
+      "badge": "Archivado el {date}",
+      "hint": "Este curso está archivado: no aparece en Inicio ni en Cursos, pero no se perdió nada y sigue en la historia de cada estudiante."
     }
   },
   "groups": {
@@ -1001,7 +1014,8 @@
       "kind": "Tipo",
       "name": "Nombre",
       "setting": "Ajuste",
-      "value": "Valor"
+      "value": "Valor",
+      "archivedOn": "Archivado el"
     },
     "shift": {
       "morning": "Mañana",

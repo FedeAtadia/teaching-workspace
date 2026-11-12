@@ -38,6 +38,8 @@ export type ClassDetail = {
   passMark: number | null;
   /** CAL-4 */
   weekdays: number[];
+  /** CLASS-8: the day it was archived, if it is. */
+  archivedOn: string | null;
 };
 
 /** The class, or null when it isn't this teacher's (or doesn't exist). */
@@ -58,6 +60,7 @@ export async function getClass(db: Db, teacherId: string, classId: string): Prom
       school: schools.name,
       passMark: classes.passMark,
       weekdays: classes.weekdays,
+      archivedOn: classes.archivedOn,
     })
     .from(classes)
     .innerJoin(courses, eq(classes.courseId, courses.id))

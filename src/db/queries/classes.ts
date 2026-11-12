@@ -2,7 +2,7 @@
 // one teacher (OWNER-1). Takes the database as an argument so tests can pass
 // an in-memory one.
 
-import { and, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db";
 import {
@@ -315,8 +315,15 @@ export async function listCourses(db: Db, teacherId: string): Promise<CourseRow[
 
 export type ClassRow = CourseRow & { courseId: string; name: string; students: number };
 
-/** COURSE-3, STUDENT-2: classes with how many students their course has. */
-export async function listClasses(db: Db, teacherId: string): Promise<ClassRow[]> {
+/**
+ * COURSE-3, STUDENT-2: classes with how many students their course has.
+ * CLASS-8: the ones the teacher works with, or the archived ones.
+ */
+export async function listClasses(
+  db: Db,
+  teacherId: string,
+  which: "active" | "archived" = "active",
+): Promise<ClassRow[]> {
   const rows = await db
     .select({
       id: classes.id,
@@ -336,8 +343,26 @@ export async function listClasses(db: Db, teacherId: string): Promise<ClassRow[]
     .innerJoin(courses, eq(classes.courseId, courses.id))
     .innerJoin(academicYears, eq(courses.academicYearId, academicYears.id))
     .innerJoin(schools, eq(courses.schoolId, schools.id))
-    .where(eq(classes.teacherId, teacherId));
+    .where(
+      and(eq(classes.teacherId, teacherId), which === "archived" ? isNotNull(classes.archivedOn) : isNull(classes.archivedOn)),
+    );
   return rows.sort((a, b) => compareCourses(a, b) || collator.compare(a.name, b.name));
+}
+
+/** CLASS-8: archives the class as of `today`, or brings it back. */
+export async function setClassArchived(
+  db: Db,
+  teacherId: string,
+  input: { classId: string; archived: boolean },
+  today: string,
+): Promise<{ ok: true } | { ok: false; error: "notFound" }> {
+  if (!isUuid(input.classId)) return { ok: false, error: "notFound" };
+  const updated = await db
+    .update(classes)
+    .set({ archivedOn: input.archived ? today : null })
+    .where(ownClass(teacherId, input.classId))
+    .returning({ id: classes.id });
+  return updated.length > 0 ? { ok: true } : { ok: false, error: "notFound" };
 }
 
 export type SchoolRow = {
