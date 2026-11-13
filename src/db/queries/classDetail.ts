@@ -35,6 +35,7 @@ export type ClassDetail = {
   shift: Shift;
   schoolYear: string;
   school: string;
+  /** GRADE-3, GRADE-5: the class's own pass mark, else its school's; null means the teacher's. */
   passMark: number | null;
   /** CAL-4 */
   weekdays: number[];
@@ -58,7 +59,8 @@ export async function getClass(db: Db, teacherId: string, classId: string): Prom
       shift: courses.shift,
       schoolYear: academicYears.name,
       school: schools.name,
-      passMark: classes.passMark,
+      // GRADE-3, GRADE-5: its own pass mark, else its school's; null means the teacher's.
+      passMark: sql<number | null>`coalesce(${classes.passMark}, ${schools.passMark})::float8`,
       weekdays: classes.weekdays,
       archivedOn: classes.archivedOn,
     })

@@ -497,7 +497,8 @@
       "graduates": "Graduates",
       "all": "All",
       "course": "Course",
-      "allCourses": "All courses"
+      "allCourses": "All courses",
+      "followUp": "To follow up"
     },
     "graduated": "Graduated",
     "owes": "Owes classes",
@@ -529,12 +530,15 @@
       "intro": "They're created when you add a class. Here you can rename them and set each year's school calendar.",
       "empty": "No schools yet: one is created with your first class.",
       "courses": "{count, plural, one {# course} other {# courses}}",
-      "rename": "Rename",
-      "renameTitle": "Rename “{name}”",
+      "rename": "Edit",
+      "renameTitle": "Edit “{name}”",
       "name": "School name",
       "duplicate": "You already have another school with that name.",
       "notFound": "That school wasn't found. Reload the page.",
-      "calendar": "{year} calendar"
+      "calendar": "{year} calendar",
+      "passMark": "This school's pass mark",
+      "passMarkPlaceholder": "Empty: yours ({grade})",
+      "passMarkBadge": "Passes at {grade}"
     },
     "attendance": {
       "title": "Attendance",
@@ -587,6 +591,14 @@
       },
       "saved": "Saved.",
       "note": "Changing the scale doesn't alter grades you already entered: they stay as they are. A different pass mark does change who shows as passing or owing a class."
+    },
+    "followUp": {
+      "title": "Follow-up",
+      "intro": "Annora points out the students worth following closely in the term under way: those with attendance below your minimum, a task average below the pass mark, or several tasks not handed in. They show on Home, on Students and on each one's page.",
+      "enabled": "Point out students to follow up",
+      "missing": "Tasks not handed in",
+      "missingHint": "From how many tasks not handed in during the term a student is pointed out. Between 1 and 20.",
+      "saved": "Saved."
     }
   },
   "weekdays": {
@@ -1228,5 +1240,19 @@
     "owedLine": "{name} ({course}, {year})",
     "noCourse": "This student is in no course, so there is nothing to report yet.",
     "footer": "Report generated with Annora on {date}. It reflects what the teacher had entered by that date."
+  },
+  "followUp": {
+    "title": "To follow up",
+    "intro": "Students who, in the term under way, are below one of your limits.",
+    "badge": "Follow-up",
+    "seeAll": "{count, plural, one {See the student} other {See all # students}}",
+    "more": "{count, plural, one {and # more} other {and # more}}",
+    "boxTitle": "Follow-up",
+    "classLine": "{name} ({term})",
+    "reasons": {
+      "attendance": "attendance {rate}%",
+      "average": "average {average}",
+      "missing": "{count, plural, one {# task not handed in} other {# tasks not handed in}}"
+    }
   }
 }

@@ -497,7 +497,8 @@
       "graduates": "Egresados",
       "all": "Todos",
       "course": "Curso",
-      "allCourses": "Todos los cursos"
+      "allCourses": "Todos los cursos",
+      "followUp": "En seguimiento"
     },
     "graduated": "Egresó",
     "owes": "Debe materias",
@@ -529,12 +530,15 @@
       "intro": "Se crean al agregar un curso. Acá podés cambiarles el nombre y cargar el calendario escolar de cada año.",
       "empty": "Todavía no hay escuelas: se crean con tu primer curso.",
       "courses": "{count, plural, one {# curso} other {# cursos}}",
-      "rename": "Cambiar nombre",
-      "renameTitle": "Cambiar el nombre de «{name}»",
+      "rename": "Editar",
+      "renameTitle": "Editar «{name}»",
       "name": "Nombre de la escuela",
       "duplicate": "Ya tenés otra escuela con ese nombre.",
       "notFound": "No se encontró esa escuela. Recargá la página.",
-      "calendar": "Calendario {year}"
+      "calendar": "Calendario {year}",
+      "passMark": "Nota de aprobación de esta escuela",
+      "passMarkPlaceholder": "Vacío: la tuya ({grade})",
+      "passMarkBadge": "Aprueba con {grade}"
     },
     "attendance": {
       "title": "Asistencia",
@@ -587,6 +591,14 @@
       },
       "saved": "Guardado.",
       "note": "Cambiar la escala no modifica las notas que ya cargaste: quedan como están. Con otra nota de aprobación, sí cambia quién figura como aprobado o debe la materia."
+    },
+    "followUp": {
+      "title": "Seguimiento",
+      "intro": "Annora te señala a los estudiantes que conviene seguir de cerca en el cuatrimestre en curso: los que tienen la asistencia por debajo de tu mínimo, el promedio de tareas por debajo de la nota de aprobación, o varias tareas sin entregar. Aparecen en Inicio, en Estudiantes y en la página de cada uno.",
+      "enabled": "Señalar a los estudiantes en seguimiento",
+      "missing": "Tareas sin entregar",
+      "missingHint": "Desde cuántas tareas sin entregar en el cuatrimestre se lo señala. Entre 1 y 20.",
+      "saved": "Guardado."
     }
   },
   "weekdays": {
@@ -1228,5 +1240,19 @@
     "owedLine": "{name} ({course}, {year})",
     "noCourse": "Este estudiante no está en ningún curso, así que todavía no hay nada que informar.",
     "footer": "Informe generado con Annora el {date}. Refleja lo cargado por el o la docente hasta esa fecha."
+  },
+  "followUp": {
+    "title": "Para seguir de cerca",
+    "intro": "Estudiantes que, en el cuatrimestre en curso, están por debajo de alguno de tus límites.",
+    "badge": "Seguimiento",
+    "seeAll": "{count, plural, one {Ver el estudiante} other {Ver los # estudiantes}}",
+    "more": "{count, plural, one {y # más} other {y # más}}",
+    "boxTitle": "Seguimiento",
+    "classLine": "{name} ({term})",
+    "reasons": {
+      "attendance": "asistencia {rate} %",
+      "average": "promedio {average}",
+      "missing": "{count, plural, one {# tarea sin entregar} other {# tareas sin entregar}}"
+    }
   }
 }

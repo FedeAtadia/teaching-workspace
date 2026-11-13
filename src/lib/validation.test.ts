@@ -7,6 +7,7 @@ import {
   dayOffEdit,
   dayOffInput,
   examInputFor,
+  followUpInput,
   retentionInput,
   rulesInput,
   groupEdit,
@@ -517,5 +518,32 @@ describe("the settings a teacher types (KEEP-2, GRADE-4)", () => {
     for (const bad of ["", "siete", "-1", "101", "7,555", "1e2"]) {
       expect(rulesInput.safeParse({ ...good, passMark: bad }).success, bad).toBe(false);
     }
+  });
+});
+
+describe("the follow-up settings a teacher sends (FOLLOW-4)", () => {
+  it("reads the box as on or off and the number of tasks", () => {
+    expect(followUpInput.parse({ enabled: "on", missing: "3" })).toEqual({ enabled: "on", missing: 3 });
+    // An unticked box sends nothing at all.
+    expect(followUpInput.parse({ missing: " 20 " })).toEqual({ missing: 20 });
+  });
+
+  it("refuses a number of tasks outside 1 to 20", () => {
+    for (const missing of ["0", "21", "", "tres", "2,5", "-1"]) {
+      expect(followUpInput.safeParse({ enabled: "on", missing }).success, missing).toBe(false);
+    }
+  });
+});
+
+describe("a school with its own pass mark (GRADE-5)", () => {
+  it("keeps what was typed for the action to read on the teacher's scale; empty or absent is fine", () => {
+    const schoolId = crypto.randomUUID();
+    expect(schoolInput.parse({ schoolId, name: "EPET 30", passMark: " 6,5 " })).toEqual({
+      schoolId,
+      name: "EPET 30",
+      passMark: "6,5",
+    });
+    expect(schoolInput.parse({ schoolId, name: "EPET 30", passMark: "" }).passMark).toBe("");
+    expect(schoolInput.parse({ schoolId, name: "EPET 30" }).passMark).toBeUndefined();
   });
 });

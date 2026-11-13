@@ -171,8 +171,16 @@ export async function getStudentHistory(
   const courseIds = memberships.map((m) => m.courseId);
   const [classRows, taskRows, groupRows] = await Promise.all([
     db
-      .select({ id: classes.id, courseId: classes.courseId, name: classes.name, passMark: classes.passMark })
+      .select({
+        id: classes.id,
+        courseId: classes.courseId,
+        name: classes.name,
+        // GRADE-3, GRADE-5
+        passMark: sql<number | null>`coalesce(${classes.passMark}, ${schools.passMark})::float8`,
+      })
       .from(classes)
+      .innerJoin(courses, eq(classes.courseId, courses.id))
+      .innerJoin(schools, eq(courses.schoolId, schools.id))
       .where(and(inArray(classes.courseId, courseIds), eq(classes.teacherId, teacherId))),
     db
       .select({

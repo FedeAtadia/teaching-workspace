@@ -43,6 +43,10 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   From then on every grade typed (INPUT-1), every pass or fail, the 2°
   cuatrimestre's range and each class's result (YEAR-1) go by those rules.
   Grades already saved are never changed.
+- **GRADE-5** A school can have its own pass mark, set where the school is
+  edited in Settings: a grade on the teacher's scale, or empty to follow the
+  teacher's. It is the pass mark of every class at that school that has none
+  of its own (GRADE-3), and of nothing at the teacher's other schools.
 
 ## TERM — Cuatrimestres
 
@@ -237,6 +241,7 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   class. A graduate who still owes a class (EXAM-3) stays in it, marked as a
   graduate who owes, until they pass it. Those left out show under
   "Egresados", and "Todos" shows everyone; each says how many it has.
+  A fourth view shows the students to follow up (FOLLOW-3).
 - **STUDENT-6** The list can be narrowed to the students of one course, in
   any of those views. The view and the course are kept in the address.
 - **STUDENT-7** A student's first and last name can be changed from their
@@ -703,6 +708,30 @@ by hand (Known gaps).*
   word to confirm. Everything they loaded, their attached files, their
   settings and their sign-in are deleted; they are signed out and land on the
   public home page. Another teacher's data is untouched.
+
+## FOLLOW — Students to follow up
+
+*Enforced by `src/lib/followUp.ts`, `src/lib/students.ts`,
+`src/db/queries/followUp.ts`. Covered by `src/lib/followUp.test.ts`,
+`src/lib/students.test.ts`, `src/db/queries/followUp.test.ts`.*
+
+- **FOLLOW-1** A student needs following up in a class when, in one
+  cuatrimestre, their attendance (ATT-4) is below the teacher's minimum
+  (SUGGEST-3; never with the minimum at 0), the average of their scored
+  tasks (SUGGEST-1) is below the class's pass mark (GRADE-2..5), or their
+  tasks not handed in (SUGGEST-2) reach the teacher's number. Each reason
+  comes with its figure. With nothing recorded there is no reason.
+- **FOLLOW-2** The cuatrimestre looked at is the one under way: the one
+  today falls in by the school's calendar (CAL-1), and none outside the
+  school year; for a class whose school has no calendar, the latest one
+  with anything scored.
+- **FOLLOW-3** Only active students of classes that aren't archived
+  (CLASS-8) are considered. Home lists the first of them with their
+  reasons and a way to the rest; the Students list marks them and has a
+  view with only them; a student's page says, class by class, why.
+- **FOLLOW-4** In Settings the teacher turns this on or off (on unless
+  changed) and sets the number of tasks not handed in, 1 to 20 (3 unless
+  changed). Off, nobody is pointed out anywhere and the view isn't offered.
 
 ## KEEP — How long graduates are kept
 

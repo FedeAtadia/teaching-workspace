@@ -54,6 +54,9 @@ export const teacherSettings = pgTable("teacher_settings", {
   // KEEP-4: graduates deleted since the teacher last dismissed the notice, and when.
   graduatesDeleted: integer("graduates_deleted").notNull().default(0),
   graduatesDeletedOn: date("graduates_deleted_on"),
+  // FOLLOW-4: whether students to follow up are pointed out, and from how many tasks not handed in.
+  followUp: boolean("follow_up").notNull().default(true),
+  followUpMissing: integer("follow_up_missing").notNull().default(3),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }).enableRLS();
 
@@ -101,6 +104,8 @@ export const schools = pgTable(
     id: id(),
     teacherId: teacherId(),
     name: text("name").notNull(),
+    // GRADE-5: this school's own pass mark; null means the teacher's.
+    passMark: grade("pass_mark"),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex("schools_teacher_name_ci").on(t.teacherId, sql`lower(${t.name})`)],

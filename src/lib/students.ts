@@ -18,7 +18,7 @@ export type StudentCourse = {
 };
 export type ListedStudent = { id: string; firstName: string; lastName: string; courses: StudentCourse[] };
 
-export const STUDENT_VIEWS = ["current", "graduates", "all"] as const;
+export const STUDENT_VIEWS = ["current", "followUp", "graduates", "all"] as const;
 export type StudentView = (typeof STUDENT_VIEWS)[number];
 
 /** Anything but a known view is the default one. */
@@ -44,15 +44,18 @@ export function isFormer(student: ListedStudent, owing: ReadonlySet<string>): bo
   return isGraduate(student) && !owing.has(student.id);
 }
 
-/** STUDENT-5, STUDENT-6: the students of a view, and of one course when one is chosen. */
+/** STUDENT-5, STUDENT-6, FOLLOW-3: the students of a view, and of one course when one is chosen. */
 export function filterStudents<T extends ListedStudent>(
   students: T[],
   filter: { view: StudentView; courseId?: string },
   owing: ReadonlySet<string>,
+  /** FOLLOW-3: the students to follow up. */
+  following: ReadonlySet<string> = new Set(),
 ): T[] {
   return students.filter((s) => {
     if (filter.courseId && !s.courses.some((c) => c.id === filter.courseId)) return false;
     if (filter.view === "all") return true;
+    if (filter.view === "followUp") return following.has(s.id);
     return isFormer(s, owing) === (filter.view === "graduates");
   });
 }
