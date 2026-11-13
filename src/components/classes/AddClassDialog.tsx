@@ -23,9 +23,12 @@ import { COURSE_YEARS, SHIFTS, type Shift } from "@/lib/courses";
 export function AddClassDialog({
   defaultSchoolYear,
   schools,
+  copySources = [],
   appearance = "button",
 }: {
   defaultSchoolYear: number;
+  /** COPY-1: the teacher's classes, to copy one's content from. */
+  copySources?: { id: string; label: string }[];
   /** The teacher's schools, suggested as they type (SCHOOL-1). */
   schools: string[];
   /** "card": a dashed card, for the end of a grid of class cards. */
@@ -56,6 +59,7 @@ export function AddClassDialog({
           // One school so far: most classes will be there, so start with it.
           initial={{ school: schools.length === 1 ? schools[0] : "", schoolYear: String(defaultSchoolYear) }}
           schools={schools}
+          copySources={copySources}
           onSaved={() => setOpen(false)}
         />
       </DialogContent>
@@ -119,15 +123,18 @@ function ClassForm({
   initial,
   hidden = {},
   schools,
+  copySources = [],
   note,
   onSaved,
 }: {
   action: (prev: AddClassState, formData: FormData) => Promise<AddClassState>;
   /** What the fields start with, as the form sends them. */
   /** `weekdays` as the ticked days joined by commas, the way an error sends them back. */
-  initial: Partial<Record<"school" | "name" | "year" | "division" | "shift" | "schoolYear" | "weekdays", string>>;
+  initial: Partial<Record<"school" | "name" | "year" | "division" | "shift" | "schoolYear" | "weekdays" | "copyFrom", string>>;
   hidden?: Record<string, string>;
   schools: string[];
+  /** COPY-1: only when adding a class. */
+  copySources?: { id: string; label: string }[];
   /** Shown under the course fields. */
   note?: string;
   onSaved: () => void;
@@ -266,6 +273,21 @@ function ClassForm({
           ))}
         </div>
       </Field>
+
+      {/* COPY-1: optional, and nothing is copied unless a class is picked. */}
+      {copySources.length > 0 && (
+        <Field id="class-copy-from" label={t("copy.label")} error={err("copyFrom")}>
+          <NativeSelect id="class-copy-from" name="copyFrom" defaultValue={v.copyFrom ?? ""} className="w-full">
+            <NativeSelectOption value="">{t("copy.none")}</NativeSelectOption>
+            {copySources.map((c) => (
+              <NativeSelectOption key={c.id} value={c.id}>
+                {c.label}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+          <p className="text-xs text-muted-foreground">{t("copy.hint")}</p>
+        </Field>
+      )}
 
       {note && <p className="text-sm text-muted-foreground">{note}</p>}
 

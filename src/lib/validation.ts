@@ -43,6 +43,14 @@ export const classInput = z.object({
 });
 export type ClassInput = z.infer<typeof classInput>;
 
+/** COPY-1: a new class, and optionally the class to copy its content from. */
+export const classCreate = classInput.extend({
+  copyFrom: z
+    .union([z.literal(""), z.uuid()])
+    .optional()
+    .transform((v) => v || null),
+});
+
 /** CLASS-6 */
 export const classEdit = classInput.extend({ classId: z.uuid() });
 export type ClassEdit = z.infer<typeof classEdit>;

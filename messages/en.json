@@ -130,7 +130,12 @@
       "archived": "Archived"
     },
     "emptyArchived": "No archived classes.",
-    "archivedHint": "The classes you no longer use, such as last year's. They are still complete and in each student's history; open one to unarchive it."
+    "archivedHint": "The classes you no longer use, such as last year's. They are still complete and in each student's history; open one to unarchive it.",
+    "copy": {
+      "label": "Copy content from another class",
+      "none": "Don't copy anything",
+      "hint": "Optional. Brings over the units, passing standards and tasks (with their files and adapted version), without dates, groups or grades. You can change anything afterwards."
+    }
   },
   "classPage": {
     "back": "Classes",
