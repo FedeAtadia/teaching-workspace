@@ -8,7 +8,7 @@ import { MAX_IMPORT_ROWS } from "./rosterImport";
 import { SESSION_REASONS } from "./attendance";
 import { DAY_OFF_KINDS } from "./calendar";
 import { SHIFTS } from "./courses";
-import { DEFAULT_RULES, parseGrade } from "./grading";
+import { parseGrade, SCALE_LIMITS, type GradingRules } from "./grading";
 import { YEAR_OUTCOMES } from "./yearEnd";
 
 const name = z.string().trim().min(1).max(80);
@@ -150,7 +150,8 @@ export type TaskEdit = z.infer<typeof taskEdit>;
  * EXAM-1. The grade arrives as typed (`7,5`) and leaves as `value`: a number
  * for a graded exam, null when the student was absent.
  */
-export const examInput = z
+export const examInputFor = (rules: GradingRules) =>
+  z
   .object({
     classId: z.uuid(),
     studentId: z.uuid(),
@@ -160,15 +161,15 @@ export const examInput = z
     notes: optionalText(1000),
   })
   .superRefine((v, ctx) => {
-    if (v.status === "graded" && parseGrade(v.grade, DEFAULT_RULES) === null) {
+    if (v.status === "graded" && parseGrade(v.grade, rules) === null) {
       ctx.addIssue({ code: "custom", path: ["grade"], message: "invalid" });
     }
   })
   .transform(({ grade, ...rest }) => ({
     ...rest,
-    value: rest.status === "graded" ? parseGrade(grade, DEFAULT_RULES) : null,
+    value: rest.status === "graded" ? parseGrade(grade, rules) : null,
   }));
-export type ExamInput = z.infer<typeof examInput>;
+export type ExamInput = z.infer<ReturnType<typeof examInputFor>>;
 
 /** YEAR-2: one student's outcome; the form's "undecided" option sends "". */
 export const outcomeInput = z.object({
@@ -254,9 +255,29 @@ export type NoClassInput = z.infer<typeof noClassInput>;
 export const retentionInput = z.object({
   months: z
     .string()
-    .regex(/^d{1,2}$/)
+    .regex(/^\d{1,2}$/)
     .transform(Number)
     .refine((n) => (RETENTION_OPTIONS as readonly number[]).includes(n)),
+});
+
+/** A number typed in a settings field: digits with up to two decimals, comma or point. */
+const typedNumber = z
+  .string()
+  .trim()
+  .regex(/^\d{1,3}([.,]\d{1,2})?$/)
+  .transform((v) => Number(v.replace(",", ".")))
+  .pipe(z.number().min(SCALE_LIMITS.min).max(SCALE_LIMITS.max));
+
+/**
+ * GRADE-4: the teacher's grading rules, as typed. Whether they fit together
+ * is `checkRules`'s to say, so each problem gets its own message.
+ */
+export const rulesInput = z.object({
+  gradeMin: typedNumber,
+  gradeMax: typedNumber,
+  passMark: typedNumber,
+  maxTermIncrease: typedNumber,
+  maxTermDecrease: typedNumber,
 });
 
 /** SUGGEST-3 */

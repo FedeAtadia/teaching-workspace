@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { getAdaptations } from "@/db/queries/adaptations";
 import { getClosingSheet } from "@/db/queries/yearEnd";
 import { formatGrade } from "@/lib/format";
-import { DEFAULT_RULES, isPassing } from "@/lib/grading";
+import { isPassing } from "@/lib/grading";
 import { allowedOutcomes, type ClassResult } from "@/lib/yearEnd";
 import { loadClass } from "../data";
 
@@ -28,7 +28,7 @@ const RESULT_ICON = { pending: CircleHelp, passed: CircleCheck, passedByExam: Ci
 /** YEAR-1..3, EXAM-1, EXAM-2 */
 export default async function ClosingPage({ params }: PageProps<"/classes/[id]/closing">) {
   const { id } = await params;
-  const { db, teacherId, cls } = await loadClass(id);
+  const { db, teacherId, cls, rules } = await loadClass(id);
   const [sheet, adaptations] = await Promise.all([
     getClosingSheet(db, teacherId, cls),
     getAdaptations(db, teacherId, id),
@@ -36,7 +36,6 @@ export default async function ClosingPage({ params }: PageProps<"/classes/[id]/c
   const t = await getTranslations("closing");
   const tAdapt = await getTranslations("adaptations");
   const locale = await getLocale();
-  const passMark = cls.passMark ?? DEFAULT_RULES.passMark;
   const options = allowedOutcomes(cls.year);
   // Shown before each value on a phone; from lg up the header row says it.
   const label = "text-xs font-semibold text-muted-foreground lg:sr-only";
@@ -69,7 +68,7 @@ export default async function ClosingPage({ params }: PageProps<"/classes/[id]/c
             {sheet.rows.map(({ student, finalGrade, result, exams, outcome }) => {
               const name = `${student.lastName}, ${student.firstName}`;
               const owed = result.kind === "owed";
-              const failing = finalGrade !== null && !isPassing(finalGrade, { ...DEFAULT_RULES, passMark });
+              const failing = finalGrade !== null && !isPassing(finalGrade, rules);
               const adaptation = adaptations.get(student.id);
               const Icon = RESULT_ICON[result.kind];
               return (

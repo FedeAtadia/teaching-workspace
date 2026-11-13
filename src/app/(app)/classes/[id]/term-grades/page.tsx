@@ -10,14 +10,13 @@ import { listTasks } from "@/db/queries/tasks";
 import { getTermGradeSheet } from "@/db/queries/termGrades";
 import { belowMinimum } from "@/lib/attendance";
 import { formatGrade } from "@/lib/format";
-import { DEFAULT_RULES } from "@/lib/grading";
 import { loadClass } from "../data";
 
 /** TERM-5..7: one cuatrimestre at a time, chosen with ?term=1 or ?term=2. */
 export default async function TermGradesPage({ params, searchParams }: PageProps<"/classes/[id]/term-grades">) {
   const { id } = await params;
   const { term: termParam } = await searchParams;
-  const { db, teacherId, cls } = await loadClass(id);
+  const { db, teacherId, cls, rules } = await loadClass(id);
   const [terms, tasks] = await Promise.all([listTerms(db, teacherId, cls), listTasks(db, teacherId, cls)]);
 
   // As in the gradebook: the latest cuatrimestre that has tasks, the one being taught.
@@ -35,7 +34,6 @@ export default async function TermGradesPage({ params, searchParams }: PageProps
   const t = await getTranslations("classPage.termGrades");
   const tTerm = await getTranslations("terms");
   const locale = await getLocale();
-  const rules = { ...DEFAULT_RULES, passMark: cls.passMark ?? DEFAULT_RULES.passMark };
 
   return (
     <>
