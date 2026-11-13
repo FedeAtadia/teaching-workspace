@@ -744,7 +744,8 @@
         "button": "Clear this day",
         "title": "Clear what was saved on {date}?",
         "body": "The day goes back to not taken, with no marks."
-      }
+      },
+      "saving": "Saving…"
     }
   },
   "landing": {
@@ -1259,5 +1260,25 @@
       "average": "average {average}",
       "missing": "{count, plural, one {# task not handed in} other {# tasks not handed in}}"
     }
+  },
+  "offline": {
+    "banner": "No connection. What you save is sent when the signal returns; attendance stays on this phone even if you close Annora.",
+    "pending": "{count, plural, one {# day of attendance kept on this phone, not sent yet.} other {# days of attendance kept on this phone, not sent yet.}}",
+    "pendingOffline": "They are sent by themselves when the signal returns.",
+    "sending": "Sending…",
+    "sendNow": "Send now",
+    "conflictShort": "was changed from another device after you took attendance here.",
+    "failed": "couldn't be saved: the class or the date no longer exists.",
+    "review": "Review",
+    "discard": "Discard",
+    "conflictTitle": "This day was changed from another device after you took attendance on this phone.",
+    "conflictBody": "{count, plural, =0 {The marks match.} one {It differs for # student.} other {It differs for # students.}} Which one do you want to keep?",
+    "conflictNotHeld": "There it shows as “no class”. Which one do you want to keep?",
+    "keepPhone": "Save this phone's",
+    "keepSaved": "Keep the saved one",
+    "dayPending": "This attendance is kept on this phone and hasn't reached Annora yet. It is sent by itself when there is signal.",
+    "dayUnsaved": "You have marks for this day on this phone that you haven't saved yet.",
+    "waiting": "Waiting for signal…",
+    "savedOnPhone": "No connection: it was kept on this phone and is sent by itself when the signal returns. You can keep using Annora."
   }
 }

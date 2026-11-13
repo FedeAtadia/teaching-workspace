@@ -108,7 +108,7 @@ describe("taking attendance (ATT-2)", () => {
     const s = await setup();
     expect(
       await saveAttendance(db, s.teacher, s.cls, "2026-10-05", marks(s, { Ana: "present", Bea: "absent", Carla: "late" })),
-    ).toEqual({ ok: true });
+    ).toEqual({ ok: true, version: 1 });
     const day = await getAttendanceDay(db, s.teacher, s.cls, "2026-10-05");
     expect(day.ok && day.rows.map((r) => r.status)).toEqual(["present", "absent", "late"]);
     expect(day.ok && day.session?.held).toBe(true);
@@ -261,5 +261,82 @@ describe("each teacher's attendance (OWNER-1)", () => {
     expect((await getAttendanceRates(db, other, s.cls, 2)).size).toBe(0);
 
     expect((await getAttendanceRates(db, s.teacher, s.cls, 2)).get(s.s.Ana)?.rate).toBe(0);
+  });
+});
+
+describe("a day saved from an older copy (OFFLINE-3)", () => {
+  const DAY = "2026-10-05";
+  const day = async (s: Setup) => {
+    const d = await getAttendanceDay(db, s.teacher, s.cls, DAY);
+    if (!d.ok) throw new Error("no day");
+    return d;
+  };
+
+  it("gives the day a version that goes up with every save", async () => {
+    const s = await setup();
+    expect((await day(s)).version).toBeNull();
+    expect(await saveAttendance(db, s.teacher, s.cls, DAY, marks(s, { Ana: "present" }), { baseVersion: null })).toEqual({
+      ok: true,
+      version: 1,
+    });
+    expect(await saveAttendance(db, s.teacher, s.cls, DAY, marks(s, { Ana: "absent" }), { baseVersion: 1 })).toEqual({
+      ok: true,
+      version: 2,
+    });
+    await saveNoClass(db, s.teacher, s.cls, { date: DAY, reason: "strike", note: null });
+    expect((await day(s)).version).toBe(3);
+  });
+
+  it("refuses to overwrite a day saved again since, and says what it holds now", async () => {
+    const s = await setup();
+    // The phone loads the empty day; meanwhile the computer saves it.
+    await saveAttendance(db, s.teacher, s.cls, DAY, marks(s, { Ana: "present", Bea: "present" }), { baseVersion: null });
+
+    const result = await saveAttendance(db, s.teacher, s.cls, DAY, marks(s, { Ana: "absent", Bea: "present" }), {
+      baseVersion: null,
+    });
+    expect(result).toMatchObject({ ok: false, error: "conflict", current: { version: 1, held: true } });
+    if (result.ok || result.error !== "conflict") throw new Error("expected a conflict");
+    expect(Object.fromEntries(result.current.marks.map((m) => [m.studentId, m.status]))).toEqual({
+      [s.s.Ana]: "present",
+      [s.s.Bea]: "present",
+    });
+    // Nothing changed.
+    expect((await day(s)).rows.map((r) => r.status)).toEqual(["present", "present", null]);
+  });
+
+  it("saves the older copy anyway when the teacher chooses it", async () => {
+    const s = await setup();
+    await saveAttendance(db, s.teacher, s.cls, DAY, marks(s, { Ana: "present" }), { baseVersion: null });
+    expect(
+      await saveAttendance(db, s.teacher, s.cls, DAY, marks(s, { Ana: "absent" }), { baseVersion: null, force: true }),
+    ).toEqual({ ok: true, version: 2 });
+    expect((await day(s)).rows[0].status).toBe("absent");
+  });
+
+  it("takes the same marks sent twice as already saved, not as a clash", async () => {
+    const s = await setup();
+    const same = marks(s, { Ana: "late", Bea: "present" });
+    await saveAttendance(db, s.teacher, s.cls, DAY, same, { baseVersion: null });
+    // The phone sent it, lost the answer, and sends it again from the same copy.
+    expect(await saveAttendance(db, s.teacher, s.cls, DAY, same, { baseVersion: null })).toEqual({ ok: true, version: 1 });
+  });
+
+  it("clashes with a day saved since as not held, and saves over a day cleared since", async () => {
+    const s = await setup();
+    await saveAttendance(db, s.teacher, s.cls, DAY, marks(s, { Ana: "present" }), { baseVersion: null });
+    await saveNoClass(db, s.teacher, s.cls, { date: DAY, reason: "weather", note: null });
+    expect(await saveAttendance(db, s.teacher, s.cls, DAY, marks(s, { Ana: "present" }), { baseVersion: 1 })).toMatchObject({
+      ok: false,
+      error: "conflict",
+      current: { held: false, marks: [] },
+    });
+
+    // Cleared, there is nothing to lose: the copy is saved.
+    await clearDay(db, s.teacher, s.cls, DAY);
+    expect(await saveAttendance(db, s.teacher, s.cls, DAY, marks(s, { Ana: "absent" }), { baseVersion: 2 })).toEqual({
+      ok: true,
+      version: 1,
+    });
   });
 });

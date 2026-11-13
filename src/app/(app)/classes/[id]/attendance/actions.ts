@@ -5,12 +5,12 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import { clearDay, saveAttendance, saveNoClass } from "@/db/queries/attendance";
 import { getClass, listClassStudents } from "@/db/queries/classDetail";
-import { parseAttendanceForm } from "@/lib/attendanceForm";
+import type { AttendanceStatus } from "@/lib/attendance";
 import { requireTeacherId } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
-import { noClassInput, toFieldErrors } from "@/lib/validation";
+import { attendanceSave, noClassInput, toFieldErrors, type AttendanceSave } from "@/lib/validation";
 
-type AttendanceError = "notFound" | "noCalendar" | "outsideYear" | "invalid";
+type AttendanceError = "notFound" | "noCalendar" | "outsideYear" | "invalid" | "conflict";
 export type AttendanceState = FormState<AttendanceError> & { savedAt?: number };
 
 /** Attendance shows on the tab, the gradebook, the cuatrimestre grades and the histories. */
@@ -19,29 +19,45 @@ function refresh(classId: string) {
   revalidatePath("/students", "layout");
 }
 
-/** ATT-2: every mark on the page, in one save. */
-export async function saveAttendanceAction(_prev: AttendanceState, formData: FormData): Promise<AttendanceState> {
+export type SaveAttendanceResult =
+  | { ok: true; version: number }
+  | { ok: false; error: "conflict"; current: { held: boolean; marks: Record<string, AttendanceStatus> } }
+  | { ok: false; error: "notFound" | "noCalendar" | "outsideYear" | "invalid" };
+
+/**
+ * ATT-2, OFFLINE-2..4: one day's marks, from the form or from the phone's
+ * queue. Without signal the call waits and goes through when it returns
+ * (OFFLINE-1). A day saved since from somewhere else isn't overwritten unless
+ * `force` (OFFLINE-3).
+ */
+export async function saveAttendanceAction(input: AttendanceSave): Promise<SaveAttendanceResult> {
+  const parsed = attendanceSave.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
   const db = getDb();
   const teacherId = await requireTeacherId();
-  const date = String(formData.get("date") ?? "");
-  const cls = await getClass(db, teacherId, String(formData.get("classId") ?? ""));
-  if (!cls || !z.iso.date().safeParse(date).success) return { status: "error", formError: "notFound" };
+  const cls = await getClass(db, teacherId, parsed.data.classId);
+  if (!cls) return { ok: false, error: "notFound" };
 
-  // Only the course's students are read; anyone else in the form is ignored.
-  const roster = await listClassStudents(db, teacherId, cls);
-  const parsed = parseAttendanceForm(
-    (name) => {
-      const v = formData.get(name);
-      return typeof v === "string" ? v : null;
-    },
-    roster.map((s) => s.id),
-  );
-  if (!parsed.ok) return { status: "error", formError: "invalid" };
-
-  const result = await saveAttendance(db, teacherId, cls, date, parsed.marks);
-  if (!result.ok) return { status: "error", formError: result.error };
+  // Only the course's students are kept; anyone else sent is ignored.
+  const roster = new Set((await listClassStudents(db, teacherId, cls)).map((s) => s.id));
+  const marks = parsed.data.marks.filter((m) => roster.has(m.studentId));
+  const result = await saveAttendance(db, teacherId, cls, parsed.data.date, marks, {
+    baseVersion: parsed.data.baseVersion,
+    force: parsed.data.force,
+  });
+  if (!result.ok) {
+    if (result.error !== "conflict") return { ok: false, error: result.error };
+    return {
+      ok: false,
+      error: "conflict",
+      current: {
+        held: result.current.held,
+        marks: Object.fromEntries(result.current.marks.map((m) => [m.studentId, m.status])),
+      },
+    };
+  }
   refresh(cls.id);
-  return { status: "saved", savedAt: Date.now() };
+  return { ok: true, version: result.version };
 }
 
 /** ATT-3 */

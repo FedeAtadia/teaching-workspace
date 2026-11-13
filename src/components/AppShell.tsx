@@ -1,7 +1,9 @@
 import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
+import { AttendanceSync } from "@/components/attendance/AttendanceSync";
 import { Sidebar } from "@/components/Sidebar";
+import { requireTeacherId } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { resolveSidebar, SIDEBAR_COOKIE } from "@/lib/theme";
 
@@ -9,6 +11,8 @@ export async function AppShell({ children }: { children: ReactNode }) {
   const t = await getTranslations();
   // NAV-1: read on the server, so a collapsed menu doesn't open and then jump.
   const sidebar = resolveSidebar((await cookies()).get(SIDEBAR_COOKIE)?.value);
+  // OFFLINE-2: the phone keeps each teacher's attendance apart.
+  const teacherId = isSupabaseConfigured() ? await requireTeacherId() : null;
 
   return (
     <div className="flex flex-1 flex-col md:flex-row">
@@ -33,7 +37,11 @@ export async function AppShell({ children }: { children: ReactNode }) {
           <p className="bg-primary px-4 py-2 text-sm text-primary-foreground">{t("app.setupBanner")}</p>
         )}
         {/* On a phone, room at the bottom for the menu bar (NAV-1). */}
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-28 sm:px-8 sm:pt-8 md:pb-8">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-28 sm:px-8 sm:pt-8 md:pb-8">
+          {/* OFFLINE-1, OFFLINE-4 */}
+          {teacherId && <AttendanceSync teacherId={teacherId} />}
+          {children}
+        </main>
       </div>
     </div>
   );
