@@ -161,6 +161,25 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   when it is archived, and stays in each student's history (HISTORY-2), in
   Previas (EXAM-3) and in the download (DATA-1).
 
+## COPY — Starting a class from another one
+
+*Enforced by `src/db/queries/copyClass.ts`, `src/lib/validation.ts`. Covered
+by `src/db/queries/copyClass.test.ts`, `src/lib/validation.test.ts`.*
+
+- **COPY-1** Adding a class optionally copies the content of another of the
+  teacher's classes, archived ones included (CLASS-8), listed newest school
+  year first. Nothing is copied unless one is picked.
+- **COPY-2** The copy brings the units, the class's passing standards (not a
+  student's own, ADAPT-2) and the tasks with their description, specific
+  standard, adapted version, unit and passing standards, each into the
+  cuatrimestre of the same number. Dates, groups, scores and grades stay
+  behind, and the class copied from is untouched.
+- **COPY-3** The tasks' and standards' files are copied into the new ones'
+  own folders (FILE-2). One that Storage can't copy is left unlinked rather
+  than pointing at nothing.
+- **COPY-4** Only the teacher's own classes can be copied from or into, and
+  never a class onto itself (OWNER-1).
+
 ## COURSE — Courses
 
 *Enforced by `src/lib/courses.ts`, `src/db/queries/classes.ts`. Covered by
@@ -778,6 +797,8 @@ by hand (Known gaps).*
   hand; the tests cover how a list is read and what is saved.
 - **REPORT-1**'s teacher name and date, and **REPORT-4**'s printed layout, are
   checked by hand: print preview on a computer and a phone, light and dark.
+- **COPY-3**'s copying in Storage runs in Supabase and is checked by hand; the
+  tests cover which files are named and the unlinking of a failed one.
 - **NAV-4**'s sign-out runs in Supabase Auth, like sign-in, and is checked by
   hand.
 - **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and

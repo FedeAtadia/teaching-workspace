@@ -5,6 +5,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { getDb } from "@/db";
 import Link from "next/link";
+import { listCopySources } from "@/db/queries/copyClass";
+import { copyLabels } from "@/lib/classCards";
 import { listClasses, listSchools } from "@/db/queries/classes";
 import { getHomeCards, type HomeCard } from "@/db/queries/home";
 import { requireTeacherId } from "@/lib/auth";
@@ -33,6 +35,7 @@ export default async function ClassesPage({ searchParams }: PageProps<"/classes"
     listSchools(db, teacherId),
     classCardProps(),
   ]);
+  const [copySources, copyLabel] = await Promise.all([listCopySources(db, teacherId), copyLabels()]);
   const counts = {
     active: view === "active" ? home.cards.length : others.length,
     archived: view === "archived" ? home.cards.length : others.length,
@@ -48,7 +51,13 @@ export default async function ClassesPage({ searchParams }: PageProps<"/classes"
   return (
     <PageHeader
       title={t("title")}
-      action={<AddClassDialog defaultSchoolYear={new Date().getFullYear()} schools={schools.map((s) => s.name)} />}
+      action={
+        <AddClassDialog
+          defaultSchoolYear={new Date().getFullYear()}
+          schools={schools.map((s) => s.name)}
+          copySources={copySources.map((c) => ({ id: c.id, label: copyLabel(c, schools.length > 1) }))}
+        />
+      }
     >
       {counts.archived > 0 && (
         <nav

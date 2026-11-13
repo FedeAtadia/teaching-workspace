@@ -1,5 +1,6 @@
 import "server-only";
 import { getTranslations } from "next-intl/server";
+import type { CopySource } from "@/db/queries/copyClass";
 import type { HomeCard } from "@/db/queries/home";
 import { formatCourse } from "@/lib/courses";
 import { formatDate } from "@/lib/format";
@@ -25,4 +26,13 @@ export async function classCardProps() {
         ? t("noTasks")
         : t("allScored"),
   });
+}
+
+/** COPY-1: how a class reads in the list to copy from: "Matemática · 5° A · Mañana · 2026". */
+export async function copyLabels() {
+  const tShift = await getTranslations("shifts");
+  return (c: CopySource, withSchool: boolean) =>
+    [c.name, formatCourse(c.year, c.division), tShift(c.shift), c.schoolYear, withSchool ? c.school : null]
+      .filter(Boolean)
+      .join(" · ");
 }

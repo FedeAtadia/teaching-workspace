@@ -3,6 +3,7 @@ import {
   adaptationInput,
   calendarInput,
   classEdit,
+  classCreate,
   classInput,
   dayOffEdit,
   dayOffInput,
@@ -545,5 +546,16 @@ describe("a school with its own pass mark (GRADE-5)", () => {
     });
     expect(schoolInput.parse({ schoolId, name: "EPET 30", passMark: "" }).passMark).toBe("");
     expect(schoolInput.parse({ schoolId, name: "EPET 30" }).passMark).toBeUndefined();
+  });
+});
+
+describe("a new class copied from another (COPY-1)", () => {
+  const base = { school: "EPET 30", name: "Matemática", year: "5", division: "a", shift: "morning", schoolYear: "2027", weekdays: [] };
+  it("copies nothing unless a class is picked", () => {
+    expect(classCreate.parse(base).copyFrom).toBeNull();
+    expect(classCreate.parse({ ...base, copyFrom: "" }).copyFrom).toBeNull();
+    const id = crypto.randomUUID();
+    expect(classCreate.parse({ ...base, copyFrom: id }).copyFrom).toBe(id);
+    expect(classCreate.safeParse({ ...base, copyFrom: "nope" }).success).toBe(false);
   });
 });

@@ -1,10 +1,12 @@
 "use server";
 
+import { copyClassContent, unlinkMissingFiles } from "@/db/queries/copyClass";
+import { copyStoredFiles } from "@/lib/supabase/storage";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/db";
 import { createClass, updateClass } from "@/db/queries/classes";
 import { requireTeacherId } from "@/lib/auth";
-import { classEdit, classInput, toFieldErrors, type FieldError } from "@/lib/validation";
+import { classEdit, classCreate, toFieldErrors, type FieldError } from "@/lib/validation";
 
 export type AddClassState = {
   status: "idle" | "saved" | "error";
@@ -31,11 +33,19 @@ function readClassForm(formData: FormData) {
 
 export async function addClass(_prev: AddClassState, formData: FormData): Promise<AddClassState> {
   const { values, input } = readClassForm(formData);
-  const parsed = classInput.safeParse(input);
+  const parsed = classCreate.safeParse(input);
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
 
-  const result = await createClass(getDb(), await requireTeacherId(), parsed.data);
+  const db = getDb();
+  const teacherId = await requireTeacherId();
+  const result = await createClass(db, teacherId, parsed.data);
   if (!result.ok) return { status: "error", formError: result.error, values };
+
+  // COPY-1..3: the content of the class picked, then its files in Storage.
+  if (parsed.data.copyFrom) {
+    const copy = await copyClassContent(db, teacherId, { fromClassId: parsed.data.copyFrom, toClassId: result.classId });
+    if (copy.ok) await unlinkMissingFiles(db, teacherId, await copyStoredFiles(copy.files));
+  }
 
   revalidatePath("/classes");
   revalidatePath("/students");

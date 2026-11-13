@@ -11,6 +11,8 @@ import { listSchools } from "@/db/queries/classes";
 import { getHomeCards, getTodayClasses, type TodayClass } from "@/db/queries/home";
 import { runRetention } from "@/db/queries/retention";
 import { getFollowUp } from "@/db/queries/followUp";
+import { listCopySources } from "@/db/queries/copyClass";
+import { copyLabels } from "@/lib/classCards";
 import { FollowUpReasons } from "@/components/students/FollowUpReasons";
 import { formatCourse } from "@/lib/courses";
 import { removeStoredFiles } from "@/lib/supabase/storage";
@@ -47,11 +49,13 @@ export default async function DashboardPage() {
   // KEEP-1: graduates whose day has come are deleted before anything is counted.
   const retention = await runRetention(db, teacherId, today);
   await removeStoredFiles(retention.attachmentPaths);
-  const [home, followUp, schools, cardProps, todayClasses] = await Promise.all([
+  const [home, followUp, schools, copySources, cardProps, copyLabel, todayClasses] = await Promise.all([
     getHomeCards(db, teacherId),
     getFollowUp(db, teacherId, today),
     listSchools(db, teacherId),
+    listCopySources(db, teacherId),
     classCardProps(),
+    copyLabels(),
     getTodayClasses(db, teacherId, today),
   ]);
   const severalSchools = schools.length > 1;
@@ -194,6 +198,7 @@ export default async function DashboardPage() {
               appearance="card"
               defaultSchoolYear={new Date().getFullYear()}
               schools={schools.map((s) => s.name)}
+              copySources={copySources.map((c) => ({ id: c.id, label: copyLabel(c, severalSchools) }))}
             />
           </div>
         </section>

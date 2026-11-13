@@ -130,7 +130,12 @@
       "archived": "Archivados"
     },
     "emptyArchived": "No hay cursos archivados.",
-    "archivedHint": "Los cursos que ya no usás, por ejemplo los del año pasado. Siguen completos y en la historia de cada estudiante; abrí uno para desarchivarlo."
+    "archivedHint": "Los cursos que ya no usás, por ejemplo los del año pasado. Siguen completos y en la historia de cada estudiante; abrí uno para desarchivarlo.",
+    "copy": {
+      "label": "Copiar contenido de otro curso",
+      "none": "No copiar nada",
+      "hint": "Opcional. Trae las unidades, los criterios de aprobación y las tareas (con sus archivos y su versión adaptada), sin fechas, grupos ni notas. Después podés cambiar lo que quieras."
+    }
   },
   "classPage": {
     "back": "Cursos",
