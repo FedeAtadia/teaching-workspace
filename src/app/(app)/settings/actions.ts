@@ -5,9 +5,11 @@ import { redirect } from "next/navigation";
 import { getDb, type Db } from "@/db";
 import { deleteSignIn, deleteTeacherData } from "@/db/queries/account";
 import { addDayOff, addNationalHolidays, deleteDayOff, saveCalendar, updateDayOff } from "@/db/queries/calendar";
-import { renameSchool } from "@/db/queries/classes";
+import { renameSchool, setSchoolPassMark } from "@/db/queries/classes";
+import { setFollowUpSettings } from "@/db/queries/followUp";
 import { setRetentionMonths } from "@/db/queries/retention";
-import { setMinAttendance } from "@/db/queries/settings";
+import { getRules, setMinAttendance, setRules } from "@/db/queries/settings";
+import { checkRules, parseGrade, type RulesProblem } from "@/lib/grading";
 import { ATTACHMENT_BUCKET } from "@/lib/attachments";
 import { requireTeacherId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -17,19 +19,28 @@ import {
   dayOffEdit,
   dayOffInput,
   minAttendanceInput,
+  followUpInput,
   retentionInput,
+  rulesInput,
   schoolInput,
   toFieldErrors,
 } from "@/lib/validation";
 
-/** SCHOOL-3 */
+/** SCHOOL-3, GRADE-5 */
 export async function renameSchoolAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const values = Object.fromEntries(formData) as Record<string, string>;
   const parsed = schoolInput.safeParse(values);
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
 
-  const result = await renameSchool(getDb(), await requireTeacherId(), parsed.data);
+  const teacherId = await requireTeacherId();
+  // GRADE-5: empty goes back to the teacher's pass mark; otherwise a grade on their scale.
+  const typed = parsed.data.passMark ?? "";
+  const passMark = typed === "" ? null : parseGrade(typed, await getRules(getDb(), teacherId));
+  if (typed !== "" && passMark === null) return { status: "error", fieldErrors: { passMark: "invalid" }, values };
+
+  const result = await renameSchool(getDb(), teacherId, parsed.data);
   if (!result.ok) return { status: "error", formError: result.error, values };
+  await setSchoolPassMark(getDb(), teacherId, { schoolId: parsed.data.schoolId, passMark });
 
   // The name shows on Classes, Students, class pages and histories.
   revalidatePath("/", "layout");
@@ -106,6 +117,39 @@ export async function saveMinAttendanceAction(_prev: FormState, formData: FormDa
   // The gradebooks, cuatrimestre grades and attendance tabs use it.
   revalidatePath("/", "layout");
   return { status: "saved" };
+}
+
+export type RulesState = FormState & {
+  /** Per field, what doesn't fit with the other rules. */
+  ruleErrors?: Partial<Record<string, RulesProblem>>;
+};
+
+/** GRADE-4 */
+export async function saveRulesAction(_prev: RulesState, formData: FormData): Promise<RulesState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = rulesInput.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+  const ruleErrors = checkRules(parsed.data);
+  if (Object.keys(ruleErrors).length > 0) return { status: "error", ruleErrors, values };
+
+  await setRules(getDb(), await requireTeacherId(), parsed.data);
+  // Every gradebook, cuatrimestre sheet, Cierre, Previas and history reads them.
+  revalidatePath("/", "layout");
+  return { status: "saved", values };
+}
+
+/** FOLLOW-4 */
+export async function saveFollowUpAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = followUpInput.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+  await setFollowUpSettings(getDb(), await requireTeacherId(), {
+    enabled: parsed.data.enabled === "on",
+    missing: parsed.data.missing,
+  });
+  // Home, Students and each student's page show it.
+  revalidatePath("/", "layout");
+  return { status: "saved", values };
 }
 
 /** KEEP-2 */

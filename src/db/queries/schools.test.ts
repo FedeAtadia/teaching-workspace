@@ -4,7 +4,13 @@ import type { Db } from "@/db";
 import { academicYears, courseStudents, courses, schools, students } from "@/db/schema";
 import { createTestDb, migrateRest, newTeacher } from "@/test/db";
 import type { ClassInput } from "@/lib/validation";
-import { createClass, listClasses, listCourses, listSchools, renameSchool } from "./classes";
+import { createClass, listClasses, listCourses, listSchools, renameSchool, setSchoolPassMark } from "./classes";
+import { getClass } from "./classDetail";
+import { getStudentHistory } from "./history";
+import { setRules } from "./settings";
+import { saveTermGrades } from "./termGrades";
+import { getClosingSheet, listOwed } from "./yearEnd";
+import { listTerms } from "./classDetail";
 import { createStudent, listStudents } from "./students";
 
 let db: Db;
@@ -117,4 +123,70 @@ describe("courses from before schools (SCHOOL-4)", () => {
     expect(named.map((s) => s.name)).toEqual(["Mi escuela"]);
     expect(await old.select().from(courseStudents)).toHaveLength(1);
   }, 30_000);
+});
+
+describe("a school's own pass mark (GRADE-5)", () => {
+  /** One teacher, a class at each of two schools, the same student with a final 6 in both. */
+  async function twoSchools() {
+    const teacher = newTeacher();
+    const input = { name: "Matemática", year: 4, division: "A", shift: "morning" as const, schoolYear: 2026 };
+    const ids: Record<string, string> = {};
+    for (const school of ["Escuela del 6", "Escuela del 7"]) {
+      const created = await createClass(db, teacher, { ...input, school });
+      if (!created.ok) throw new Error("createClass failed");
+      const cls = (await getClass(db, teacher, created.classId))!;
+      await createStudent(db, teacher, { firstName: "Ana", lastName: "Pérez", courseId: cls.courseId });
+      const [student] = (await listStudents(db, teacher)).filter((s) => s.courses.some((c) => c.id === cls.courseId));
+      const [, term2] = await listTerms(db, teacher, cls);
+      await saveTermGrades(db, teacher, cls, term2.id, {
+        save: [{ studentId: student.id, value: 6, notes: null, outsideRangeReason: null }],
+        clear: [],
+      });
+      ids[school] = created.classId;
+    }
+    const schools = await listSchools(db, teacher);
+    return { teacher, ids, sixId: schools.find((s) => s.name === "Escuela del 6")!.id };
+  }
+  const result = async (teacher: string, classId: string) => {
+    const cls = (await getClass(db, teacher, classId))!;
+    return (await getClosingSheet(db, teacher, cls)).rows[0].result.kind;
+  };
+
+  it("is used for that school's classes only; the others keep the teacher's", async () => {
+    const { teacher, ids, sixId } = await twoSchools();
+    expect(await result(teacher, ids["Escuela del 6"])).toBe("owed");
+
+    expect(await setSchoolPassMark(db, teacher, { schoolId: sixId, passMark: 6 })).toEqual({ ok: true });
+
+    expect((await listSchools(db, teacher)).map((s) => [s.name, s.passMark])).toEqual([
+      ["Escuela del 6", 6],
+      ["Escuela del 7", null],
+    ]);
+    expect((await getClass(db, teacher, ids["Escuela del 6"]))!.passMark).toBe(6);
+    expect((await getClass(db, teacher, ids["Escuela del 7"]))!.passMark).toBeNull();
+    expect(await result(teacher, ids["Escuela del 6"])).toBe("passed");
+    expect(await result(teacher, ids["Escuela del 7"])).toBe("owed");
+    // Previas and the history agree.
+    expect((await listOwed(db, teacher)).map((c) => c.school)).toEqual(["Escuela del 7"]);
+    const [student] = (await listStudents(db, teacher)).filter((s) => s.courses.some((c) => c.school === "Escuela del 6"));
+    const history = (await getStudentHistory(db, teacher, student.id))!;
+    expect(history.courses[0].classes[0]).toMatchObject({ passMark: 6, result: { kind: "passed" } });
+  });
+
+  it("goes back to the teacher's pass mark when cleared, whatever that is by then", async () => {
+    const { teacher, ids, sixId } = await twoSchools();
+    await setSchoolPassMark(db, teacher, { schoolId: sixId, passMark: 6 });
+    await setSchoolPassMark(db, teacher, { schoolId: sixId, passMark: null });
+    expect(await result(teacher, ids["Escuela del 6"])).toBe("owed");
+    await setRules(db, teacher, { gradeMin: 1, gradeMax: 10, passMark: 5, maxTermIncrease: 3, maxTermDecrease: 3 });
+    expect(await result(teacher, ids["Escuela del 6"])).toBe("passed");
+  });
+
+  it("refuses another teacher's school (OWNER-1)", async () => {
+    const { teacher, sixId } = await twoSchools();
+    const notFound = { ok: false, error: "notFound" };
+    expect(await setSchoolPassMark(db, newTeacher(), { schoolId: sixId, passMark: 4 })).toEqual(notFound);
+    expect(await setSchoolPassMark(db, teacher, { schoolId: "nope", passMark: 4 })).toEqual(notFound);
+    expect((await listSchools(db, teacher)).find((s) => s.id === sixId)!.passMark).toBeNull();
+  });
 });

@@ -130,7 +130,12 @@
       "archived": "Archivados"
     },
     "emptyArchived": "No hay cursos archivados.",
-    "archivedHint": "Los cursos que ya no usás, por ejemplo los del año pasado. Siguen completos y en la historia de cada estudiante; abrí uno para desarchivarlo."
+    "archivedHint": "Los cursos que ya no usás, por ejemplo los del año pasado. Siguen completos y en la historia de cada estudiante; abrí uno para desarchivarlo.",
+    "copy": {
+      "label": "Copiar contenido de otro curso",
+      "none": "No copiar nada",
+      "hint": "Opcional. Trae las unidades, los criterios de aprobación y las tareas (con sus archivos y su versión adaptada), sin fechas, grupos ni notas. Después podés cambiar lo que quieras."
+    }
   },
   "classPage": {
     "back": "Cursos",
@@ -274,7 +279,7 @@
         "excused": "Justificado"
       },
       "errors": {
-        "invalidScore": "Tiene que ser una nota del 1 al 10 (por ejemplo 7,5).",
+        "invalidScore": "No es una nota de tu escala. Se escribe con hasta dos decimales, por ejemplo 7,5.",
         "notesTooLong": "Las observaciones son demasiado largas."
       },
       "adapted": "Adaptada",
@@ -318,7 +323,7 @@
       "notFound": "No se encontró este cuatrimestre. Recargá la página.",
       "noStudents": "Este curso todavía no tiene estudiantes.",
       "errors": {
-        "invalidGrade": "Tiene que ser una nota del 1 al 10 (por ejemplo 7,5).",
+        "invalidGrade": "No es una nota de tu escala. Se escribe con hasta dos decimales, por ejemplo 7,5.",
         "needsGrade": "Poné una nota o borrá las observaciones.",
         "notesTooLong": "Las observaciones son demasiado largas.",
         "reasonRequired": "Está fuera del rango esperado: escribí el motivo.",
@@ -401,7 +406,8 @@
       "to": "Nuevo curso",
       "otherYear": "Ese curso es de otro ciclo lectivo.",
       "notFound": "No se pudo cambiar de curso. Recargá la página y probá de nuevo."
-    }
+    },
+    "report": "Informe"
   },
   "closing": {
     "intro": "El resultado de cada estudiante en la materia, y si promociona o repite el año. La nota final es la del 2° cuatrimestre.",
@@ -496,7 +502,8 @@
       "graduates": "Egresados",
       "all": "Todos",
       "course": "Curso",
-      "allCourses": "Todos los cursos"
+      "allCourses": "Todos los cursos",
+      "followUp": "En seguimiento"
     },
     "graduated": "Egresó",
     "owes": "Debe materias",
@@ -528,12 +535,15 @@
       "intro": "Se crean al agregar un curso. Acá podés cambiarles el nombre y cargar el calendario escolar de cada año.",
       "empty": "Todavía no hay escuelas: se crean con tu primer curso.",
       "courses": "{count, plural, one {# curso} other {# cursos}}",
-      "rename": "Cambiar nombre",
-      "renameTitle": "Cambiar el nombre de «{name}»",
+      "rename": "Editar",
+      "renameTitle": "Editar «{name}»",
       "name": "Nombre de la escuela",
       "duplicate": "Ya tenés otra escuela con ese nombre.",
       "notFound": "No se encontró esa escuela. Recargá la página.",
-      "calendar": "Calendario {year}"
+      "calendar": "Calendario {year}",
+      "passMark": "Nota de aprobación de esta escuela",
+      "passMarkPlaceholder": "Vacío: la tuya ({grade})",
+      "passMarkBadge": "Aprueba con {grade}"
     },
     "attendance": {
       "title": "Asistencia",
@@ -561,6 +571,39 @@
         "months": "{count, plural, =6 {6 meses} =12 {1 año} =24 {2 años} =36 {3 años} =60 {5 años} other {# meses}}",
         "saved": "Guardado."
       }
+    },
+    "grading": {
+      "title": "Calificaciones",
+      "intro": "La escala con la que calificás y las reglas que Annora aplica sobre ella. Rigen para todos tus cursos; si tu escuela o tu provincia usan otras, cambialas acá.",
+      "fields": {
+        "gradeMin": "Nota mínima",
+        "gradeMax": "Nota máxima",
+        "passMark": "Nota de aprobación",
+        "maxTermIncrease": "Cuánto puede subir el 2° cuatrimestre",
+        "maxTermDecrease": "Cuánto puede bajar el 2° cuatrimestre"
+      },
+      "hints": {
+        "gradeMin": "La más baja que se puede poner.",
+        "gradeMax": "La más alta, hasta 100.",
+        "passMark": "Desde esta nota se aprueba.",
+        "maxTermIncrease": "Puntos por encima de la nota del 1°.",
+        "maxTermDecrease": "Puntos por debajo de la nota del 1°."
+      },
+      "problems": {
+        "scale": "La nota máxima tiene que ser mayor que la mínima, y hasta 100.",
+        "passMark": "Tiene que estar entre la nota mínima y la máxima.",
+        "termChange": "No puede ser más que la distancia entre la nota mínima y la máxima."
+      },
+      "saved": "Guardado.",
+      "note": "Cambiar la escala no modifica las notas que ya cargaste: quedan como están. Con otra nota de aprobación, sí cambia quién figura como aprobado o debe la materia."
+    },
+    "followUp": {
+      "title": "Seguimiento",
+      "intro": "Annora te señala a los estudiantes que conviene seguir de cerca en el cuatrimestre en curso: los que tienen la asistencia por debajo de tu mínimo, el promedio de tareas por debajo de la nota de aprobación, o varias tareas sin entregar. Aparecen en Inicio, en Estudiantes y en la página de cada uno.",
+      "enabled": "Señalar a los estudiantes en seguimiento",
+      "missing": "Tareas sin entregar",
+      "missingHint": "Desde cuántas tareas sin entregar en el cuatrimestre se lo señala. Entre 1 y 20.",
+      "saved": "Guardado."
     }
   },
   "weekdays": {
@@ -1147,6 +1190,74 @@
       "courseNotFound": "Ese curso ya no existe. Elegí otro.",
       "invalid": "No se pudo importar la lista. Revisala y probá de nuevo.",
       "unreadable": "No se pudo leer ese archivo. Guardalo como CSV y probá de nuevo."
+    }
+  },
+  "report": {
+    "metaTitle": "Informe de {name}",
+    "title": "Informe del estudiante",
+    "back": "Volver al estudiante",
+    "print": "Imprimir o guardar como PDF",
+    "printHint": "Para tener un PDF, en la ventana de impresión elegí «Guardar como PDF» como destino.",
+    "options": {
+      "course": "Curso",
+      "tasks": "Incluir el detalle de las tareas",
+      "adaptations": "Incluir las adaptaciones"
+    },
+    "fields": {
+      "student": "Estudiante",
+      "course": "Curso",
+      "school": "Escuela",
+      "schoolYear": "Ciclo lectivo",
+      "teacher": "Docente",
+      "date": "Fecha del informe",
+      "outcome": "Cierre del año"
+    },
+    "left": "Ya no está en este curso",
+    "columns": {
+      "term": "Cuatrimestre",
+      "average": "Promedio de tareas",
+      "missing": "Tareas sin entregar",
+      "attendance": "Asistencia",
+      "grade": "Nota"
+    },
+    "finalGrade": "Nota final",
+    "result": "Situación",
+    "passMark": "Se aprueba con {grade}",
+    "exams": "Exámenes",
+    "examAbsent": "ausente",
+    "adaptation": "Adaptaciones",
+    "tasks": "Tareas del {term}",
+    "taskColumns": {
+      "task": "Tarea",
+      "date": "Fecha",
+      "score": "Calificación",
+      "notes": "Observaciones"
+    },
+    "scores": {
+      "missing": "No entregó",
+      "excused": "Justificado",
+      "none": "Sin calificar",
+      "adapted": "adaptada"
+    },
+    "noClasses": "Este curso todavía no tiene materias.",
+    "noTerms": "Todavía no hay nada cargado.",
+    "owedElsewhere": "Materias que debe de otros años",
+    "owedLine": "{name} ({course}, {year})",
+    "noCourse": "Este estudiante no está en ningún curso, así que todavía no hay nada que informar.",
+    "footer": "Informe generado con Annora el {date}. Refleja lo cargado por el o la docente hasta esa fecha."
+  },
+  "followUp": {
+    "title": "Para seguir de cerca",
+    "intro": "Estudiantes que, en el cuatrimestre en curso, están por debajo de alguno de tus límites.",
+    "badge": "Seguimiento",
+    "seeAll": "{count, plural, one {Ver el estudiante} other {Ver los # estudiantes}}",
+    "more": "{count, plural, one {y # más} other {y # más}}",
+    "boxTitle": "Seguimiento",
+    "classLine": "{name} ({term})",
+    "reasons": {
+      "attendance": "asistencia {rate} %",
+      "average": "promedio {average}",
+      "missing": "{count, plural, one {# tarea sin entregar} other {# tareas sin entregar}}"
     }
   }
 }

@@ -3,10 +3,14 @@ import {
   adaptationInput,
   calendarInput,
   classEdit,
+  classCreate,
   classInput,
   dayOffEdit,
   dayOffInput,
-  examInput,
+  examInputFor,
+  followUpInput,
+  retentionInput,
+  rulesInput,
   groupEdit,
   groupInput,
   minAttendanceInput,
@@ -32,6 +36,10 @@ const validClass = {
   shift: "morning",
   schoolYear: "2026",
 };
+
+import { DEFAULT_RULES } from "./grading";
+
+const examInput = examInputFor(DEFAULT_RULES);
 
 describe("adding a class (CLASS)", () => {
   it("accepts the six fields as a form sends them (CLASS-2)", () => {
@@ -477,5 +485,77 @@ describe("the minimum attendance (SUGGEST-3)", () => {
     expect(minAttendanceInput.safeParse({ minAttendance: "101" }).success).toBe(false);
     expect(minAttendanceInput.safeParse({ minAttendance: "7,5" }).success).toBe(false);
     expect(minAttendanceInput.safeParse({ minAttendance: "" }).success).toBe(false);
+  });
+});
+
+describe("an exam's grade on the teacher's scale (GRADE-4)", () => {
+  const base = { classId: crypto.randomUUID(), studentId: crypto.randomUUID(), takenOn: "2026-12-15", status: "graded", notes: "" };
+  it("takes a grade the default scale refuses, and refuses one off the teacher's", () => {
+    const hundred = examInputFor({ ...DEFAULT_RULES, gradeMin: 0, gradeMax: 100, passMark: 60 });
+    expect(hundred.parse({ ...base, grade: "85" }).value).toBe(85);
+    expect(examInputFor(DEFAULT_RULES).safeParse({ ...base, grade: "85" }).success).toBe(false);
+    expect(hundred.safeParse({ ...base, grade: "101" }).success).toBe(false);
+  });
+});
+
+describe("the settings a teacher types (KEEP-2, GRADE-4)", () => {
+  it("takes the periods on offer for graduates and nothing else (KEEP-2)", () => {
+    // What broke once: a pattern that matched no digit refused every period.
+    expect(retentionInput.parse({ months: "6" })).toEqual({ months: 6 });
+    expect(retentionInput.parse({ months: "24" })).toEqual({ months: 24 });
+    for (const months of ["7", "", "abc", "120", "1.5"]) {
+      expect(retentionInput.safeParse({ months }).success, months).toBe(false);
+    }
+  });
+
+  it("reads grading rules typed with a comma or a point (GRADE-4)", () => {
+    expect(
+      rulesInput.parse({ gradeMin: "1", gradeMax: "10", passMark: "6,5", maxTermIncrease: " 3 ", maxTermDecrease: "2.5" }),
+    ).toEqual({ gradeMin: 1, gradeMax: 10, passMark: 6.5, maxTermIncrease: 3, maxTermDecrease: 2.5 });
+  });
+
+  it("refuses what isn't a number on the widest scale (GRADE-4)", () => {
+    const good = { gradeMin: "1", gradeMax: "10", passMark: "7", maxTermIncrease: "3", maxTermDecrease: "3" };
+    for (const bad of ["", "siete", "-1", "101", "7,555", "1e2"]) {
+      expect(rulesInput.safeParse({ ...good, passMark: bad }).success, bad).toBe(false);
+    }
+  });
+});
+
+describe("the follow-up settings a teacher sends (FOLLOW-4)", () => {
+  it("reads the box as on or off and the number of tasks", () => {
+    expect(followUpInput.parse({ enabled: "on", missing: "3" })).toEqual({ enabled: "on", missing: 3 });
+    // An unticked box sends nothing at all.
+    expect(followUpInput.parse({ missing: " 20 " })).toEqual({ missing: 20 });
+  });
+
+  it("refuses a number of tasks outside 1 to 20", () => {
+    for (const missing of ["0", "21", "", "tres", "2,5", "-1"]) {
+      expect(followUpInput.safeParse({ enabled: "on", missing }).success, missing).toBe(false);
+    }
+  });
+});
+
+describe("a school with its own pass mark (GRADE-5)", () => {
+  it("keeps what was typed for the action to read on the teacher's scale; empty or absent is fine", () => {
+    const schoolId = crypto.randomUUID();
+    expect(schoolInput.parse({ schoolId, name: "EPET 30", passMark: " 6,5 " })).toEqual({
+      schoolId,
+      name: "EPET 30",
+      passMark: "6,5",
+    });
+    expect(schoolInput.parse({ schoolId, name: "EPET 30", passMark: "" }).passMark).toBe("");
+    expect(schoolInput.parse({ schoolId, name: "EPET 30" }).passMark).toBeUndefined();
+  });
+});
+
+describe("a new class copied from another (COPY-1)", () => {
+  const base = { school: "EPET 30", name: "Matemática", year: "5", division: "a", shift: "morning", schoolYear: "2027", weekdays: [] };
+  it("copies nothing unless a class is picked", () => {
+    expect(classCreate.parse(base).copyFrom).toBeNull();
+    expect(classCreate.parse({ ...base, copyFrom: "" }).copyFrom).toBeNull();
+    const id = crypto.randomUUID();
+    expect(classCreate.parse({ ...base, copyFrom: id }).copyFrom).toBe(id);
+    expect(classCreate.safeParse({ ...base, copyFrom: "nope" }).success).toBe(false);
   });
 });

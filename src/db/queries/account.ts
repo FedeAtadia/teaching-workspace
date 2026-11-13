@@ -100,6 +100,8 @@ export async function loadExport(db: Db, teacherId: string): Promise<ExportData>
       },
     ]),
   );
+  // GRADE-5: a class without its own pass mark has its school's.
+  const schoolPassMark = new Map(courseRows.map((c) => [c.id, schoolById.get(c.schoolId)?.passMark ?? null]));
   const classById = new Map(
     classRows.flatMap((c) => {
       const course = courseById.get(c.courseId);
@@ -126,7 +128,7 @@ export async function loadExport(db: Db, teacherId: string): Promise<ExportData>
 
   return {
     classes: present(
-      classRows.map((c) => inClass(c.id, { passMark: c.passMark, weekdays: c.weekdays, notes: c.notes, archivedOn: c.archivedOn })),
+      classRows.map((c) => inClass(c.id, { passMark: c.passMark ?? schoolPassMark.get(c.courseId) ?? null, weekdays: c.weekdays, notes: c.notes, archivedOn: c.archivedOn })),
     ),
     students: [
       ...present(

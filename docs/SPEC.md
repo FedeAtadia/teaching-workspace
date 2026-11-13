@@ -24,13 +24,29 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
 
 ## GRADE — Scale and passing
 
-*Enforced by `src/lib/grading.ts`. Covered by `src/lib/grading.test.ts`.*
+*Enforced by `src/lib/grading.ts`, `src/lib/validation.ts`,
+`src/db/queries/settings.ts`. Covered by `src/lib/grading.test.ts`,
+`src/lib/validation.test.ts`, `src/db/queries/settings.test.ts`,
+`src/db/queries/yearEnd.test.ts`.*
 
-- **GRADE-1** Grades are on a 1 to 10 scale by default.
+- **GRADE-1** Grades are on a 1 to 10 scale by default; the scale is the
+  teacher's to set (GRADE-4).
 - **GRADE-2** A grade passes when it is at or above the pass mark, which is 7 by
   default.
 - **GRADE-3** A class can set its own pass mark; when it does, that mark is used
   instead of the teacher's default.
+- **GRADE-4** In Settings the teacher sets their lowest and highest grade, the
+  pass mark and how far the 2° cuatrimestre may go above and below the 1°
+  (TERM-2), typed with a comma or a point. The highest grade is above the
+  lowest and at most 100; the pass mark is on the scale; neither limit is
+  wider than the scale. What doesn't fit is refused, saying which and why.
+  From then on every grade typed (INPUT-1), every pass or fail, the 2°
+  cuatrimestre's range and each class's result (YEAR-1) go by those rules.
+  Grades already saved are never changed.
+- **GRADE-5** A school can have its own pass mark, set where the school is
+  edited in Settings: a grade on the teacher's scale, or empty to follow the
+  teacher's. It is the pass mark of every class at that school that has none
+  of its own (GRADE-3), and of nothing at the teacher's other schools.
 
 ## TERM — Cuatrimestres
 
@@ -145,6 +161,25 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   when it is archived, and stays in each student's history (HISTORY-2), in
   Previas (EXAM-3) and in the download (DATA-1).
 
+## COPY — Starting a class from another one
+
+*Enforced by `src/db/queries/copyClass.ts`, `src/lib/validation.ts`. Covered
+by `src/db/queries/copyClass.test.ts`, `src/lib/validation.test.ts`.*
+
+- **COPY-1** Adding a class optionally copies the content of another of the
+  teacher's classes, archived ones included (CLASS-8), listed newest school
+  year first. Nothing is copied unless one is picked.
+- **COPY-2** The copy brings the units, the class's passing standards (not a
+  student's own, ADAPT-2) and the tasks with their description, specific
+  standard, adapted version, unit and passing standards, each into the
+  cuatrimestre of the same number. Dates, groups, scores and grades stay
+  behind, and the class copied from is untouched.
+- **COPY-3** The tasks' and standards' files are copied into the new ones'
+  own folders (FILE-2). One that Storage can't copy is left unlinked rather
+  than pointing at nothing.
+- **COPY-4** Only the teacher's own classes can be copied from or into, and
+  never a class onto itself (OWNER-1).
+
 ## COURSE — Courses
 
 *Enforced by `src/lib/courses.ts`, `src/db/queries/classes.ts`. Covered by
@@ -225,6 +260,7 @@ up. What is planned but not yet specified lives in [ROADMAP.md](ROADMAP.md).
   class. A graduate who still owes a class (EXAM-3) stays in it, marked as a
   graduate who owes, until they pass it. Those left out show under
   "Egresados", and "Todos" shows everyone; each says how many it has.
+  A fourth view shows the students to follow up (FOLLOW-3).
 - **STUDENT-6** The list can be narrowed to the students of one course, in
   any of those views. The view and the course are kept in the address.
 - **STUDENT-7** A student's first and last name can be changed from their
@@ -499,6 +535,26 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 - **HISTORY-5** Each cuatrimestre of a class also shows the student's
   attendance in it (ATT-4), when there is a percentage.
 
+## REPORT — A student's report
+
+*Enforced by `src/lib/report.ts`. Covered by `src/lib/report.test.ts`.*
+
+- **REPORT-1** A student's page opens a report on one of their courses: by
+  default the one they are in now (not one they left), newest first. It
+  names the student, the course, the school, the school year and the
+  teacher, is dated, and for each class of the course shows, cuatrimestre by
+  cuatrimestre, the average of the tasks scored, the tasks not handed in,
+  the attendance and the grade set; then the final grade, the result
+  (YEAR-1) and any exams. A student in no course has no report.
+- **REPORT-2** The report lists the classes the student still owes from
+  their other courses (EXAM-3), by subject, course and school year.
+- **REPORT-3** Each task with its score and notes, and what is adapted for
+  the student (ADAPT-1), are left out unless the teacher asks for them.
+- **REPORT-4** The teacher can pick another of the student's courses. The
+  course and what is included are kept in the address, and the report is
+  laid out to be printed or saved as a PDF, black on white whatever the
+  theme, without the app's menus.
+
 ## YEAR — Closing the school year
 
 *Enforced by `src/lib/yearEnd.ts`, `src/lib/validation.ts`,
@@ -672,6 +728,30 @@ by hand (Known gaps).*
   settings and their sign-in are deleted; they are signed out and land on the
   public home page. Another teacher's data is untouched.
 
+## FOLLOW — Students to follow up
+
+*Enforced by `src/lib/followUp.ts`, `src/lib/students.ts`,
+`src/db/queries/followUp.ts`. Covered by `src/lib/followUp.test.ts`,
+`src/lib/students.test.ts`, `src/db/queries/followUp.test.ts`.*
+
+- **FOLLOW-1** A student needs following up in a class when, in one
+  cuatrimestre, their attendance (ATT-4) is below the teacher's minimum
+  (SUGGEST-3; never with the minimum at 0), the average of their scored
+  tasks (SUGGEST-1) is below the class's pass mark (GRADE-2..5), or their
+  tasks not handed in (SUGGEST-2) reach the teacher's number. Each reason
+  comes with its figure. With nothing recorded there is no reason.
+- **FOLLOW-2** The cuatrimestre looked at is the one under way: the one
+  today falls in by the school's calendar (CAL-1), and none outside the
+  school year; for a class whose school has no calendar, the latest one
+  with anything scored.
+- **FOLLOW-3** Only active students of classes that aren't archived
+  (CLASS-8) are considered. Home lists the first of them with their
+  reasons and a way to the rest; the Students list marks them and has a
+  view with only them; a student's page says, class by class, why.
+- **FOLLOW-4** In Settings the teacher turns this on or off (on unless
+  changed) and sets the number of tasks not handed in, 1 to 20 (3 unless
+  changed). Off, nobody is pointed out anywhere and the view isn't offered.
+
 ## KEEP — How long graduates are kept
 
 *Enforced by `src/lib/retention.ts`, `src/db/queries/retention.ts`,
@@ -715,6 +795,10 @@ by hand (Known gaps).*
   reason: every page behind them needs a signed-in teacher.
 - **IMPORT-3**'s preview and **IMPORT-5**'s guide are interface, checked by
   hand; the tests cover how a list is read and what is saved.
+- **REPORT-1**'s teacher name and date, and **REPORT-4**'s printed layout, are
+  checked by hand: print preview on a computer and a phone, light and dark.
+- **COPY-3**'s copying in Storage runs in Supabase and is checked by hand; the
+  tests cover which files are named and the unlinking of a failed one.
 - **NAV-4**'s sign-out runs in Supabase Auth, like sign-in, and is checked by
   hand.
 - **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and

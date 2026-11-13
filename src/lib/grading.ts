@@ -21,6 +21,32 @@ export const DEFAULT_RULES: GradingRules = {
   maxTermDecrease: 3,
 };
 
+/** GRADE-3: the teacher's rules with a class's own pass mark, when it has one. */
+export function classRules(rules: GradingRules, classPassMark: number | null): GradingRules {
+  return classPassMark === null ? rules : { ...rules, passMark: classPassMark };
+}
+
+/** GRADE-4: the widest scale a teacher can set. */
+export const SCALE_LIMITS = { min: 0, max: 100 } as const;
+
+export type RulesProblem = "scale" | "passMark" | "termChange";
+
+/**
+ * GRADE-4: what is wrong with a set of rules, by field, or nothing. The
+ * scale must have room (lowest below highest, within SCALE_LIMITS), the pass
+ * mark must be on it, and neither cuatrimestre limit can exceed its width.
+ */
+export function checkRules(rules: GradingRules): Partial<Record<keyof GradingRules, RulesProblem>> {
+  const problems: Partial<Record<keyof GradingRules, RulesProblem>> = {};
+  if (rules.gradeMin < SCALE_LIMITS.min) problems.gradeMin = "scale";
+  if (rules.gradeMax > SCALE_LIMITS.max || rules.gradeMax <= rules.gradeMin) problems.gradeMax = "scale";
+  if (rules.passMark < rules.gradeMin || rules.passMark > rules.gradeMax) problems.passMark = "passMark";
+  const width = rules.gradeMax - rules.gradeMin;
+  if (rules.maxTermIncrease < 0 || rules.maxTermIncrease > width) problems.maxTermIncrease = "termChange";
+  if (rules.maxTermDecrease < 0 || rules.maxTermDecrease > width) problems.maxTermDecrease = "termChange";
+  return problems;
+}
+
 /** GRADE-2 */
 export function isPassing(value: number, rules: GradingRules): boolean {
   return value >= rules.passMark;

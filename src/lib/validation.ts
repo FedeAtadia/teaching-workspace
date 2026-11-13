@@ -3,12 +3,13 @@
 // which field is wrong.
 
 import { z } from "zod";
+import { FOLLOW_UP_MISSING_RANGE } from "./followUp";
 import { RETENTION_OPTIONS } from "./retention";
 import { MAX_IMPORT_ROWS } from "./rosterImport";
 import { SESSION_REASONS } from "./attendance";
 import { DAY_OFF_KINDS } from "./calendar";
 import { SHIFTS } from "./courses";
-import { DEFAULT_RULES, parseGrade } from "./grading";
+import { parseGrade, SCALE_LIMITS, type GradingRules } from "./grading";
 import { YEAR_OUTCOMES } from "./yearEnd";
 
 const name = z.string().trim().min(1).max(80);
@@ -42,6 +43,14 @@ export const classInput = z.object({
 });
 export type ClassInput = z.infer<typeof classInput>;
 
+/** COPY-1: a new class, and optionally the class to copy its content from. */
+export const classCreate = classInput.extend({
+  copyFrom: z
+    .union([z.literal(""), z.uuid()])
+    .optional()
+    .transform((v) => v || null),
+});
+
 /** CLASS-6 */
 export const classEdit = classInput.extend({ classId: z.uuid() });
 export type ClassEdit = z.infer<typeof classEdit>;
@@ -50,6 +59,8 @@ export type ClassEdit = z.infer<typeof classEdit>;
 export const schoolInput = z.object({
   schoolId: z.uuid(),
   name: schoolName,
+  /** GRADE-5: as typed; empty means the teacher's pass mark. The action reads it on the teacher's scale. */
+  passMark: z.string().trim().optional(),
 });
 export type SchoolInput = z.infer<typeof schoolInput>;
 
@@ -150,7 +161,8 @@ export type TaskEdit = z.infer<typeof taskEdit>;
  * EXAM-1. The grade arrives as typed (`7,5`) and leaves as `value`: a number
  * for a graded exam, null when the student was absent.
  */
-export const examInput = z
+export const examInputFor = (rules: GradingRules) =>
+  z
   .object({
     classId: z.uuid(),
     studentId: z.uuid(),
@@ -160,15 +172,15 @@ export const examInput = z
     notes: optionalText(1000),
   })
   .superRefine((v, ctx) => {
-    if (v.status === "graded" && parseGrade(v.grade, DEFAULT_RULES) === null) {
+    if (v.status === "graded" && parseGrade(v.grade, rules) === null) {
       ctx.addIssue({ code: "custom", path: ["grade"], message: "invalid" });
     }
   })
   .transform(({ grade, ...rest }) => ({
     ...rest,
-    value: rest.status === "graded" ? parseGrade(grade, DEFAULT_RULES) : null,
+    value: rest.status === "graded" ? parseGrade(grade, rules) : null,
   }));
-export type ExamInput = z.infer<typeof examInput>;
+export type ExamInput = z.infer<ReturnType<typeof examInputFor>>;
 
 /** YEAR-2: one student's outcome; the form's "undecided" option sends "". */
 export const outcomeInput = z.object({
@@ -254,9 +266,40 @@ export type NoClassInput = z.infer<typeof noClassInput>;
 export const retentionInput = z.object({
   months: z
     .string()
-    .regex(/^d{1,2}$/)
+    .regex(/^\d{1,2}$/)
     .transform(Number)
     .refine((n) => (RETENTION_OPTIONS as readonly number[]).includes(n)),
+});
+
+/** A number typed in a settings field: digits with up to two decimals, comma or point. */
+const typedNumber = z
+  .string()
+  .trim()
+  .regex(/^\d{1,3}([.,]\d{1,2})?$/)
+  .transform((v) => Number(v.replace(",", ".")))
+  .pipe(z.number().min(SCALE_LIMITS.min).max(SCALE_LIMITS.max));
+
+/**
+ * GRADE-4: the teacher's grading rules, as typed. Whether they fit together
+ * is `checkRules`'s to say, so each problem gets its own message.
+ */
+export const rulesInput = z.object({
+  gradeMin: typedNumber,
+  gradeMax: typedNumber,
+  passMark: typedNumber,
+  maxTermIncrease: typedNumber,
+  maxTermDecrease: typedNumber,
+});
+
+/** FOLLOW-4: a ticked box arrives as "on", an unticked one not at all. */
+export const followUpInput = z.object({
+  enabled: z.literal("on").optional(),
+  missing: z
+    .string()
+    .trim()
+    .regex(/^[0-9]{1,2}$/)
+    .transform(Number)
+    .pipe(z.number().int().min(FOLLOW_UP_MISSING_RANGE.min).max(FOLLOW_UP_MISSING_RANGE.max)),
 });
 
 /** SUGGEST-3 */

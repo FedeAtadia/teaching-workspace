@@ -10,6 +10,11 @@ import { getDb } from "@/db";
 import { listSchools } from "@/db/queries/classes";
 import { getHomeCards, getTodayClasses, type TodayClass } from "@/db/queries/home";
 import { runRetention } from "@/db/queries/retention";
+import { getFollowUp } from "@/db/queries/followUp";
+import { listCopySources } from "@/db/queries/copyClass";
+import { copyLabels } from "@/lib/classCards";
+import { FollowUpReasons } from "@/components/students/FollowUpReasons";
+import { formatCourse } from "@/lib/courses";
 import { removeStoredFiles } from "@/lib/supabase/storage";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { dismissGraduatesNotice } from "./actions";
@@ -19,11 +24,15 @@ import { classCardProps } from "@/lib/classCards";
 import { formatDate } from "@/lib/format";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-/** HOME-1..4, EXAM-4 */
+/** FOLLOW-3: how many students Home lists before pointing at the rest. */
+const FOLLOW_UP_SHOWN = 6;
+
+/** HOME-1..4, EXAM-4, FOLLOW-3 */
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
   const tCommon = await getTranslations("common");
   const tWeekday = await getTranslations("weekdays");
+  const tFollow = await getTranslations("followUp");
 
   if (!isSupabaseConfigured()) {
     return (
@@ -40,10 +49,13 @@ export default async function DashboardPage() {
   // KEEP-1: graduates whose day has come are deleted before anything is counted.
   const retention = await runRetention(db, teacherId, today);
   await removeStoredFiles(retention.attachmentPaths);
-  const [home, schools, cardProps, todayClasses] = await Promise.all([
+  const [home, followUp, schools, copySources, cardProps, copyLabel, todayClasses] = await Promise.all([
     getHomeCards(db, teacherId),
+    getFollowUp(db, teacherId, today),
     listSchools(db, teacherId),
+    listCopySources(db, teacherId),
     classCardProps(),
+    copyLabels(),
     getTodayClasses(db, teacherId, today),
   ]);
   const severalSchools = schools.length > 1;
@@ -114,6 +126,46 @@ export default async function DashboardPage() {
         />
       </dl>
 
+      {/* FOLLOW-3: the first few, with a way to the rest. */}
+      {followUp.students.length > 0 && (
+        <section>
+          <div className="mb-1 flex flex-wrap items-center gap-3">
+            <h2 className="text-2xl font-bold">{tFollow("title")}</h2>
+            <Badge tone="alert" className="tabular-nums">
+              {followUp.students.length}
+            </Badge>
+          </div>
+          <p className="mb-4 text-sm text-muted-foreground">{tFollow("intro")}</p>
+          <ul className="grid gap-2 lg:grid-cols-2">
+            {followUp.students.slice(0, FOLLOW_UP_SHOWN).map((s) => (
+              <li key={s.studentId}>
+                <Link
+                  href={`/students/${s.studentId}`}
+                  className="relative block overflow-hidden rounded-2xl bg-card p-3 pl-5 ring-1 ring-border transition hover:ring-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  <span className="absolute inset-y-0 left-0 w-1.5 bg-alert" aria-hidden />
+                  <span className="block font-bold">
+                    {s.lastName}, <span className="font-normal">{s.firstName}</span>
+                  </span>
+                  {s.classes.map((c) => (
+                    <span key={c.classId} className="block text-sm text-muted-foreground">
+                      {formatCourse(c.year, c.division)} {c.name}: <FollowUpReasons reasons={c.reasons} />
+                    </span>
+                  ))}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {followUp.students.length > FOLLOW_UP_SHOWN && (
+            <p className="mt-3 text-sm">
+              <Link href="/students?view=followUp" className="font-semibold text-highlight underline underline-offset-4">
+                {tFollow("seeAll", { count: followUp.students.length })}
+              </Link>
+            </p>
+          )}
+        </section>
+      )}
+
       {/* With classes today: Hoy on the left, the classes in a column on the right. */}
       <div className={cn("grid gap-8 sm:gap-10", hasToday && "lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]")}>
         {/* HOME-4 */}
@@ -146,6 +198,7 @@ export default async function DashboardPage() {
               appearance="card"
               defaultSchoolYear={new Date().getFullYear()}
               schools={schools.map((s) => s.name)}
+              copySources={copySources.map((c) => ({ id: c.id, label: copyLabel(c, severalSchools) }))}
             />
           </div>
         </section>

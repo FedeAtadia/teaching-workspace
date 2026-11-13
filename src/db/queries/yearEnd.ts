@@ -17,14 +17,15 @@ import {
 } from "@/db/schema";
 import { compareCourses, compareStudents, type Shift } from "@/lib/courses";
 import { todayInArgentina } from "@/lib/calendar";
-import { DEFAULT_RULES } from "@/lib/grading";
 import type { ExamInput, OutcomeInput } from "@/lib/validation";
 import { allowedOutcomes, classResult, type ClassResult, type ExamStatus, type YearOutcome } from "@/lib/yearEnd";
+import { getRules } from "./settings";
 import { getClass, listClassStudents, type ClassDetail, type RosterStudent } from "./classDetail";
 
 const isUuid = (v: string) => z.uuid().safeParse(v).success;
 const collator = new Intl.Collator("es", { sensitivity: "base" });
-const passMarkOf = (cls: { passMark: number | null }) => cls.passMark ?? DEFAULT_RULES.passMark;
+/** GRADE-3: the class's own pass mark, or the teacher's. */
+const passMarkOf = (cls: { passMark: number | null }, teacherPassMark: number) => cls.passMark ?? teacherPassMark;
 
 export type ExamRow = { id: string; takenOn: string; status: ExamStatus; value: number | null; notes: string | null };
 
@@ -71,7 +72,8 @@ export async function getClosingSheet(
   teacherId: string,
   cls: Pick<ClassDetail, "id" | "courseId" | "passMark">,
 ): Promise<{ rows: ClosingRow[] }> {
-  const [roster, finals, classExams, outcomes] = await Promise.all([
+  const [rules, roster, finals, classExams, outcomes] = await Promise.all([
+    getRules(db, teacherId),
     listClassStudents(db, teacherId, cls),
     finalGrades(db, teacherId, [cls.id]),
     db
@@ -91,7 +93,7 @@ export async function getClosingSheet(
       return {
         student,
         finalGrade,
-        result: classResult(finalGrade, own, passMarkOf(cls)),
+        result: classResult(finalGrade, own, passMarkOf(cls, rules.passMark)),
         exams: own,
         outcome: outcomes.find((o) => o.studentId === student.id)?.outcome ?? null,
       };
@@ -143,7 +145,8 @@ export async function recordExam(
   if (!isUuid(input.studentId)) return notFound;
   const cls = await getClass(db, teacherId, input.classId);
   if (!cls) return notFound;
-  const [[member], finals, earlier] = await Promise.all([
+  const [rules, [member], finals, earlier] = await Promise.all([
+    getRules(db, teacherId),
     db
       .select({ studentId: courseStudents.studentId })
       .from(courseStudents)
@@ -162,7 +165,7 @@ export async function recordExam(
       .where(and(eq(exams.classId, cls.id), eq(exams.studentId, input.studentId), eq(exams.teacherId, teacherId))),
   ]);
   if (!member) return notFound;
-  const result = classResult(finals.get(`${cls.id}:${input.studentId}`) ?? null, earlier, passMarkOf(cls));
+  const result = classResult(finals.get(`${cls.id}:${input.studentId}`) ?? null, earlier, passMarkOf(cls, rules.passMark));
   if (result.kind !== "owed") return { ok: false, error: "notOwed" };
 
   await db.insert(exams).values({
@@ -207,11 +210,14 @@ export type OwedClass = {
  * Two round trips: the final grades below a pass mark, then their exams.
  */
 export async function listOwed(db: Db, teacherId: string): Promise<OwedClass[]> {
+  // Started first, so it travels with the query below.
+  const rules = getRules(db, teacherId);
   const graded = await db
     .select({
       classId: classes.id,
       name: classes.name,
-      passMark: classes.passMark,
+      // GRADE-3, GRADE-5
+      passMark: sql<number | null>`coalesce(${classes.passMark}, ${schools.passMark})::float8`,
       schoolYear: academicYears.name,
       school: schools.name,
       year: courses.year,
@@ -240,7 +246,8 @@ export async function listOwed(db: Db, teacherId: string): Promise<OwedClass[]> 
     )
     .where(and(eq(termGrades.teacherId, teacherId), eq(terms.position, 2)));
 
-  const failing = graded.filter((g) => g.finalGrade < passMarkOf(g));
+  const teacherPassMark = (await rules).passMark;
+  const failing = graded.filter((g) => g.finalGrade < passMarkOf(g, teacherPassMark));
   if (failing.length === 0) return [];
   const examRows = await db
     .select({ ...examColumns, classId: exams.classId, studentId: exams.studentId })
@@ -251,7 +258,7 @@ export async function listOwed(db: Db, teacherId: string): Promise<OwedClass[]> 
   const byClass = new Map<string, OwedClass>();
   for (const g of failing) {
     const own = examRows.filter((e) => e.classId === g.classId && e.studentId === g.studentId).map(toExamRow);
-    if (classResult(g.finalGrade, own, passMarkOf(g)).kind !== "owed") continue;
+    if (classResult(g.finalGrade, own, passMarkOf(g, teacherPassMark)).kind !== "owed") continue;
     const entry = byClass.get(g.classId) ?? {
       classId: g.classId,
       name: g.name,
