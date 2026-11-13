@@ -7,6 +7,7 @@ import {
   classInput,
   dayOffEdit,
   dayOffInput,
+  attendanceSave,
   examInputFor,
   followUpInput,
   retentionInput,
@@ -557,5 +558,24 @@ describe("a new class copied from another (COPY-1)", () => {
     const id = crypto.randomUUID();
     expect(classCreate.parse({ ...base, copyFrom: id }).copyFrom).toBe(id);
     expect(classCreate.safeParse({ ...base, copyFrom: "nope" }).success).toBe(false);
+  });
+});
+
+describe("a day's marks sent from the form or the phone's queue (OFFLINE-3)", () => {
+  const base = { classId: crypto.randomUUID(), date: "2026-11-13", baseVersion: null };
+  it("takes known marks and the version they came from", () => {
+    const studentId = crypto.randomUUID();
+    expect(attendanceSave.parse({ ...base, marks: [{ studentId, status: "late" }], baseVersion: 3, force: true })).toEqual({
+      ...base,
+      marks: [{ studentId, status: "late" }],
+      baseVersion: 3,
+      force: true,
+    });
+  });
+  it("refuses an unknown mark, a bad date or a bad version", () => {
+    const studentId = crypto.randomUUID();
+    expect(attendanceSave.safeParse({ ...base, marks: [{ studentId, status: "maybe" }] }).success).toBe(false);
+    expect(attendanceSave.safeParse({ ...base, date: "13/11/2026", marks: [] }).success).toBe(false);
+    expect(attendanceSave.safeParse({ ...base, marks: [], baseVersion: 0 }).success).toBe(false);
   });
 });

@@ -238,6 +238,33 @@ by `src/db/queries/copyClass.test.ts`, `src/lib/validation.test.ts`.*
   days of the week, in order; a date is without class when a day without
   class of its school's calendar covers it.
 
+## OFFLINE — Taking attendance without signal
+
+*Enforced by `src/lib/offlineAttendance.ts`, `src/db/queries/attendance.ts`,
+`src/lib/validation.ts`. Covered by `src/lib/offlineAttendance.test.ts`,
+`src/db/queries/attendance.test.ts`, `src/lib/validation.test.ts`.*
+
+- **OFFLINE-1** Without signal, every page says so, and a save made then
+  waits and goes through by itself when the signal returns, instead of
+  failing.
+- **OFFLINE-2** On the day's attendance page (ATT-2), each mark is kept on
+  the phone as it is tapped, and "Guardar" keeps the day there before sending
+  it. Reopening the day brings back what the phone has, saying whether it
+  was saved but not sent yet, or not saved. What the phone keeps belongs to
+  the teacher signed in; another account on the same phone neither sees nor
+  sends it.
+- **OFFLINE-3** Each saved day has a version that goes up with every save
+  (ATT-2, ATT-3). A day kept on the phone is sent with the version it was
+  taken from; if the day was saved again since with different marks, or as
+  not held, nothing is overwritten: the teacher is told and chooses which
+  copy to keep. The same marks sent twice are not a clash, and a day cleared
+  since is simply saved.
+- **OFFLINE-4** Days kept on the phone are sent, oldest first, when Annora
+  opens and whenever the signal returns, even after the app was closed; a
+  notice on every page says how many wait and offers to send them now. A
+  day the server refuses for good (its class or date no longer exists) is
+  shown, to be discarded.
+
 ## STUDENT — Students
 
 *Enforced by `src/lib/validation.ts`, `src/lib/students.ts`,
@@ -799,6 +826,11 @@ by hand (Known gaps).*
   checked by hand: print preview on a computer and a phone, light and dark.
 - **COPY-3**'s copying in Storage runs in Supabase and is checked by hand; the
   tests cover which files are named and the unlinking of a failed one.
+- **OFFLINE-1**'s waiting and retrying are Next.js's own (`experimental.useOffline`),
+  and **OFFLINE-2**'s and **OFFLINE-4**'s keeping and sending run in the
+  browser; they are checked by hand with the phone in airplane mode. The tests
+  cover the rules for what is kept, sent and settled, and the server's
+  versions and clashes.
 - **NAV-4**'s sign-out runs in Supabase Auth, like sign-in, and is checked by
   hand.
 - **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and

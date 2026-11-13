@@ -744,7 +744,8 @@
         "button": "Borrar lo cargado",
         "title": "¿Borrar lo cargado el {date}?",
         "body": "El día vuelve a quedar sin tomar, sin marcas."
-      }
+      },
+      "saving": "Guardando…"
     }
   },
   "landing": {
@@ -1259,5 +1260,25 @@
       "average": "promedio {average}",
       "missing": "{count, plural, one {# tarea sin entregar} other {# tareas sin entregar}}"
     }
+  },
+  "offline": {
+    "banner": "Sin conexión. Lo que guardes se envía cuando vuelva la señal; la asistencia queda guardada en este teléfono aunque cierres Annora.",
+    "pending": "{count, plural, one {# día de asistencia guardado en este teléfono, sin enviar.} other {# días de asistencia guardados en este teléfono, sin enviar.}}",
+    "pendingOffline": "Se envían solos cuando vuelva la señal.",
+    "sending": "Enviando…",
+    "sendNow": "Enviar ahora",
+    "conflictShort": "se cambió desde otro dispositivo después de que tomaste asistencia acá.",
+    "failed": "no se pudo guardar: el curso o la fecha ya no existen.",
+    "review": "Revisar",
+    "discard": "Descartar",
+    "conflictTitle": "Este día se cambió desde otro dispositivo después de que tomaste asistencia en este teléfono.",
+    "conflictBody": "{count, plural, =0 {Las marcas coinciden.} one {Difiere en # estudiante.} other {Difiere en # estudiantes.}} ¿Cuál querés conservar?",
+    "conflictNotHeld": "Ahí figura como «no hubo clase». ¿Cuál querés conservar?",
+    "keepPhone": "Guardar la de este teléfono",
+    "keepSaved": "Conservar la guardada",
+    "dayPending": "Esta asistencia está guardada en este teléfono y todavía no llegó a Annora. Se envía sola cuando haya señal.",
+    "dayUnsaved": "Tenés marcas de este día en este teléfono que todavía no guardaste.",
+    "waiting": "Esperando señal…",
+    "savedOnPhone": "Sin conexión: quedó guardada en este teléfono y se envía sola cuando vuelva la señal. Podés seguir usando Annora."
   }
 }

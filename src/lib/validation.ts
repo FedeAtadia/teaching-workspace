@@ -3,6 +3,7 @@
 // which field is wrong.
 
 import { z } from "zod";
+import { ATTENDANCE_STATUSES } from "./attendance";
 import { FOLLOW_UP_MISSING_RANGE } from "./followUp";
 import { RETENTION_OPTIONS } from "./retention";
 import { MAX_IMPORT_ROWS } from "./rosterImport";
@@ -301,6 +302,16 @@ export const followUpInput = z.object({
     .transform(Number)
     .pipe(z.number().int().min(FOLLOW_UP_MISSING_RANGE.min).max(FOLLOW_UP_MISSING_RANGE.max)),
 });
+
+/** ATT-2, OFFLINE-3: one day's marks, as the form or the phone's queue sends them. */
+export const attendanceSave = z.object({
+  classId: z.uuid(),
+  date: z.iso.date(),
+  marks: z.array(z.object({ studentId: z.uuid(), status: z.enum(ATTENDANCE_STATUSES) })).max(500),
+  baseVersion: z.number().int().positive().nullable(),
+  force: z.boolean().optional(),
+});
+export type AttendanceSave = z.infer<typeof attendanceSave>;
 
 /** SUGGEST-3 */
 export const minAttendanceInput = z.object({

@@ -506,6 +506,9 @@ export const classSessions = pgTable(
     // ATT-3: why it wasn't held; null when it was.
     reason: sessionReason("reason"),
     note: text("note"),
+    // OFFLINE-3: goes up by one with every save of the day, so a save made from
+    // an older copy of it can be told apart.
+    version: integer("version").notNull().default(1),
     createdAt: createdAt(),
   },
   (t) => [unique().on(t.classId, t.date)],
