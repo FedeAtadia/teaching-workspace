@@ -819,7 +819,7 @@
         },
         {
           "title": "Armá tus cursos",
-          "text": "Escuela, materia, curso y días de clase. Sumá a tus estudiantes, o traelos del año anterior en un toque."
+          "text": "Escuela, materia, curso y días de clase. Importá tu lista desde Excel, o traé unidades y tareas de un curso del año anterior."
         },
         {
           "title": "Usalo en cada clase",
@@ -830,7 +830,7 @@
     "features": {
       "eyebrow": "Funciones",
       "title": "Hecho para cómo se enseña en Argentina.",
-      "lead": "Cuatrimestres, escala del 1 al 10, nota de aprobación, jornadas institucionales y previas: Annora ya los conoce.",
+      "lead": "Cuatrimestres, tu escala y tu nota de aprobación (también una por escuela), jornadas institucionales y previas: Annora ya los conoce.",
       "groups": [
         {
           "title": "Todo en un lugar",
@@ -838,7 +838,8 @@
             "Cursos y escuelas",
             "Tareas con su archivo",
             "Criterios de aprobación",
-            "Unidades por cuatrimestre"
+            "Lista importada desde Excel",
+            "Cursos archivados, a mano"
           ]
         },
         {
@@ -846,7 +847,8 @@
           "items": [
             "Su historial de todos los años",
             "Asistencia y porcentaje",
-            "Grupos que vienen distintos días",
+            "Quién necesita seguimiento, y por qué",
+            "Informe para imprimir o PDF",
             "Adaptaciones, con su propia versión de cada tarea"
           ]
         },
@@ -854,7 +856,7 @@
           "title": "El año bajo control",
           "items": [
             "Calendario escolar con feriados y jornadas",
-            "Notas de cuatrimestre con su rango esperado",
+            "Tu escala y tu nota de aprobación",
             "Cierre del año y previas",
             "Traer estudiantes al año siguiente"
           ]
@@ -864,8 +866,9 @@
           "items": [
             "Promedios automáticos",
             "Asistencia de hoy desde Inicio",
-            "Funciona en el teléfono y la compu",
-            "En español y en inglés"
+            "Asistencia sin señal",
+            "Copiá un curso del año pasado",
+            "Instalala como app en el teléfono"
           ]
         }
       ]
@@ -876,7 +879,21 @@
       "text1": "Todos empiezan presentes: tocás solo a quien faltó o llegó tarde. Los feriados y las jornadas ya aparecen como días sin clase, y si hubo paro, lo marcás con su motivo.",
       "text2": "Cada estudiante tiene su porcentaje, y si baja del mínimo que elegís, su promedio te lo avisa.",
       "day": "Lunes 19/10",
-      "save": "Guardar"
+      "save": "Guardar",
+      "offlineTitle": "¿Sin señal en el aula? Igual la tomás.",
+      "offlineText": "Cada toque queda guardado en el teléfono y se envía solo cuando vuelve la conexión.",
+      "offlineStrip": "Sin señal · se guarda en el teléfono",
+      "hint": "Probalo: tocá las letras",
+      "demo": "Probá tomar asistencia",
+      "untaken": "Sin tomar",
+      "unsaved": "Sin guardar",
+      "saved": "Guardado",
+      "totals": {
+        "present": "{count, plural, one {# presente} other {# presentes}}",
+        "absent": "{count, plural, one {# ausente} other {# ausentes}}",
+        "late": "{count} tarde",
+        "excused": "{count, plural, one {# justificado} other {# justificados}}"
+      }
     },
     "data": {
       "eyebrow": "Tus datos",
@@ -893,8 +910,21 @@
         {
           "title": "Adaptaciones sin diagnósticos",
           "text": "Se guarda qué contenido se adapta, nunca un diagnóstico. El aviso solo dice «Adaptación»."
+        },
+        {
+          "title": "Todo en un Excel, cuando quieras",
+          "text": "Desde Configuración descargás todo lo que cargaste en un solo archivo."
+        },
+        {
+          "title": "Los egresados se borran solos",
+          "text": "Pasado el plazo que elegís, con aviso antes. Quien debe materias se queda."
+        },
+        {
+          "title": "Tu cuenta, borrable",
+          "text": "Si te vas, borrás tu cuenta y todo lo que cargaste, en un paso."
         }
-      ]
+      ],
+      "lead": "Y es tuyo: lo descargás cuando quieras y lo borrás cuando quieras."
     },
     "faq": {
       "title": "Preguntas frecuentes",
@@ -927,7 +957,70 @@
     },
     "footer": {
       "madeBy": "Hecho en Argentina, por un docente.",
-      "privacy": "Privacidad"
+      "privacy": "Privacidad",
+      "social": "Redes",
+      "instagram": "Annora en Instagram (@annora_app)",
+      "x": "Annora en X (@annora_app)"
+    },
+    "followUp": {
+      "eyebrow": "Seguimiento e informes",
+      "title": "Sabé a quién mirar antes de que sea tarde.",
+      "text1": "En el cuatrimestre en curso, Annora te señala a quien tiene la asistencia por debajo del mínimo, el promedio por debajo de la aprobación o varias tareas sin entregar, y te dice por qué.",
+      "text2": "Y cuando tenés que contarlo, el informe de cada estudiante sale listo para imprimir o guardar como PDF: notas, asistencia y previas, sin armar nada a mano.",
+      "card": "Para seguir de cerca",
+      "students": [
+        {
+          "name": "Benítez, Juan",
+          "course": "4° A · Matemática",
+          "reasons": [
+            "Asistencia 68%",
+            "3 tareas sin entregar"
+          ]
+        },
+        {
+          "name": "Díaz, Martina",
+          "course": "5° B · Física",
+          "reasons": [
+            "Promedio 5,2"
+          ]
+        },
+        {
+          "name": "Ruiz, Tomás",
+          "course": "4° A · Matemática",
+          "reasons": [
+            "Asistencia 71%",
+            "Promedio 6,1"
+          ]
+        }
+      ],
+      "report": "Informe",
+      "reportStudent": "Gómez, Lucía · 4° A",
+      "reportRows": [
+        [
+          "1° cuatr.",
+          "8"
+        ],
+        [
+          "2° cuatr.",
+          "7"
+        ],
+        [
+          "Asistencia",
+          "92%"
+        ]
+      ],
+      "reportResult": "Aprobada"
+    },
+    "import": {
+      "eyebrow": "Para arrancar el año",
+      "title": "Tu lista, de la planilla a Annora en un paso.",
+      "text1": "Copiá las celdas de Excel o Google Sheets y pegalas, o subí un CSV. Antes de guardar ves quién se agrega, y nadie queda repetido.",
+      "text2": "¿Mismo programa que el año pasado? Copiá las unidades, los criterios y las tareas de otro curso, con sus archivos.",
+      "lastName": "Apellido",
+      "firstName": "Nombre",
+      "add": "Se agrega",
+      "already": "Ya está en el curso",
+      "button": "Agregar 3 estudiantes"
     }
   },
   "privacy": {

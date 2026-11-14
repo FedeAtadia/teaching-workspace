@@ -665,8 +665,9 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 ## LAND — The public home page
 
 *Enforced by `src/lib/access.ts`, `src/proxy.ts`, `src/app/page.tsx`,
-`src/app/privacidad/page.tsx`. Covered by `src/lib/access.test.ts`; the
-pages themselves by hand (Known gaps).*
+`src/app/privacidad/page.tsx`, `src/lib/attendanceDemo.ts`. Covered by
+`src/lib/access.test.ts`, `src/lib/attendanceDemo.test.ts`; the pages
+themselves by hand (Known gaps).*
 
 - **LAND-1** Anyone not signed in can open the home page, `/`, which explains
   what Annora is. Every other page, except signing in (`/login`, `/auth/…`),
@@ -683,6 +684,18 @@ pages themselves by hand (Known gaps).*
   responsible and how to reach them, what Annora receives from Google and
   what for, how the data a teacher enters is kept, and how to see, correct
   or delete it.
+- **LAND-6** The home page links to Annora's Instagram and X accounts
+  (@annora_app), each opening in a new tab.
+- **LAND-7** The home page moves: its sections rise in as they scroll into
+  view, the drawn numbers count up, and the drawn phone takes attendance by
+  itself until the visitor taps a letter. From then on the visitor marks each
+  student (P, A, T or J), the totals under the list follow their marks, and
+  "Guardar" shows it saved until the next tap; nothing is sent anywhere.
+  Nothing moves when the device asks for reduced motion, and without
+  JavaScript everything shows, still.
+- **LAND-8** The home page's questions open one at a time: the first starts
+  open, opening another closes the one that was open, and tapping the open
+  one closes it.
 
 ## INSTALL — Installing Annora as an app
 
@@ -837,8 +850,10 @@ by hand (Known gaps).*
   **NAV-3**'s section button are interface behaviour, checked by hand in the
   browser; there are no component tests yet.
 - **LAND-3**'s page — its sections, the phone menu (closed until opened) and
-  the language switch — is checked by hand in the browser, light and dark, on
-  a phone and a computer.
+  the language switch — **LAND-6**'s links, **LAND-7**'s motion and
+  **LAND-8**'s questions are checked by hand in the browser, light and dark,
+  on a phone and a computer, and with reduced motion; only LAND-7's totals
+  have a test.
 - **DATA-1**'s Excel file itself is written in the download route and
   checked by hand; the tests cover what goes into each sheet. **DATA-3**'s
   removal of the sign-in and of the files runs in Supabase (its `auth` schema

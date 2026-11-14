@@ -244,3 +244,178 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/*
+ * The home page's motion (LAND-7). Elements marked data-reveal rise in when
+ * RevealOnScroll sees them; with reduced motion, or without JavaScript,
+ * everything simply shows. --reveal-delay staggers siblings (×100 ms).
+ */
+@property --n {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+@keyframes lp-count {
+  from {
+    --n: 0;
+  }
+}
+@keyframes lp-fill {
+  from {
+    width: 0;
+  }
+}
+@keyframes lp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes lp-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.8);
+    opacity: 0.35;
+  }
+}
+@keyframes lp-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+@keyframes lp-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+/* The drawn phone taps a letter: P goes off, A or T comes on, then it starts over. */
+@keyframes lp-tap {
+  0%,
+  20% {
+    background: var(--off-bg);
+    color: var(--off-fg);
+    transform: scale(1);
+  }
+  24% {
+    transform: scale(0.8);
+  }
+  28%,
+  86% {
+    background: var(--on-bg);
+    color: var(--on-fg);
+    transform: scale(1);
+  }
+  92%,
+  100% {
+    background: var(--off-bg);
+    color: var(--off-fg);
+  }
+}
+@keyframes lp-untap {
+  0%,
+  22% {
+    background: var(--on-bg);
+    color: var(--on-fg);
+  }
+  28%,
+  86% {
+    background: var(--off-bg);
+    color: var(--off-fg);
+  }
+  92%,
+  100% {
+    background: var(--on-bg);
+    color: var(--on-fg);
+  }
+}
+
+.lp-count {
+  counter-reset: n var(--n);
+}
+.lp-count::after {
+  content: counter(n);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @media (scripting: enabled) {
+    [data-reveal]:not([data-shown]) {
+      opacity: 0;
+      transform: translateY(22px);
+    }
+  }
+  [data-reveal] {
+    transition:
+      opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: calc(var(--reveal-delay, 0) * 100ms);
+  }
+  .lp-count {
+    animation: lp-count 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) 0.5s both;
+  }
+  .lp-fill {
+    animation: lp-fill 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.7s both;
+  }
+  .lp-float {
+    animation: lp-float 7s ease-in-out infinite;
+  }
+  .lp-float:hover,
+  .lp-float:focus-within {
+    animation-play-state: paused;
+  }
+  .lp-pulse {
+    animation: lp-pulse 1.8s ease-in-out infinite;
+  }
+  .lp-blink {
+    animation: lp-blink 2.4s ease-in-out infinite;
+  }
+  .lp-pop {
+    animation: lp-pop 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .lp-tap {
+    animation: lp-tap 7s ease-in-out infinite;
+  }
+  .lp-untap {
+    animation: lp-untap 7s ease-in-out infinite;
+  }
+  /* Never on a data-reveal element itself (its stagger would delay the hover): on a child. */
+  .lp-lift {
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+  .lp-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 22px 44px -26px rgb(0 0 0 / 0.5);
+  }
+  .lp-mark {
+    transition:
+      transform 0.15s ease,
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .lp-mark:hover {
+    transform: scale(1.08);
+  }
+  .lp-mark:active {
+    transform: scale(0.88);
+  }
+}
