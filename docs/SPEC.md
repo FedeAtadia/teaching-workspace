@@ -693,6 +693,9 @@ themselves by hand (Known gaps).*
   "Guardar" shows it saved until the next tap; nothing is sent anywhere.
   Nothing moves when the device asks for reduced motion, and without
   JavaScript everything shows, still.
+- **LAND-8** The home page's questions open one at a time: the first starts
+  open, opening another closes the one that was open, and tapping the open
+  one closes it.
 
 ## INSTALL — Installing Annora as an app
 
@@ -847,9 +850,10 @@ by hand (Known gaps).*
   **NAV-3**'s section button are interface behaviour, checked by hand in the
   browser; there are no component tests yet.
 - **LAND-3**'s page — its sections, the phone menu (closed until opened) and
-  the language switch — **LAND-6**'s links and **LAND-7**'s motion are checked
-  by hand in the browser, light and dark, on a phone and a computer, and with
-  reduced motion; only LAND-7's totals have a test.
+  the language switch — **LAND-6**'s links, **LAND-7**'s motion and
+  **LAND-8**'s questions are checked by hand in the browser, light and dark,
+  on a phone and a computer, and with reduced motion; only LAND-7's totals
+  have a test.
 - **DATA-1**'s Excel file itself is written in the download route and
   checked by hand; the tests cover what goes into each sheet. **DATA-3**'s
   removal of the sign-in and of the files runs in Supabase (its `auth` schema
