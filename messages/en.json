@@ -819,7 +819,7 @@
         },
         {
           "title": "Set up your classes",
-          "text": "School, subject, year and class days. Add your students, or bring them over from last year in one tap."
+          "text": "School, subject, year and class days. Import your list from Excel, or bring units and tasks over from last year's class."
         },
         {
           "title": "Use it every class",
@@ -830,7 +830,7 @@
     "features": {
       "eyebrow": "Features",
       "title": "Built for how teaching works in Argentina.",
-      "lead": "Terms, the 1 to 10 scale, the passing grade, school-wide days off and owed subjects: Annora already knows them.",
+      "lead": "Terms, your scale and your passing grade (one per school, too), school-wide days off and owed subjects: Annora already knows them.",
       "groups": [
         {
           "title": "Everything in one place",
@@ -838,7 +838,8 @@
             "Classes and schools",
             "Tasks with their file",
             "Passing standards",
-            "Units per term"
+            "Your list imported from Excel",
+            "Archived classes, at hand"
           ]
         },
         {
@@ -846,7 +847,8 @@
           "items": [
             "Their history across every year",
             "Attendance and percentage",
-            "Groups that come on different days",
+            "Who needs following up, and why",
+            "A report to print or save as PDF",
             "Adaptations, with their own version of each task"
           ]
         },
@@ -854,7 +856,7 @@
           "title": "The year under control",
           "items": [
             "School calendar with holidays and days off",
-            "Term grades with their expected range",
+            "Your scale and your passing grade",
             "Closing the year and owed subjects",
             "Bringing students into next year"
           ]
@@ -864,8 +866,9 @@
           "items": [
             "Automatic averages",
             "Today's attendance from Home",
-            "Works on your phone and computer",
-            "In Spanish and English"
+            "Attendance without signal",
+            "Copy last year's class",
+            "Install it as an app on your phone"
           ]
         }
       ]
@@ -876,7 +879,21 @@
       "text1": "Everyone starts present: you only tap whoever was absent or late. Holidays and days off already show as days without class, and if there was a strike, you mark it with its reason.",
       "text2": "Each student has their percentage, and if it drops below the minimum you choose, their average tells you.",
       "day": "Monday 19/10",
-      "save": "Save"
+      "save": "Save",
+      "offlineTitle": "No signal in the classroom? Take it anyway.",
+      "offlineText": "Every tap is kept on the phone and sent by itself when the connection is back.",
+      "offlineStrip": "No signal · kept on the phone",
+      "hint": "Try it: tap the letters",
+      "demo": "Try taking attendance",
+      "untaken": "Not taken",
+      "unsaved": "Not saved",
+      "saved": "Saved",
+      "totals": {
+        "present": "{count} present",
+        "absent": "{count} absent",
+        "late": "{count} late",
+        "excused": "{count} excused"
+      }
     },
     "data": {
       "eyebrow": "Your data",
@@ -893,8 +910,21 @@
         {
           "title": "Adaptations without diagnoses",
           "text": "What's stored is which content is adapted, never a diagnosis. The label only says “Adaptation”."
+        },
+        {
+          "title": "Everything in one Excel file, any time",
+          "text": "From Settings you download everything you entered in a single file."
+        },
+        {
+          "title": "Graduates are deleted by themselves",
+          "text": "After the period you choose, with a notice first. Anyone who owes a subject stays."
+        },
+        {
+          "title": "Your account, deletable",
+          "text": "If you leave, you delete your account and everything you entered, in one step."
         }
-      ]
+      ],
+      "lead": "And it's yours: download it whenever you want, delete it whenever you want."
     },
     "faq": {
       "title": "Frequently asked questions",
@@ -927,7 +957,70 @@
     },
     "footer": {
       "madeBy": "Made in Argentina, by a teacher.",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "social": "Social media",
+      "instagram": "Annora on Instagram (@annora_app)",
+      "x": "Annora on X (@annora_app)"
+    },
+    "followUp": {
+      "eyebrow": "Follow-up and reports",
+      "title": "Know who to watch before it's too late.",
+      "text1": "In the term under way, Annora points out whoever's attendance is below the minimum, whose average is below the passing grade or who has several tasks not handed in, and tells you why.",
+      "text2": "And when you need to report it, each student's report comes out ready to print or save as PDF: grades, attendance and owed subjects, nothing put together by hand.",
+      "card": "To follow closely",
+      "students": [
+        {
+          "name": "Benítez, Juan",
+          "course": "4th A · Math",
+          "reasons": [
+            "Attendance 68%",
+            "3 tasks not handed in"
+          ]
+        },
+        {
+          "name": "Díaz, Martina",
+          "course": "5th B · Physics",
+          "reasons": [
+            "Average 5.2"
+          ]
+        },
+        {
+          "name": "Ruiz, Tomás",
+          "course": "4th A · Math",
+          "reasons": [
+            "Attendance 71%",
+            "Average 6.1"
+          ]
+        }
+      ],
+      "report": "Report",
+      "reportStudent": "Gómez, Lucía · 4th A",
+      "reportRows": [
+        [
+          "1st term",
+          "8"
+        ],
+        [
+          "2nd term",
+          "7"
+        ],
+        [
+          "Attendance",
+          "92%"
+        ]
+      ],
+      "reportResult": "Passed"
+    },
+    "import": {
+      "eyebrow": "To start the year",
+      "title": "Your list, from the spreadsheet to Annora in one step.",
+      "text1": "Copy the cells from Excel or Google Sheets and paste them, or upload a CSV. Before saving you see who is added, and nobody ends up twice.",
+      "text2": "Same syllabus as last year? Copy the units, standards and tasks from another class, files included.",
+      "lastName": "Last name",
+      "firstName": "First name",
+      "add": "Added",
+      "already": "Already in the class",
+      "button": "Add 3 students"
     }
   },
   "privacy": {
