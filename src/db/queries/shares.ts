@@ -242,3 +242,13 @@ export async function classAccess(db: Db, viewerId: string, classId: string): Pr
   if (!share) return null;
   return { ownerId: share.ownerId, ownerName: share.ownerName, readOnly: true, showAdaptations: share.includeAdaptations };
 }
+
+/** SHARE-4: the guest stops seeing a class they accepted. */
+export async function leaveSharedClass(db: Db, guestId: string, classId: string): Promise<{ ok: true } | NotFound> {
+  if (!isUuid(classId)) return notFound;
+  const deleted = await db
+    .delete(classShares)
+    .where(and(eq(classShares.classId, classId), eq(classShares.guestId, guestId), eq(classShares.status, "accepted")))
+    .returning({ id: classShares.id });
+  return deleted.length > 0 ? { ok: true } : notFound;
+}

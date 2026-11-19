@@ -6,6 +6,7 @@ import { ClassTabs } from "@/components/classes/ClassTabs";
 import { getClassCounts, listSchools } from "@/db/queries/classes";
 import { listClassShares } from "@/db/queries/shares";
 import { ShareDialog } from "@/components/classes/ShareDialog";
+import { LeaveShareButton } from "@/components/classes/LeaveShareButton";
 import { formatCourse } from "@/lib/courses";
 import { Archive, ArchiveRestore, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -100,6 +101,8 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
           <span className="min-w-0 flex-1 basis-64">
             {tShares("readOnlyBanner", { owner: ownerName ?? tShares("someone") })}
           </span>
+          {/* SHARE-4: outside the read-only frame, so it stays usable. */}
+          <LeaveShareButton classId={id} />
         </p>
       )}
       {cls.archivedOn && (

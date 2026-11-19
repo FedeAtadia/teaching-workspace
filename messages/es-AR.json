@@ -1415,7 +1415,8 @@
     "sharedEmpty": "Todavía nadie te compartió un curso.",
     "by": "De {owner}",
     "archived": "Archivado",
-    "seeOwn": "Verlo en tus cursos"
+    "seeOwn": "Verlo en tus cursos",
+    "leave": "Dejar de ver este curso"
   },
   "dupla": {
     "title": "En dupla",

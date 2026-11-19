@@ -1415,7 +1415,8 @@
     "sharedEmpty": "Nobody has shared a class with you yet.",
     "by": "From {owner}",
     "archived": "Archived",
-    "seeOwn": "See them in your classes"
+    "seeOwn": "See them in your classes",
+    "leave": "Stop seeing this class"
   },
   "dupla": {
     "title": "Co-taught",
