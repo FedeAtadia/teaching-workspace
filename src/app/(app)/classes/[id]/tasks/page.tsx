@@ -5,12 +5,11 @@ import { getTranslations } from "next-intl/server";
 import { FormDialog } from "@/components/forms/FormDialog";
 import { Badge } from "@/components/ui/badge";
 import { listStandards, listTerms, listUnits } from "@/db/queries/classDetail";
-import { getAdaptations } from "@/db/queries/adaptations";
 import { listGroups } from "@/db/queries/groups";
 import { listTasks, type TaskRow } from "@/db/queries/tasks";
 import { formatDate } from "@/lib/format";
 import { addTask } from "../actions";
-import { loadClass } from "../data";
+import { loadAdaptations, loadClass } from "../data";
 import { taskFields } from "./fields";
 
 export default async function TasksPage({ params }: PageProps<"/classes/[id]/tasks">) {
@@ -26,7 +25,7 @@ export default async function TasksPage({ params }: PageProps<"/classes/[id]/tas
     listUnits(db, teacherId, id),
     listStandards(db, teacherId, id),
     listGroups(db, teacherId, id),
-    getAdaptations(db, teacherId, id),
+    loadAdaptations(id),
   ]);
 
   const byTerm = new Map<number, TaskRow[]>();

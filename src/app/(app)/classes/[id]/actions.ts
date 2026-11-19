@@ -1,5 +1,8 @@
 "use server";
 
+import { revokeShare, setShareAdaptations, shareClass } from "@/db/queries/shares";
+import { requireTeacher } from "@/lib/auth";
+import { shareInput } from "@/lib/validation";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/db";
 import {
@@ -515,4 +518,36 @@ export async function saveAdaptation(_prev: FormState, formData: FormData): Prom
   refreshClass(cls.id);
   revalidatePath("/students/[id]", "page");
   return { status: "saved" };
+}
+
+/** SHARE-1 */
+export async function shareClassAction(_prev: FormState, formData: FormData): Promise<FormState<"self" | "notFound">> {
+  const values = Object.fromEntries(formData) as Record<string, string>;
+  const parsed = shareInput.safeParse(values);
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error), values };
+  const result = await shareClass(getDb(), await requireTeacher(), parsed.data);
+  if (!result.ok) return { status: "error", formError: result.error, values };
+  revalidatePath(`/classes/${parsed.data.classId}`, "layout");
+  return { status: "saved" };
+}
+
+/** SHARE-3 */
+export async function setShareAdaptationsAction(input: {
+  classId: string;
+  shareId: string;
+  includeAdaptations: boolean;
+}): Promise<{ ok: boolean }> {
+  const result = await setShareAdaptations(getDb(), await requireTeacherId(), {
+    shareId: input.shareId,
+    includeAdaptations: input.includeAdaptations === true,
+  });
+  if (result.ok) revalidatePath(`/classes/${input.classId}`, "layout");
+  return { ok: result.ok };
+}
+
+/** SHARE-4 */
+export async function revokeShareAction(input: { classId: string; shareId: string }): Promise<{ ok: boolean }> {
+  const result = await revokeShare(getDb(), await requireTeacherId(), input.shareId);
+  if (result.ok) revalidatePath(`/classes/${input.classId}`, "layout");
+  return { ok: result.ok };
 }

@@ -6,6 +6,9 @@ import { FormDialog } from "@/components/forms/FormDialog";
 import { FollowUpReasons } from "@/components/students/FollowUpReasons";
 import { listCourses } from "@/db/queries/classes";
 import { getFollowUp } from "@/db/queries/followUp";
+import { getSharedStudentHistory } from "@/db/queries/sharedStudent";
+import { findOwnStudent, getDuplaView } from "@/db/queries/dupla";
+import { DuplaSection } from "@/components/students/DuplaSection";
 import { todayInArgentina } from "@/lib/calendar";
 import { editStudentAction, moveStudentAction, removeStudent } from "../actions";
 import { Initials } from "@/components/Initials";
@@ -28,14 +31,29 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
   const { id } = await params;
   if (!isSupabaseConfigured()) notFound();
   const teacherId = await requireTeacherId();
-  const [history, allCourses, followUp] = await Promise.all([
+  const [own, allCourses, followUp] = await Promise.all([
     getStudentHistory(getDb(), teacherId, id),
     listCourses(getDb(), teacherId),
     getFollowUp(getDb(), teacherId, todayInArgentina()),
   ]);
+  // SHARE-6: someone else's student, from a class shared with this teacher, is shown read-only.
+  const shared = own ? null : await getSharedStudentHistory(getDb(), teacherId, id);
+  const history = own ?? shared;
   if (!history) notFound();
+  const readOnly = !own;
+  // DUPLA-1, DUPLA-2: the same student in a partner's shared class, or the way back to one's own.
+  const person = {
+    firstName: history.student.firstName,
+    lastName: history.student.lastName,
+    schoolYears: [...new Set(history.courses.map((c) => c.schoolYear))],
+  };
+  const [duplaViews, ownMatch] = await Promise.all([
+    readOnly ? [] : getDuplaView(getDb(), teacherId, person),
+    readOnly ? findOwnStudent(getDb(), teacherId, person) : null,
+  ]);
 
   const t = await getTranslations("studentPage");
+  const tShares = await getTranslations("shares");
   const tFollow = await getTranslations("followUp");
   const following = followUp.students.find((s) => s.studentId === id);
   const tShift = await getTranslations("shifts");
@@ -66,7 +84,7 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
 
   return (
     <>
-      <BackLink href="/students" label={t("back")} />
+      <BackLink href={readOnly ? "/classes?view=shared" : "/students"} label={readOnly ? tShares("back") : t("back")} />
       <header className="mt-2 mb-8 flex flex-wrap items-center gap-5 rounded-2xl bg-card p-5 ring-1 ring-border sm:p-6">
         <Initials firstName={student.firstName} lastName={student.lastName} shape="square" />
         <div className="min-w-0">
@@ -89,7 +107,8 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
             </div>
           )}
         </div>
-        {/* REPORT-1, STUDENT-7, STUDENT-4 */}
+        {/* REPORT-1, STUDENT-7, STUDENT-4: the owner's to do. */}
+        {!readOnly && (
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {courses.length > 0 && (
             <Link href={`/students/${student.id}/report`} className={buttonVariants({ variant: "outline", size: "sm" })}>
@@ -116,10 +135,30 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
             action={removeStudent.bind(null, { studentId: student.id })}
           />
         </div>
+        )}
       </header>
 
+      {/* SHARE-6 */}
+      {shared && (
+        <p role="status" className="-mt-4 mb-8 rounded-2xl bg-highlight-soft p-4 text-sm">
+          {tShares("studentBanner", { owner: shared.ownerName ?? tShares("someone") })}
+          {/* DUPLA-2 */}
+          {ownMatch && (
+            <>
+              {" "}
+              <Link href={`/students/${ownMatch}`} className="font-semibold text-highlight underline underline-offset-4">
+                {tShares("seeOwn")}
+              </Link>
+            </>
+          )}
+        </p>
+      )}
+
       {/* FOLLOW-3: why this student is worth following, class by class. */}
-      {following && (
+      {/* DUPLA-1 */}
+      <DuplaSection views={duplaViews} />
+
+      {following && !readOnly && (
         <section className="relative mb-8 overflow-hidden rounded-2xl bg-alert-soft p-5 pl-6 ring-1 ring-destructive/30">
           <span className="absolute inset-y-0 left-0 w-1.5 bg-alert" aria-hidden />
           <h2 className="text-lg font-bold">{tFollow("boxTitle")}</h2>
@@ -149,7 +188,7 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
               {course.status === "withdrawn" && <Badge tone="outline">{t("left")}</Badge>}
               {course.outcome && <Badge tone="accent">{t(`outcomes.${course.outcome}`)}</Badge>}
               {/* STUDENT-8: only between courses of the same school year. */}
-              {course.status === "active" && moveOptions(course).length > 0 && (
+              {!readOnly && course.status === "active" && moveOptions(course).length > 0 && (
                 <FormDialog
                   trigger="text"
                   triggerLabel={t("move.button")}

@@ -313,6 +313,17 @@ export const attendanceSave = z.object({
 });
 export type AttendanceSave = z.infer<typeof attendanceSave>;
 
+/** SHARE-1: sharing a class with a teacher's email. A ticked box arrives as "on". */
+export const shareInput = z.object({
+  classId: z.uuid(),
+  email: z.string().trim().toLowerCase().pipe(z.email()),
+  includeAdaptations: z
+    .literal("on")
+    .optional()
+    .transform((v) => v === "on"),
+});
+export type ShareInput = z.infer<typeof shareInput>;
+
 /** SUGGEST-3 */
 export const minAttendanceInput = z.object({
   minAttendance: z

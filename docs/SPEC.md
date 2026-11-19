@@ -759,7 +759,8 @@ by hand (Known gaps).*
   attendance, days not held, exams, adaptations, groups, school calendars
   and settings (KEEP-2's period among them). Rows name things (the school, the course, the student)
   rather than showing ids, and only the teacher's own rows are in it
-  (OWNER-1). Attached files are listed by name, not included.
+  (OWNER-1), with whom each class is shared (SHARE-1). Attached files are
+  listed by name, not included.
 - **DATA-2** Sheet names, column titles and values such as "presente" are in
   the teacher's language; dates are dates and grades are numbers, so the
   file can be sorted and filtered.
@@ -813,6 +814,55 @@ by hand (Known gaps).*
 - **KEEP-4** After a deletion, Home says how many graduates were deleted and
   when, until the teacher dismisses it.
 
+## SHARE — Sharing a class with another teacher
+
+*Enforced by `src/db/queries/shares.ts`, `src/db/queries/sharedStudent.ts`,
+`src/lib/validation.ts`, `supabase/storage.sql`. Covered by
+`src/db/queries/shares.test.ts`, `src/db/queries/sharedStudent.test.ts`,
+`src/lib/validation.test.ts`.*
+
+- **SHARE-1** A class's owner can share it, from its page, with another
+  teacher's email. The share waits for that teacher to accept. A class can't
+  be shared with the owner's own email, nor by anyone but its owner; sharing
+  again with the same email changes the share instead of adding one. The
+  owner sees whom the class is shared with, and whether each accepted.
+- **SHARE-2** Home shows the teacher signed in with that email each class
+  offered to them, by whom and which, to accept or decline. Nobody else can
+  accept it.
+- **SHARE-3** The owner chooses, per share and at any time, whether the guest
+  sees adaptations (ADAPT); not unless chosen.
+- **SHARE-4** A share ends when the owner stops it, the guest declines or
+  leaves it, the class is deleted, or either account is deleted (DATA-3).
+  Archiving the class (CLASS-8) doesn't end it.
+- **SHARE-5** A guest finds the classes shared with them under "Compartidos
+  conmigo" in Classes, by whom, and opens each with the same tabs its owner
+  has, showing the owner's data and grading rules, with a notice that it is
+  read-only: nothing on it can be added, changed, saved or deleted, and the
+  server refuses it anyway (OWNER-1). Without leave to see adaptations
+  (SHARE-3), none shows: no notes, adapted tasks, own standards or adapted
+  marks. Shared classes stay out of the guest's Home, Students, Previas and
+  follow-up.
+- **SHARE-6** From a shared class the guest opens its files (adapted ones
+  and a student's own standards' only with leave to see adaptations) and
+  each student's page, which shows only the shared classes of that student,
+  read-only. Storage enforces the same (`supabase/storage.sql`).
+
+## DUPLA — A student seen in both teachers' classes
+
+*Enforced by `src/lib/dupla.ts`, `src/db/queries/dupla.ts`. Covered by
+`src/lib/dupla.test.ts`, `src/db/queries/dupla.test.ts`.*
+
+- **DUPLA-1** A teacher's own student is taken to be the same as a student
+  of a class shared with them (SHARE-5) when their first and last names
+  match, ignoring case and accents, in the same school year. The student's
+  page then shows, for each such class, by cuatrimestre the grade (or the
+  average so far) and the attendance, the final grade and the result,
+  read-only, with a way to that student's page in the shared class
+  (SHARE-6). A class with two students of that name shows nothing rather
+  than guess.
+- **DUPLA-2** A shared class's student's page leads back to the teacher's
+  own student of the same name and school year, when there is exactly one.
+
 ## OWNER — Each teacher's data
 
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
@@ -844,6 +894,10 @@ by hand (Known gaps).*
   browser; they are checked by hand with the phone in airplane mode. The tests
   cover the rules for what is kept, sent and settled, and the server's
   versions and clashes.
+- **SHARE-5**'s read-only pages (every field disabled and every button hidden
+  for a guest) are checked by hand with two accounts. **SHARE-6**'s Storage
+  rule runs in Supabase; it was checked on dev for a guest with and without
+  adaptations and for a stranger.
 - **NAV-4**'s sign-out runs in Supabase Auth, like sign-in, and is checked by
   hand.
 - **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and

@@ -6,10 +6,9 @@ import { Initials } from "@/components/Initials";
 import { Attachment } from "@/components/classes/Attachment";
 import { FormDialog, type FieldSpec } from "@/components/forms/FormDialog";
 import { Badge } from "@/components/ui/badge";
-import { getAdaptations, listStudentStandards } from "@/db/queries/adaptations";
 import { listClassStudents, listStandards, type StandardRow } from "@/db/queries/classDetail";
 import { addStandard, editStandard, removeStandard } from "../actions";
-import { loadClass } from "../data";
+import { loadAdaptations, loadClass, loadStudentStandards } from "../data";
 
 /** STD-1..4, FILE-4, ADAPT-2 */
 export default async function StandardsPage({ params }: PageProps<"/classes/[id]/standards">) {
@@ -19,9 +18,9 @@ export default async function StandardsPage({ params }: PageProps<"/classes/[id]
   const tErr = await getTranslations("classPage.errors");
   const [list, ownLists, roster, adaptations] = await Promise.all([
     listStandards(db, teacherId, id),
-    listStudentStandards(db, teacherId, id),
+    loadStudentStandards(id),
     listClassStudents(db, teacherId, cls),
-    getAdaptations(db, teacherId, id),
+    loadAdaptations(id),
   ]);
 
   // The same form adds a standard or, with its current values, changes one.

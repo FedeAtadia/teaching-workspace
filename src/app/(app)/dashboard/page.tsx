@@ -12,6 +12,9 @@ import { getHomeCards, getTodayClasses, type TodayClass } from "@/db/queries/hom
 import { runRetention } from "@/db/queries/retention";
 import { getFollowUp } from "@/db/queries/followUp";
 import { listCopySources } from "@/db/queries/copyClass";
+import { listInvitations } from "@/db/queries/shares";
+import { ShareInvitations } from "@/components/classes/ShareInvitations";
+import { requireTeacher } from "@/lib/auth";
 import { copyLabels } from "@/lib/classCards";
 import { FollowUpReasons } from "@/components/students/FollowUpReasons";
 import { formatCourse } from "@/lib/courses";
@@ -33,6 +36,7 @@ export default async function DashboardPage() {
   const tCommon = await getTranslations("common");
   const tWeekday = await getTranslations("weekdays");
   const tFollow = await getTranslations("followUp");
+  const tShares = await getTranslations("shares");
 
   if (!isSupabaseConfigured()) {
     return (
@@ -49,7 +53,7 @@ export default async function DashboardPage() {
   // KEEP-1: graduates whose day has come are deleted before anything is counted.
   const retention = await runRetention(db, teacherId, today);
   await removeStoredFiles(retention.attachmentPaths);
-  const [home, followUp, schools, copySources, cardProps, copyLabel, todayClasses] = await Promise.all([
+  const [home, followUp, schools, copySources, cardProps, copyLabel, todayClasses, invitations] = await Promise.all([
     getHomeCards(db, teacherId),
     getFollowUp(db, teacherId, today),
     listSchools(db, teacherId),
@@ -57,6 +61,8 @@ export default async function DashboardPage() {
     classCardProps(),
     copyLabels(),
     getTodayClasses(db, teacherId, today),
+    // SHARE-2
+    listInvitations(db, await requireTeacher()),
   ]);
   const severalSchools = schools.length > 1;
   const { stats } = home;
@@ -68,6 +74,20 @@ export default async function DashboardPage() {
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{t("greeting")}</h1>
         <p className="mt-2 text-lg text-muted-foreground">{t("subtitle")}</p>
       </header>
+
+      {/* SHARE-2 */}
+      <ShareInvitations
+        invitations={invitations.map((inv) => ({
+          shareId: inv.shareId,
+          text: tShares("invitation", {
+            owner: inv.ownerName ?? tShares("someone"),
+            course: formatCourse(inv.year, inv.division),
+            name: inv.name,
+            school: inv.school,
+            year: inv.schoolYear,
+          }),
+        }))}
+      />
 
       {/* KEEP-3, KEEP-4 */}
       {(retention.soon || retention.deleted) && (
