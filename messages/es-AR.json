@@ -1029,7 +1029,7 @@
       "description": "Qué datos usa Annora, para qué, dónde se guardan y cómo pedir verlos, corregirlos o borrarlos."
     },
     "title": "Política de privacidad",
-    "updated": "Última actualización: 12/11/2026",
+    "updated": "Última actualización: 19/11/2026",
     "intro": "Esta política explica qué datos usa Annora, para qué, dónde se guardan y qué podés hacer con ellos. Está escrita para docentes, que son quienes usan Annora.",
     "sections": [
       {
@@ -1052,7 +1052,8 @@
         "title": "Lo que cargás en Annora",
         "paragraphs": [
           "Annora guarda lo que cargás vos: tus escuelas y su calendario, tus cursos, tus estudiantes (nombre y apellido, notas, asistencia, observaciones y adaptaciones), tus tareas y sus archivos, y tus preferencias.",
-          "Son tus registros como docente, como lo eran tus planillas: vos decidís qué cargás y sos responsable de tenerlo. Annora los guarda para mostrártelos a vos y a nadie más: ningún otro docente ni otra persona puede verlos.",
+          "Son tus registros como docente, como lo eran tus planillas: vos decidís qué cargás y sos responsable de tenerlo. Annora los guarda para mostrártelos a vos: ningún otro docente ni otra persona puede verlos, salvo un curso que vos decidas compartir.",
+          "Si vos lo decidís, podés compartir un curso con otro docente que use Annora (por ejemplo, tu dupla o pareja pedagógica). Esa persona lo ve en solo lectura, sin las adaptaciones salvo que lo indiques, y deja de verlo en cuanto dejás de compartirlo. Nadie más puede ver tus datos.",
           "Tus estudiantes no tienen cuenta en Annora y Annora no se comunica con ellos. De las adaptaciones se guarda qué contenido se adapta, nunca un diagnóstico. Te pedimos que no cargues diagnósticos ni otros datos de salud."
         ]
       },
@@ -1112,7 +1113,8 @@
       "groups": "Grupos",
       "calendars": "Calendarios",
       "daysOff": "Días sin clase",
-      "settings": "Configuración"
+      "settings": "Configuración",
+      "shares": "Cursos compartidos"
     },
     "columns": {
       "schoolYear": "Ciclo lectivo",
@@ -1152,7 +1154,10 @@
       "name": "Nombre",
       "setting": "Ajuste",
       "value": "Valor",
-      "archivedOn": "Archivado el"
+      "archivedOn": "Archivado el",
+      "guestEmail": "Compartido con",
+      "guestName": "Nombre",
+      "includeAdaptations": "Ve adaptaciones"
     },
     "shift": {
       "morning": "Mañana",
@@ -1205,7 +1210,11 @@
       "graduateRetentionMonths": "Meses que se guardan los egresados"
     },
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "share": {
+      "pending": "Pendiente",
+      "accepted": "Aceptó"
+    }
   },
   "rosterImport": {
     "title": "Importar una lista de estudiantes",
@@ -1373,5 +1382,30 @@
     "dayUnsaved": "Tenés marcas de este día en este teléfono que todavía no guardaste.",
     "waiting": "Esperando señal…",
     "savedOnPhone": "Sin conexión: quedó guardada en este teléfono y se envía sola cuando vuelva la señal. Podés seguir usando Annora."
+  },
+  "shares": {
+    "button": "Compartir",
+    "title": "Compartir este curso",
+    "intro": "Para duplas y EPA: el otro docente ve este curso tal como está (estudiantes, tareas, notas, asistencia y cierre), sin poder cambiar nada. Necesita una cuenta de Annora con ese email.",
+    "email": "Email del otro docente",
+    "emailPlaceholder": "nombre@gmail.com",
+    "adaptations": "Puede ver las adaptaciones",
+    "adaptationsHint": "Qué se adapta para cada estudiante, sus tareas adaptadas y sus criterios propios. Podés cambiarlo cuando quieras.",
+    "readOnly": "Solo lectura: no puede editar, borrar ni cargar nada. Podés dejar de compartir cuando quieras.",
+    "submit": "Compartir",
+    "sent": "Listo. Cuando esa persona entre a Annora, va a ver la invitación en Inicio.",
+    "status": {
+      "pending": "Pendiente",
+      "accepted": "Aceptó"
+    },
+    "revoke": "Dejar de compartir",
+    "errors": {
+      "self": "Ese es tu propio email.",
+      "notFound": "No se encontró el curso. Recargá la página."
+    },
+    "invitation": "{owner} te compartió {course} {name} ({school}, {year}). Lo vas a ver en solo lectura.",
+    "someone": "Otro docente",
+    "accept": "Aceptar",
+    "decline": "Rechazar"
   }
 }

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb, type Db } from "@/db";
 import { deleteSignIn, deleteTeacherData } from "@/db/queries/account";
+import { deleteGuestShares } from "@/db/queries/shares";
 import { addDayOff, addNationalHolidays, deleteDayOff, saveCalendar, updateDayOff } from "@/db/queries/calendar";
 import { renameSchool, setSchoolPassMark } from "@/db/queries/classes";
 import { setFollowUpSettings } from "@/db/queries/followUp";
@@ -173,6 +174,8 @@ export async function deleteAccountAction(): Promise<{ ok: false }> {
   try {
     paths = await getDb().transaction(async (tx) => {
       const { attachmentPaths } = await deleteTeacherData(tx as unknown as Db, teacherId);
+      // SHARE-4: classes shared with this teacher are no longer seen.
+      await deleteGuestShares(tx as unknown as Db, teacherId);
       await deleteSignIn(tx as unknown as Db, teacherId);
       return attachmentPaths;
     });

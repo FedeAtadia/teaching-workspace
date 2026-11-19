@@ -134,6 +134,13 @@
       "when": 1794572170362,
       "tag": "0018_session-version",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1795096243822,
+      "tag": "0019_class-shares",
+      "breakpoints": true
     }
   ]
 }

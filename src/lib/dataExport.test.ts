@@ -24,6 +24,7 @@ const empty: ExportData = {
   groups: [],
   calendars: [],
   daysOff: [],
+  shares: [],
   settings: null,
 };
 

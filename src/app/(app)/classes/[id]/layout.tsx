@@ -4,6 +4,8 @@ import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { EditClassDialog } from "@/components/classes/AddClassDialog";
 import { ClassTabs } from "@/components/classes/ClassTabs";
 import { getClassCounts, listSchools } from "@/db/queries/classes";
+import { listClassShares } from "@/db/queries/shares";
+import { ShareDialog } from "@/components/classes/ShareDialog";
 import { formatCourse } from "@/lib/courses";
 import { Archive, ArchiveRestore } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +17,11 @@ import { loadClass } from "./data";
 export default async function ClassLayout({ children, params }: LayoutProps<"/classes/[id]">) {
   const { id } = await params;
   const { db, teacherId, cls } = await loadClass(id);
-  const [counts, schools] = await Promise.all([getClassCounts(db, teacherId, id), listSchools(db, teacherId)]);
+  const [counts, schools, shares] = await Promise.all([
+    getClassCounts(db, teacherId, id),
+    listSchools(db, teacherId),
+    listClassShares(db, teacherId, id),
+  ]);
   const t = await getTranslations("classPage");
   const tDayShort = await getTranslations("weekdaysShort");
   const tShift = await getTranslations("shifts");
@@ -49,6 +55,8 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
             schools={schools.map((s) => s.name)}
             otherClasses={counts?.otherClasses ?? []}
           />
+          {/* SHARE-1 */}
+          <ShareDialog classId={id} shares={shares} />
           {/* CLASS-8: it can be undone, so it doesn't ask first. */}
           <form action={archiveClass.bind(null, { classId: id, archived: !cls.archivedOn })}>
             <Button type="submit" variant="outline" size="sm">
