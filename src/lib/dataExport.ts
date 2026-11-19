@@ -84,6 +84,13 @@ export type ExportData = {
     kind: "holiday" | "jornada" | "recess" | "other";
     name: string;
   }[];
+  /** SHARE-1: whom each class is shared with. */
+  shares: (ClassRef & {
+    guestEmail: string;
+    guestName: string | null;
+    status: "pending" | "accepted";
+    includeAdaptations: boolean;
+  })[];
   settings: {
     gradeMin: number;
     gradeMax: number;
@@ -110,6 +117,7 @@ export const SHEET_KEYS = [
   "groups",
   "calendars",
   "daysOff",
+  "shares",
   "settings",
 ] as const;
 export type SheetKey = (typeof SHEET_KEYS)[number];
@@ -153,6 +161,9 @@ export const COLUMN_KEYS = [
   "name",
   "setting",
   "value",
+  "guestEmail",
+  "guestName",
+  "includeAdaptations",
 ] as const;
 export type ColumnKey = (typeof COLUMN_KEYS)[number];
 
@@ -168,6 +179,7 @@ export type ExportLabels = {
   exam: Record<"graded" | "absent", string>;
   notHeld: Record<"weather" | "teacher_absent" | "strike" | "other", string>;
   dayOff: Record<"holiday" | "jornada" | "recess" | "other", string>;
+  share: Record<"pending" | "accepted", string>;
   settings: Record<keyof NonNullable<ExportData["settings"]>, string>;
   yes: string;
   no: string;
@@ -422,6 +434,17 @@ export function toSheets(data: ExportData, labels: ExportLabels): Sheet[] {
         (a, b) => text(a.school, b.school),
         (a, b) => text(a.startsOn, b.startsOn),
       ).map((r) => [r.school, r.schoolYear, toDate(r.startsOn), toDate(r.endsOn), labels.dayOff[r.kind], r.name]),
+    ),
+    sheet(
+      "shares",
+      [...CLASS, "guestEmail", "guestName", "status", "includeAdaptations"],
+      sorted(data.shares, byClass, (a, b) => text(a.guestEmail, b.guestEmail)).map((r) => [
+        ...cls(r),
+        r.guestEmail,
+        r.guestName,
+        labels.share[r.status],
+        yesNo(r.includeAdaptations),
+      ]),
     ),
     sheet(
       "settings",
