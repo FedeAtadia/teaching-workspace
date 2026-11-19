@@ -1414,6 +1414,7 @@
     "sharedHint": "Classes other teachers shared with you, such as your co-teacher. You see them read-only while they're shared.",
     "sharedEmpty": "Nobody has shared a class with you yet.",
     "by": "From {owner}",
-    "archived": "Archived"
+    "archived": "Archived",
+    "leave": "Stop seeing this class"
   }
 }

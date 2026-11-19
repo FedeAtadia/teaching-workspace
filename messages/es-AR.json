@@ -1414,6 +1414,7 @@
     "sharedHint": "Cursos que otros docentes te compartieron, por ejemplo tu dupla. Los ves en solo lectura mientras te los compartan.",
     "sharedEmpty": "Todavía nadie te compartió un curso.",
     "by": "De {owner}",
-    "archived": "Archivado"
+    "archived": "Archivado",
+    "leave": "Dejar de ver este curso"
   }
 }

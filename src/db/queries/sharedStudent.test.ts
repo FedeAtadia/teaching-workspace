@@ -4,7 +4,7 @@ import * as schema from "@/db/schema";
 import { createTestDb, newTeacher } from "@/test/db";
 import { createClass } from "./classes";
 import { getClass } from "./classDetail";
-import { classAccess, acceptShare, listInvitations, shareClass, type Teacher } from "./shares";
+import { classAccess, acceptShare, leaveSharedClass, listInvitations, shareClass, type Teacher } from "./shares";
 import { getSharedStudentHistory } from "./sharedStudent";
 import { createStudent, listStudents } from "./students";
 
@@ -69,5 +69,17 @@ describe("a shared class's pages and students, for its guest (SHARE-5, SHARE-6)"
     expect(history.courses[0].classes[0].adaptation).toBe("Consignas cortas");
     expect(await getSharedStudentHistory(db, newTeacher(), s.zoe.id)).toBeNull();
     expect(await getSharedStudentHistory(db, s.guest.id, "nope")).toBeNull();
+  });
+});
+
+describe("leaving a shared class from the class itself (SHARE-4)", () => {
+  it("ends the guest's access, and only theirs", async () => {
+    const s = await setup(false);
+    expect(await leaveSharedClass(db, s.guest.id, s.mateId)).toEqual({ ok: false, error: "notFound" }); // not accepted yet
+    await s.accept();
+    expect(await leaveSharedClass(db, newTeacher(), s.mateId)).toEqual({ ok: false, error: "notFound" });
+    expect(await leaveSharedClass(db, s.guest.id, s.mateId)).toEqual({ ok: true });
+    expect(await classAccess(db, s.guest.id, s.mateId)).toBeNull();
+    expect(await classAccess(db, s.owner.id, s.mateId)).toMatchObject({ readOnly: false });
   });
 });
