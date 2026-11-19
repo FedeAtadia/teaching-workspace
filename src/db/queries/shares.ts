@@ -215,3 +215,30 @@ export async function deleteGuestShares(db: Db, guestId: string): Promise<void> 
   await db.delete(classShares).where(eq(classShares.guestId, guestId));
 }
 
+
+export type ClassAccess = {
+  ownerId: string;
+  ownerName: string | null;
+  /** SHARE-5: a guest only reads. */
+  readOnly: boolean;
+  /** SHARE-3: the owner always; a guest when allowed. */
+  showAdaptations: boolean;
+};
+
+/**
+ * OWNER-1, SHARE-5: who may open a class. Its owner, fully; a guest who
+ * accepted it, read-only; anyone else, nobody (null).
+ */
+export async function classAccess(db: Db, viewerId: string, classId: string): Promise<ClassAccess | null> {
+  if (!isUuid(classId)) return null;
+  const [[own], share] = await Promise.all([
+    db
+      .select({ id: classes.id })
+      .from(classes)
+      .where(and(eq(classes.id, classId), eq(classes.teacherId, viewerId))),
+    getShareFor(db, viewerId, classId),
+  ]);
+  if (own) return { ownerId: viewerId, ownerName: null, readOnly: false, showAdaptations: true };
+  if (!share) return null;
+  return { ownerId: share.ownerId, ownerName: share.ownerName, readOnly: true, showAdaptations: share.includeAdaptations };
+}

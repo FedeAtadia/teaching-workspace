@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { TermGradesForm } from "@/components/classes/TermGradesForm";
-import { getAdaptations } from "@/db/queries/adaptations";
 import { getAttendanceRates } from "@/db/queries/attendance";
 import { listTerms } from "@/db/queries/classDetail";
 import { getMinAttendance } from "@/db/queries/settings";
@@ -10,7 +9,7 @@ import { listTasks } from "@/db/queries/tasks";
 import { getTermGradeSheet } from "@/db/queries/termGrades";
 import { belowMinimum } from "@/lib/attendance";
 import { formatGrade } from "@/lib/format";
-import { loadClass } from "../data";
+import { loadAdaptations, loadClass } from "../data";
 
 /** TERM-5..7: one cuatrimestre at a time, chosen with ?term=1 or ?term=2. */
 export default async function TermGradesPage({ params, searchParams }: PageProps<"/classes/[id]/term-grades">) {
@@ -27,7 +26,7 @@ export default async function TermGradesPage({ params, searchParams }: PageProps
     term ? getTermGradeSheet(db, teacherId, cls, term.id) : null,
     term ? getAttendanceRates(db, teacherId, cls, term.position) : new Map(),
     getMinAttendance(db, teacherId),
-    getAdaptations(db, teacherId, id),
+    loadAdaptations(id),
   ]);
   if (!term || !sheet) notFound();
 

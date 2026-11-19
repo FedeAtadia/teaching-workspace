@@ -127,7 +127,8 @@
     "views": {
       "label": "Active or archived classes",
       "active": "Active",
-      "archived": "Archived"
+      "archived": "Archived",
+      "shared": "Shared with me"
     },
     "emptyArchived": "No archived classes.",
     "archivedHint": "The classes you no longer use, such as last year's. They are still complete and in each student's history; open one to unarchive it.",
@@ -1406,6 +1407,13 @@
     "invitation": "{owner} shared {course} {name} ({school}, {year}) with you. You'll see it read-only.",
     "someone": "Another teacher",
     "accept": "Accept",
-    "decline": "Decline"
+    "decline": "Decline",
+    "readOnlyBanner": "{owner}'s class, shared with you: you see it as it is and can't change anything.",
+    "studentBanner": "{owner}'s student: you only see the classes shared with you, and can't change anything.",
+    "back": "Shared with me",
+    "sharedHint": "Classes other teachers shared with you, such as your co-teacher. You see them read-only while they're shared.",
+    "sharedEmpty": "Nobody has shared a class with you yet.",
+    "by": "From {owner}",
+    "archived": "Archived"
   }
 }
