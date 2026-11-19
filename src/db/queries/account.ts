@@ -9,6 +9,7 @@ import {
   classGroupStudents,
   classGroups,
   classSessions,
+  classShares,
   classes,
   courseStudents,
   courses,
@@ -55,6 +56,7 @@ export async function loadExport(db: Db, teacherId: string): Promise<ExportData>
     calendarRows,
     dayOffRows,
     settingsRows,
+    shareRows,
   ] = await Promise.all([
     db.select().from(schools).where(eq(schools.teacherId, teacherId)),
     db.select().from(academicYears).where(eq(academicYears.teacherId, teacherId)),
@@ -77,6 +79,7 @@ export async function loadExport(db: Db, teacherId: string): Promise<ExportData>
     db.select().from(schoolCalendars).where(eq(schoolCalendars.teacherId, teacherId)),
     db.select().from(schoolDaysOff).where(eq(schoolDaysOff.teacherId, teacherId)),
     db.select().from(teacherSettings).where(eq(teacherSettings.teacherId, teacherId)),
+    db.select().from(classShares).where(eq(classShares.teacherId, teacherId)),
   ]);
 
   const byId = <T extends { id: string }>(rows: T[]) => new Map(rows.map((r) => [r.id, r]));
@@ -252,6 +255,16 @@ export async function loadExport(db: Db, teacherId: string): Promise<ExportData>
           name: d.name,
         };
       }),
+    ),
+    shares: present(
+      shareRows.map((s) =>
+        inClass(s.classId, {
+          guestEmail: s.guestEmail,
+          guestName: s.guestName,
+          status: s.status,
+          includeAdaptations: s.includeAdaptations,
+        }),
+      ),
     ),
     settings: settingsRows[0]
       ? {

@@ -4,8 +4,11 @@ import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { EditClassDialog } from "@/components/classes/AddClassDialog";
 import { ClassTabs } from "@/components/classes/ClassTabs";
 import { getClassCounts, listSchools } from "@/db/queries/classes";
+import { listClassShares } from "@/db/queries/shares";
+import { ShareDialog } from "@/components/classes/ShareDialog";
+import { LeaveShareButton } from "@/components/classes/LeaveShareButton";
 import { formatCourse } from "@/lib/courses";
-import { Archive, ArchiveRestore } from "lucide-react";
+import { Archive, ArchiveRestore, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
@@ -14,9 +17,13 @@ import { loadClass } from "./data";
 
 export default async function ClassLayout({ children, params }: LayoutProps<"/classes/[id]">) {
   const { id } = await params;
-  const { db, teacherId, cls } = await loadClass(id);
-  const [counts, schools] = await Promise.all([getClassCounts(db, teacherId, id), listSchools(db, teacherId)]);
+  const { db, teacherId, cls, readOnly, ownerName } = await loadClass(id);
+  // A guest has nothing to edit, share or delete (SHARE-5).
+  const [counts, schools, shares] = readOnly
+    ? [null, [], []]
+    : await Promise.all([getClassCounts(db, teacherId, id), listSchools(db, teacherId), listClassShares(db, teacherId, id)]);
   const t = await getTranslations("classPage");
+  const tShares = await getTranslations("shares");
   const tDayShort = await getTranslations("weekdaysShort");
   const tShift = await getTranslations("shifts");
   const base = `/classes/${id}`;
@@ -29,11 +36,12 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
 
   return (
     <>
-      <BackLink href="/classes" label={t("back")} />
+      <BackLink href={readOnly ? "/classes?view=shared" : "/classes"} label={t("back")} />
       <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
           {formatCourse(cls.year, cls.division)} · {cls.name}
         </h1>
+        {!readOnly && (
         <div className="flex flex-wrap gap-2">
           <EditClassDialog
             classId={id}
@@ -49,6 +57,8 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
             schools={schools.map((s) => s.name)}
             otherClasses={counts?.otherClasses ?? []}
           />
+          {/* SHARE-1 */}
+          <ShareDialog classId={id} shares={shares} />
           {/* CLASS-8: it can be undone, so it doesn't ask first. */}
           <form action={archiveClass.bind(null, { classId: id, archived: !cls.archivedOn })}>
             <Button type="submit" variant="outline" size="sm">
@@ -71,6 +81,7 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
             action={removeClass.bind(null, { classId: id })}
           />
         </div>
+        )}
       </div>
       {/* The course is in the title; the rest of what identifies the class goes here. */}
       <p className="mt-1.5 mb-6 text-muted-foreground">
@@ -83,6 +94,17 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
           .filter(Boolean)
           .join(" · ")}
       </p>
+      {/* SHARE-5 */}
+      {readOnly && (
+        <p role="status" className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-highlight-soft p-4 text-sm">
+          <Eye className="size-4 shrink-0 text-highlight" aria-hidden />
+          <span className="min-w-0 flex-1 basis-64">
+            {tShares("readOnlyBanner", { owner: ownerName ?? tShares("someone") })}
+          </span>
+          {/* SHARE-4: outside the read-only frame, so it stays usable. */}
+          <LeaveShareButton classId={id} />
+        </p>
+      )}
       {cls.archivedOn && (
         <p role="status" className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-muted p-4 text-sm">
           <Badge tone="outline">{t("archive.badge", { date: formatDate(cls.archivedOn) })}</Badge>
@@ -102,7 +124,17 @@ export default async function ClassLayout({ children, params }: LayoutProps<"/cl
           { href: `${base}/closing`, label: t("tabs.closing"), icon: "closing" },
         ]}
       />
-      <div className="mt-6">{children}</div>
+      {readOnly ? (
+        // SHARE-5: a guest's pages are shown, not used. Every field is disabled and
+        // every button hidden in one place, so no edit control on any tab is missed;
+        // links (tabs, groups, cuatrimestres, students, files) still work. Saving is
+        // refused by the server anyway: it checks the class is the signer's own.
+        <fieldset disabled className="mt-6 min-w-0 [&_button]:hidden [&_[data-save-bar]]:hidden">
+          {children}
+        </fieldset>
+      ) : (
+        <div className="mt-6">{children}</div>
+      )}
     </>
   );
 }

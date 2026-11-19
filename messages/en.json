@@ -127,7 +127,8 @@
     "views": {
       "label": "Active or archived classes",
       "active": "Active",
-      "archived": "Archived"
+      "archived": "Archived",
+      "shared": "Shared with me"
     },
     "emptyArchived": "No archived classes.",
     "archivedHint": "The classes you no longer use, such as last year's. They are still complete and in each student's history; open one to unarchive it.",
@@ -1029,7 +1030,7 @@
       "description": "What data Annora uses, what for, where it is stored and how to ask to see, correct or delete it."
     },
     "title": "Privacy policy",
-    "updated": "Last updated: 12/11/2026",
+    "updated": "Last updated: 19/11/2026",
     "intro": "This policy explains what data Annora uses, what for, where it is stored and what you can do about it. It is written for teachers, who are the people who use Annora. The Spanish version is the one that applies.",
     "sections": [
       {
@@ -1052,7 +1053,8 @@
         "title": "What you enter in Annora",
         "paragraphs": [
           "Annora stores what you enter: your schools and their calendar, your classes, your students (name, grades, attendance, notes and adaptations), your tasks and their files, and your preferences.",
-          "They are your records as a teacher, as your spreadsheets were: you decide what to enter and are responsible for having it. Annora keeps them to show them to you and nobody else: no other teacher or person can see them.",
+          "They are your records as a teacher, as your spreadsheets were: you decide what to enter and are responsible for having it. Annora keeps them to show them to you: no other teacher or person can see them, except a class you choose to share.",
+          "If you choose to, you can share a class with another teacher who uses Annora (your co-teacher, for instance). They see it read-only, without adaptations unless you say so, and stop seeing it as soon as you stop sharing it. Nobody else can see your data.",
           "Your students have no account in Annora and Annora never contacts them. For adaptations, what is stored is which content is adapted, never a diagnosis. Please don't enter diagnoses or other health data."
         ]
       },
@@ -1112,7 +1114,8 @@
       "groups": "Groups",
       "calendars": "Calendars",
       "daysOff": "Days without class",
-      "settings": "Settings"
+      "settings": "Settings",
+      "shares": "Shared classes"
     },
     "columns": {
       "schoolYear": "School year",
@@ -1152,7 +1155,10 @@
       "name": "Name",
       "setting": "Setting",
       "value": "Value",
-      "archivedOn": "Archived on"
+      "archivedOn": "Archived on",
+      "guestEmail": "Shared with",
+      "guestName": "Name",
+      "includeAdaptations": "Sees adaptations"
     },
     "shift": {
       "morning": "Morning",
@@ -1205,7 +1211,11 @@
       "graduateRetentionMonths": "Months graduates are kept"
     },
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "share": {
+      "pending": "Pending",
+      "accepted": "Accepted"
+    }
   },
   "rosterImport": {
     "title": "Import a list of students",
@@ -1373,5 +1383,38 @@
     "dayUnsaved": "You have marks for this day on this phone that you haven't saved yet.",
     "waiting": "Waiting for signal…",
     "savedOnPhone": "No connection: it was kept on this phone and is sent by itself when the signal returns. You can keep using Annora."
+  },
+  "shares": {
+    "button": "Share",
+    "title": "Share this class",
+    "intro": "For co-taught classes: the other teacher sees this class as it is (students, tasks, grades, attendance and year-end), without being able to change anything. They need an Annora account with that email.",
+    "email": "The other teacher's email",
+    "emailPlaceholder": "name@gmail.com",
+    "adaptations": "Can see adaptations",
+    "adaptationsHint": "What is adapted for each student, their adapted tasks and their own standards. You can change it any time.",
+    "readOnly": "Read-only: they can't edit, delete or add anything. You can stop sharing any time.",
+    "submit": "Share",
+    "sent": "Done. When that person signs in to Annora, they'll see the invitation on Home.",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted"
+    },
+    "revoke": "Stop sharing",
+    "errors": {
+      "self": "That's your own email.",
+      "notFound": "The class wasn't found. Reload the page."
+    },
+    "invitation": "{owner} shared {course} {name} ({school}, {year}) with you. You'll see it read-only.",
+    "someone": "Another teacher",
+    "accept": "Accept",
+    "decline": "Decline",
+    "readOnlyBanner": "{owner}'s class, shared with you: you see it as it is and can't change anything.",
+    "studentBanner": "{owner}'s student: you only see the classes shared with you, and can't change anything.",
+    "back": "Shared with me",
+    "sharedHint": "Classes other teachers shared with you, such as your co-teacher. You see them read-only while they're shared.",
+    "sharedEmpty": "Nobody has shared a class with you yet.",
+    "by": "From {owner}",
+    "archived": "Archived",
+    "leave": "Stop seeing this class"
   }
 }

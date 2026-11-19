@@ -3,26 +3,25 @@ import { getTranslations } from "next-intl/server";
 import { cn } from "cn";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { Initials } from "@/components/Initials";
-import { AdaptationButton } from "@/components/classes/Adaptation";
+import { AdaptationButton, AdaptedBadge } from "@/components/classes/Adaptation";
 import { BringStudentsDialog } from "@/components/classes/BringStudentsDialog";
 import { GroupFilter } from "@/components/classes/GroupFilter";
 import { StudentGroupSelect } from "@/components/classes/StudentGroupSelect";
 import { FormDialog, type FieldSpec } from "@/components/forms/FormDialog";
 import { Badge } from "@/components/ui/badge";
-import { getAdaptations } from "@/db/queries/adaptations";
 import { listClassStudents } from "@/db/queries/classDetail";
 import { getStudentGroups, listGroups } from "@/db/queries/groups";
 import { listNextYearCandidates } from "@/db/queries/nextYear";
 import { WEEKDAYS } from "@/lib/calendar";
 import { formatCourse } from "@/lib/courses";
 import { addGroup, editGroup, removeGroup } from "./actions";
-import { loadClass } from "./data";
+import { loadAdaptations, loadClass } from "./data";
 
 /** ROSTER-1, NEXT-1, GROUP-1, GROUP-2, GROUP-6, ADAPT-1 */
 export default async function ClassStudentsPage({ params, searchParams }: PageProps<"/classes/[id]">) {
   const { id } = await params;
   const { group } = await searchParams;
-  const { db, teacherId, cls } = await loadClass(id);
+  const { db, teacherId, cls, readOnly } = await loadClass(id);
   const t = await getTranslations("classPage.students");
   const tGroups = await getTranslations("groups");
   const tDay = await getTranslations("weekdays");
@@ -31,10 +30,11 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
   const tShift = await getTranslations("shifts");
   const [roster, candidates, groups, studentGroups, adaptations] = await Promise.all([
     listClassStudents(db, teacherId, cls),
-    listNextYearCandidates(db, teacherId, cls),
+    // NEXT-1 is the owner's to do.
+    readOnly ? [] : listNextYearCandidates(db, teacherId, cls),
     listGroups(db, teacherId, id),
     getStudentGroups(db, teacherId, id),
-    getAdaptations(db, teacherId, id),
+    loadAdaptations(id),
   ]);
   const groupId = typeof group === "string" && groups.some((g) => g.id === group) ? group : undefined;
   const shown = groupId ? roster.filter((s) => studentGroups.get(s.id) === groupId) : roster;
@@ -189,12 +189,16 @@ export default async function ClassStudentsPage({ params, searchParams }: PagePr
                   </Link>
                 </div>
                 <div className="relative z-10 md:order-last md:justify-self-end">
-                  <AdaptationButton
-                    classId={id}
-                    studentId={s.id}
-                    studentName={name}
-                    notes={adaptations.get(s.id) ?? null}
-                  />
+                  {readOnly ? (
+                    adaptations.has(s.id) && <AdaptedBadge notes={adaptations.get(s.id)!} />
+                  ) : (
+                    <AdaptationButton
+                      classId={id}
+                      studentId={s.id}
+                      studentName={name}
+                      notes={adaptations.get(s.id) ?? null}
+                    />
+                  )}
                 </div>
                 {hasGroups && (
                   <div className="relative z-10 w-full pl-12 md:w-auto md:pl-0">
