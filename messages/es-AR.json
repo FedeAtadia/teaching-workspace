@@ -1415,6 +1415,13 @@
     "sharedEmpty": "Todavía nadie te compartió un curso.",
     "by": "De {owner}",
     "archived": "Archivado",
+    "seeOwn": "Verlo en tus cursos",
     "leave": "Dejar de ver este curso"
+  },
+  "dupla": {
+    "title": "En dupla",
+    "intro": "El mismo estudiante en los cursos que te compartieron, en solo lectura. Se lo reconoce por el nombre y el ciclo lectivo.",
+    "attendance": "Asist. {rate} %",
+    "final": "Nota final"
   }
 }

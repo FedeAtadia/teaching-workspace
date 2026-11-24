@@ -1415,6 +1415,13 @@
     "sharedEmpty": "Nobody has shared a class with you yet.",
     "by": "From {owner}",
     "archived": "Archived",
+    "seeOwn": "See them in your classes",
     "leave": "Stop seeing this class"
+  },
+  "dupla": {
+    "title": "Co-taught",
+    "intro": "The same student in the classes shared with you, read-only. They are recognised by name and school year.",
+    "attendance": "Att. {rate}%",
+    "final": "Final grade"
   }
 }

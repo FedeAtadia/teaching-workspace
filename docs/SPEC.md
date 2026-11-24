@@ -847,6 +847,22 @@ by hand (Known gaps).*
   each student's page, which shows only the shared classes of that student,
   read-only. Storage enforces the same (`supabase/storage.sql`).
 
+## DUPLA — A student seen in both teachers' classes
+
+*Enforced by `src/lib/dupla.ts`, `src/db/queries/dupla.ts`. Covered by
+`src/lib/dupla.test.ts`, `src/db/queries/dupla.test.ts`.*
+
+- **DUPLA-1** A teacher's own student is taken to be the same as a student
+  of a class shared with them (SHARE-5) when their first and last names
+  match, ignoring case and accents, in the same school year. The student's
+  page then shows, for each such class, by cuatrimestre the grade (or the
+  average so far) and the attendance, the final grade and the result,
+  read-only, with a way to that student's page in the shared class
+  (SHARE-6). A class with two students of that name shows nothing rather
+  than guess.
+- **DUPLA-2** A shared class's student's page leads back to the teacher's
+  own student of the same name and school year, when there is exactly one.
+
 ## OWNER — Each teacher's data
 
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
