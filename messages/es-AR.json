@@ -127,7 +127,8 @@
     "views": {
       "label": "Cursos activos o archivados",
       "active": "Activos",
-      "archived": "Archivados"
+      "archived": "Archivados",
+      "shared": "Compartidos conmigo"
     },
     "emptyArchived": "No hay cursos archivados.",
     "archivedHint": "Los cursos que ya no usás, por ejemplo los del año pasado. Siguen completos y en la historia de cada estudiante; abrí uno para desarchivarlo.",
@@ -1406,6 +1407,14 @@
     "invitation": "{owner} te compartió {course} {name} ({school}, {year}). Lo vas a ver en solo lectura.",
     "someone": "Otro docente",
     "accept": "Aceptar",
-    "decline": "Rechazar"
+    "decline": "Rechazar",
+    "readOnlyBanner": "Curso de {owner}, compartido con vos: lo ves tal como está y no podés cambiar nada.",
+    "studentBanner": "Estudiante de {owner}: ves solo los cursos que te compartió, sin poder cambiar nada.",
+    "back": "Compartidos conmigo",
+    "sharedHint": "Cursos que otros docentes te compartieron, por ejemplo tu dupla. Los ves en solo lectura mientras te los compartan.",
+    "sharedEmpty": "Todavía nadie te compartió un curso.",
+    "by": "De {owner}",
+    "archived": "Archivado",
+    "leave": "Dejar de ver este curso"
   }
 }

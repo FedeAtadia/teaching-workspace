@@ -93,7 +93,7 @@ export function TermGradesForm({
       </div>
 
       {/* The save bar stays in view while scrolling a long list; on a phone it sits above the menu bar (NAV-1). */}
-      <div className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-10 flex flex-wrap items-center gap-3 rounded-2xl bg-card/95 p-3 shadow-lg ring-1 ring-border backdrop-blur md:bottom-4">
+      <div data-save-bar className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-10 flex flex-wrap items-center gap-3 rounded-2xl bg-card/95 p-3 shadow-lg ring-1 ring-border backdrop-blur md:bottom-4">
         <Button type="submit" size="lg" disabled={pending}>
           {pending ? tCommon("saving") : tCommon("save")}
         </Button>

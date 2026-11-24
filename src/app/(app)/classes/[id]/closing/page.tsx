@@ -6,12 +6,11 @@ import { Initials } from "@/components/Initials";
 import { OutcomeSelect } from "@/components/classes/OutcomeSelect";
 import { ResultLabel, StudentExams } from "@/components/classes/StudentExams";
 import { Badge } from "@/components/ui/badge";
-import { getAdaptations } from "@/db/queries/adaptations";
 import { getClosingSheet } from "@/db/queries/yearEnd";
 import { formatGrade } from "@/lib/format";
 import { isPassing } from "@/lib/grading";
 import { allowedOutcomes, type ClassResult } from "@/lib/yearEnd";
-import { loadClass } from "../data";
+import { loadAdaptations, loadClass } from "../data";
 
 // One card per student; from lg up the cards line up as table rows under one header.
 const COLUMNS = "lg:grid-cols-[minmax(0,1.4fr)_6rem_minmax(0,1.3fr)_minmax(0,1fr)]";
@@ -31,7 +30,7 @@ export default async function ClosingPage({ params }: PageProps<"/classes/[id]/c
   const { db, teacherId, cls, rules } = await loadClass(id);
   const [sheet, adaptations] = await Promise.all([
     getClosingSheet(db, teacherId, cls),
-    getAdaptations(db, teacherId, id),
+    loadAdaptations(id),
   ]);
   const t = await getTranslations("closing");
   const tAdapt = await getTranslations("adaptations");
