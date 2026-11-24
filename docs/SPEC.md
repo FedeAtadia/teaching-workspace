@@ -759,7 +759,8 @@ by hand (Known gaps).*
   attendance, days not held, exams, adaptations, groups, school calendars
   and settings (KEEP-2's period among them). Rows name things (the school, the course, the student)
   rather than showing ids, and only the teacher's own rows are in it
-  (OWNER-1). Attached files are listed by name, not included.
+  (OWNER-1), with whom each class is shared (SHARE-1). Attached files are
+  listed by name, not included.
 - **DATA-2** Sheet names, column titles and values such as "presente" are in
   the teacher's language; dates are dates and grades are numbers, so the
   file can be sorted and filtered.
@@ -812,6 +813,25 @@ by hand (Known gaps).*
   download a copy of the data (DATA-1).
 - **KEEP-4** After a deletion, Home says how many graduates were deleted and
   when, until the teacher dismisses it.
+
+## SHARE — Sharing a class with another teacher
+
+*Enforced by `src/db/queries/shares.ts`, `src/lib/validation.ts`. Covered by
+`src/db/queries/shares.test.ts`, `src/lib/validation.test.ts`.*
+
+- **SHARE-1** A class's owner can share it, from its page, with another
+  teacher's email. The share waits for that teacher to accept. A class can't
+  be shared with the owner's own email, nor by anyone but its owner; sharing
+  again with the same email changes the share instead of adding one. The
+  owner sees whom the class is shared with, and whether each accepted.
+- **SHARE-2** Home shows the teacher signed in with that email each class
+  offered to them, by whom and which, to accept or decline. Nobody else can
+  accept it.
+- **SHARE-3** The owner chooses, per share and at any time, whether the guest
+  sees adaptations (ADAPT); not unless chosen.
+- **SHARE-4** A share ends when the owner stops it, the guest declines or
+  leaves it, the class is deleted, or either account is deleted (DATA-3).
+  Archiving the class (CLASS-8) doesn't end it.
 
 ## OWNER — Each teacher's data
 
