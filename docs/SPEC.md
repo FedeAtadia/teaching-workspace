@@ -792,6 +792,13 @@ by hand (Known gaps).*
 - **FOLLOW-4** In Settings the teacher turns this on or off (on unless
   changed) and sets the number of tasks not handed in, 1 to 20 (3 unless
   changed). Off, nobody is pointed out anywhere and the view isn't offered.
+- **FOLLOW-5** A student whose grade for the cuatrimestre under way is
+  already set (TERM-5) and passing (GRADE-2..5) isn't pointed out in that
+  class.
+- **FOLLOW-6** The teacher can take a student out of follow-up in a class,
+  from the student's page, for the cuatrimestre under way; the page then
+  says so, with a way to put them back. The next cuatrimestre starts
+  afresh. Only the teacher's own students and classes.
 
 ## KEEP — How long graduates are kept
 

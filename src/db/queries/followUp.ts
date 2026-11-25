@@ -3,6 +3,7 @@
 // together, each already added up by Postgres.
 
 import { and, eq, isNull, sql } from "drizzle-orm";
+import { z } from "zod";
 import type { Db } from "@/db";
 import {
   attendance,
@@ -15,7 +16,9 @@ import {
   scores,
   students,
   tasks,
+  followUpDismissals,
   teacherSettings,
+  termGrades,
   terms,
 } from "@/db/schema";
 import { attendanceRate, type AttendanceStatus } from "@/lib/attendance";
@@ -55,11 +58,16 @@ export type FollowUpClass = {
   reasons: FollowUpReason[];
 };
 export type FollowUpStudent = { studentId: string; firstName: string; lastName: string; classes: FollowUpClass[] };
+/** FOLLOW-6: a student taken out of follow-up in a class, for the cuatrimestre under way. */
+export type FollowUpDismissed = { studentId: string; classId: string; name: string; term: number };
+
 export type FollowUp = {
   /** FOLLOW-4: off means nobody is pointed out. */
   enabled: boolean;
   /** STUDENT-3 order; each one's classes by subject. */
   students: FollowUpStudent[];
+  /** FOLLOW-6 */
+  dismissed: FollowUpDismissed[];
 };
 
 const collator = new Intl.Collator("es", { sensitivity: "base", numeric: true });
@@ -69,7 +77,7 @@ const collator = new Intl.Collator("es", { sensitivity: "base", numeric: true })
  * with a reason in the cuatrimestre under way, as of `today` (an ISO date).
  */
 export async function getFollowUp(db: Db, teacherId: string, today: string): Promise<FollowUp> {
-  const [[settings], classRows, enrolled, scored, marks] = await Promise.all([
+  const [[settings], classRows, enrolled, scored, marks, setGrades, dismissals] = await Promise.all([
     db
       .select({
         enabled: teacherSettings.followUp,
@@ -156,10 +164,21 @@ export async function getFollowUp(db: Db, teacherId: string, today: string): Pro
         sql`case when ${classSessions.date} >= ${schoolCalendars.term2StartsOn} then 2 else 1 end`,
         attendance.status,
       ),
+    // FOLLOW-5: the cuatrimestre grades set, by class, student and cuatrimestre.
+    db
+      .select({ classId: termGrades.classId, studentId: termGrades.studentId, term: terms.position, value: termGrades.value })
+      .from(termGrades)
+      .innerJoin(terms, eq(termGrades.termId, terms.id))
+      .where(eq(termGrades.teacherId, teacherId)),
+    // FOLLOW-6
+    db
+      .select({ classId: followUpDismissals.classId, studentId: followUpDismissals.studentId, term: followUpDismissals.term })
+      .from(followUpDismissals)
+      .where(eq(followUpDismissals.teacherId, teacherId)),
   ]);
 
   const enabled = settings?.enabled ?? true;
-  if (!enabled) return { enabled, students: [] };
+  if (!enabled) return { enabled, students: [], dismissed: [] };
   const limits = {
     missing: resolveMissing(settings?.missing),
     minAttendance: settings?.minAttendance ?? DEFAULT_MIN_ATTENDANCE,
@@ -174,6 +193,9 @@ export async function getFollowUp(db: Db, teacherId: string, today: string): Pro
     marksAt.set(k, [...(marksAt.get(k) ?? []), ...Array<AttendanceStatus>(m.days).fill(m.status)]);
   }
 
+  const gradeAt = new Map(setGrades.map((g) => [key(g.classId, g.studentId, g.term), g.value]));
+  const dismissedAt = new Set(dismissals.map((d) => key(d.classId, d.studentId, d.term)));
+  const dismissed: FollowUpDismissed[] = [];
   const byStudent = new Map<string, FollowUpStudent>();
   for (const cls of classRows) {
     const calendar =
@@ -185,6 +207,10 @@ export async function getFollowUp(db: Db, teacherId: string, today: string): Pro
 
     for (const s of enrolled.filter((e) => e.courseId === cls.courseId)) {
       const k = key(cls.id, s.studentId, term);
+      const passMark = cls.passMark ?? limits.teacherPassMark;
+      // FOLLOW-5: a passing grade already set for the cuatrimestre settles it.
+      const grade = gradeAt.get(k);
+      if (grade !== undefined && grade >= passMark) continue;
       const own = scoreAt.get(k);
       const reasons = followUpReasons(
         {
@@ -193,9 +219,14 @@ export async function getFollowUp(db: Db, teacherId: string, today: string): Pro
           missing: own?.missing ?? 0,
           attendance: attendanceRate(marksAt.get(k) ?? []).rate,
         },
-        { passMark: cls.passMark ?? limits.teacherPassMark, minAttendance: limits.minAttendance, missing: limits.missing },
+        { passMark, minAttendance: limits.minAttendance, missing: limits.missing },
       );
       if (reasons.length === 0) continue;
+      // FOLLOW-6: taken out by the teacher for this cuatrimestre.
+      if (dismissedAt.has(k)) {
+        dismissed.push({ studentId: s.studentId, classId: cls.id, name: cls.name, term });
+        continue;
+      }
       const entry = byStudent.get(s.studentId) ?? {
         studentId: s.studentId,
         firstName: s.firstName,
@@ -208,5 +239,48 @@ export async function getFollowUp(db: Db, teacherId: string, today: string): Pro
   }
   const list = [...byStudent.values()].sort(compareStudents);
   for (const s of list) s.classes.sort((a, b) => collator.compare(a.name, b.name) || a.year - b.year);
-  return { enabled, students: list };
+  return { enabled, students: list, dismissed };
 }
+
+/**
+ * FOLLOW-6: takes a student out of follow-up in one of the teacher's classes
+ * for a cuatrimestre, or (`dismissed` false) puts them back. Only an active
+ * student of the class's course.
+ */
+export async function setFollowUpDismissed(
+  db: Db,
+  teacherId: string,
+  input: { classId: string; studentId: string; term: number; dismissed: boolean },
+): Promise<{ ok: true } | { ok: false; error: "notFound" }> {
+  const notFound = { ok: false, error: "notFound" } as const;
+  if (!isUuid(input.classId) || !isUuid(input.studentId) || ![1, 2].includes(input.term)) return notFound;
+  const [member] = await db
+    .select({ id: courseStudents.studentId })
+    .from(classes)
+    .innerJoin(courseStudents, eq(courseStudents.courseId, classes.courseId))
+    .where(
+      and(
+        eq(classes.id, input.classId),
+        eq(classes.teacherId, teacherId),
+        eq(courseStudents.studentId, input.studentId),
+        eq(courseStudents.status, "active"),
+      ),
+    );
+  if (!member) return notFound;
+  const row = { teacherId, classId: input.classId, studentId: input.studentId, term: input.term };
+  if (input.dismissed) await db.insert(followUpDismissals).values(row).onConflictDoNothing();
+  else
+    await db
+      .delete(followUpDismissals)
+      .where(
+        and(
+          eq(followUpDismissals.classId, input.classId),
+          eq(followUpDismissals.studentId, input.studentId),
+          eq(followUpDismissals.term, input.term),
+          eq(followUpDismissals.teacherId, teacherId),
+        ),
+      );
+  return { ok: true };
+}
+
+const isUuid = (v: string) => z.uuid().safeParse(v).success;

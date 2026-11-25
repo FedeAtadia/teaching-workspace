@@ -5,7 +5,7 @@ import * as schema from "@/db/schema";
 import { createTestDb, newTeacher } from "@/test/db";
 import { createClass, listSchools, setClassArchived, setSchoolPassMark } from "./classes";
 import { getClass, listTerms } from "./classDetail";
-import { getFollowUp, getFollowUpSettings, setFollowUpSettings } from "./followUp";
+import { getFollowUp, getFollowUpSettings, setFollowUpDismissed, setFollowUpSettings } from "./followUp";
 import { setMinAttendance } from "./settings";
 import { createStudent, listStudents } from "./students";
 
@@ -155,11 +155,60 @@ describe("students to follow up (FOLLOW)", () => {
     expect((await getFollowUp(db, newTeacher(), MAY)).students).toEqual([]); // OWNER-1
 
     await setFollowUpSettings(db, s.teacherId, { enabled: false, missing: 3 });
-    expect(await getFollowUp(db, s.teacherId, MAY)).toEqual({ enabled: false, students: [] });
+    expect(await getFollowUp(db, s.teacherId, MAY)).toEqual({ enabled: false, students: [], dismissed: [] });
     expect(await getFollowUpSettings(db, s.teacherId)).toEqual({ enabled: false, missing: 3 });
 
     await setFollowUpSettings(db, s.teacherId, { enabled: true, missing: 3 });
     await setClassArchived(db, s.teacherId, { classId: s.cls.id, archived: true }, MAY);
     expect((await getFollowUp(db, s.teacherId, MAY)).students).toEqual([]);
+  });
+});
+
+describe("taking students out of follow-up (FOLLOW-5, FOLLOW-6)", () => {
+  const who = async (teacherId: string, today = MAY) => (await getFollowUp(db, teacherId, today)).students.map((x) => x.firstName);
+
+  it("leaves out a student whose cuatrimestre grade is set and passing (FOLLOW-5)", async () => {
+    const s = await seed();
+    await s.task(s.term1.id, { Luis: 4, Zoe: 5 });
+    expect(await who(s.teacherId)).toEqual(["Zoe", "Luis"]);
+
+    // The teacher set Luis a 7 for the 1° cuatrimestre: he passed it. Zoe got a 6: still below.
+    await db.insert(schema.termGrades).values([
+      { teacherId: s.teacherId, classId: s.cls.id, studentId: s.ids.Luis, termId: s.term1.id, value: 7 },
+      { teacherId: s.teacherId, classId: s.cls.id, studentId: s.ids.Zoe, termId: s.term1.id, value: 6 },
+    ]);
+    expect(await who(s.teacherId)).toEqual(["Zoe"]);
+  });
+
+  it("takes a student out for the cuatrimestre and puts them back, and the next one starts afresh (FOLLOW-6)", async () => {
+    const s = await seed();
+    await s.task(s.term1.id, { Luis: 4 });
+    await s.task(s.term2.id, { Luis: 3 });
+    const out = { classId: s.cls.id, studentId: s.ids.Luis, term: 1, dismissed: true };
+
+    expect(await setFollowUpDismissed(db, s.teacherId, out)).toEqual({ ok: true });
+    const may = await getFollowUp(db, s.teacherId, MAY);
+    expect(may.students).toEqual([]);
+    expect(may.dismissed).toEqual([{ studentId: s.ids.Luis, classId: s.cls.id, name: "Matemática", term: 1 }]);
+    // Taking them out twice is the same.
+    expect(await setFollowUpDismissed(db, s.teacherId, out)).toEqual({ ok: true });
+
+    // The 2° cuatrimestre starts afresh.
+    expect(await who(s.teacherId, SEPTEMBER)).toEqual(["Luis"]);
+
+    expect(await setFollowUpDismissed(db, s.teacherId, { ...out, dismissed: false })).toEqual({ ok: true });
+    expect(await who(s.teacherId)).toEqual(["Luis"]);
+    expect((await getFollowUp(db, s.teacherId, MAY)).dismissed).toEqual([]);
+  });
+
+  it("only for the teacher's own class and an active student of it (FOLLOW-6, OWNER-1)", async () => {
+    const s = await seed();
+    const out = { classId: s.cls.id, studentId: s.ids.Luis, term: 1, dismissed: true };
+    const notFound = { ok: false, error: "notFound" };
+    expect(await setFollowUpDismissed(db, newTeacher(), out)).toEqual(notFound);
+    expect(await setFollowUpDismissed(db, s.teacherId, { ...out, term: 3 })).toEqual(notFound);
+    expect(await setFollowUpDismissed(db, s.teacherId, { ...out, studentId: "nope" })).toEqual(notFound);
+    await db.update(schema.courseStudents).set({ status: "withdrawn" }).where(eq(schema.courseStudents.studentId, s.ids.Luis));
+    expect(await setFollowUpDismissed(db, s.teacherId, out)).toEqual(notFound);
   });
 });

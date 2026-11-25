@@ -141,6 +141,13 @@
       "when": 1795096243822,
       "tag": "0019_class-shares",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1795616040975,
+      "tag": "0020_follow-up-dismissals",
+      "breakpoints": true
     }
   ]
 }
