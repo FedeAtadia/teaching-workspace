@@ -9,6 +9,7 @@ import { GroupFilter } from "@/components/classes/GroupFilter";
 import { getAttendanceDay } from "@/db/queries/attendance";
 import { listGroups } from "@/db/queries/groups";
 import { weekdayOf } from "@/lib/calendar";
+import { formatCourse } from "@/lib/courses";
 import { formatDate } from "@/lib/format";
 import { loadClass } from "../../data";
 import { clearDayAction } from "../actions";
@@ -98,8 +99,11 @@ export default async function AttendanceDayPage({ params, searchParams }: PagePr
           <AttendanceForm
             // A fresh form per date and group, so switching never keeps the other's choices.
             key={`${date}:${groupId ?? ""}`}
+            teacherId={teacherId}
             classId={id}
             date={date}
+            label={`${formatCourse(cls.year, cls.division)} ${cls.name} · ${title}`}
+            version={day.version}
             rows={rows.map((r) => ({
               studentId: r.student.id,
               name: `${r.student.lastName}, ${r.student.firstName}`,

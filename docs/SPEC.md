@@ -238,6 +238,33 @@ by `src/db/queries/copyClass.test.ts`, `src/lib/validation.test.ts`.*
   days of the week, in order; a date is without class when a day without
   class of its school's calendar covers it.
 
+## OFFLINE — Taking attendance without signal
+
+*Enforced by `src/lib/offlineAttendance.ts`, `src/db/queries/attendance.ts`,
+`src/lib/validation.ts`. Covered by `src/lib/offlineAttendance.test.ts`,
+`src/db/queries/attendance.test.ts`, `src/lib/validation.test.ts`.*
+
+- **OFFLINE-1** Without signal, every page says so, and a save made then
+  waits and goes through by itself when the signal returns, instead of
+  failing.
+- **OFFLINE-2** On the day's attendance page (ATT-2), each mark is kept on
+  the phone as it is tapped, and "Guardar" keeps the day there before sending
+  it. Reopening the day brings back what the phone has, saying whether it
+  was saved but not sent yet, or not saved. What the phone keeps belongs to
+  the teacher signed in; another account on the same phone neither sees nor
+  sends it.
+- **OFFLINE-3** Each saved day has a version that goes up with every save
+  (ATT-2, ATT-3). A day kept on the phone is sent with the version it was
+  taken from; if the day was saved again since with different marks, or as
+  not held, nothing is overwritten: the teacher is told and chooses which
+  copy to keep. The same marks sent twice are not a clash, and a day cleared
+  since is simply saved.
+- **OFFLINE-4** Days kept on the phone are sent, oldest first, when Annora
+  opens and whenever the signal returns, even after the app was closed; a
+  notice on every page says how many wait and offers to send them now. A
+  day the server refuses for good (its class or date no longer exists) is
+  shown, to be discarded.
+
 ## STUDENT — Students
 
 *Enforced by `src/lib/validation.ts`, `src/lib/students.ts`,
@@ -638,8 +665,9 @@ by `src/lib/validation.test.ts`, `src/db/queries/classDetail.test.ts`.*
 ## LAND — The public home page
 
 *Enforced by `src/lib/access.ts`, `src/proxy.ts`, `src/app/page.tsx`,
-`src/app/privacidad/page.tsx`. Covered by `src/lib/access.test.ts`; the
-pages themselves by hand (Known gaps).*
+`src/app/privacidad/page.tsx`, `src/lib/attendanceDemo.ts`. Covered by
+`src/lib/access.test.ts`, `src/lib/attendanceDemo.test.ts`; the pages
+themselves by hand (Known gaps).*
 
 - **LAND-1** Anyone not signed in can open the home page, `/`, which explains
   what Annora is. Every other page, except signing in (`/login`, `/auth/…`),
@@ -656,6 +684,18 @@ pages themselves by hand (Known gaps).*
   responsible and how to reach them, what Annora receives from Google and
   what for, how the data a teacher enters is kept, and how to see, correct
   or delete it.
+- **LAND-6** The home page links to Annora's Instagram and X accounts
+  (@annora_app), each opening in a new tab.
+- **LAND-7** The home page moves: its sections rise in as they scroll into
+  view, the drawn numbers count up, and the drawn phone takes attendance by
+  itself until the visitor taps a letter. From then on the visitor marks each
+  student (P, A, T or J), the totals under the list follow their marks, and
+  "Guardar" shows it saved until the next tap; nothing is sent anywhere.
+  Nothing moves when the device asks for reduced motion, and without
+  JavaScript everything shows, still.
+- **LAND-8** The home page's questions open one at a time: the first starts
+  open, opening another closes the one that was open, and tapping the open
+  one closes it.
 
 ## INSTALL — Installing Annora as an app
 
@@ -719,7 +759,8 @@ by hand (Known gaps).*
   attendance, days not held, exams, adaptations, groups, school calendars
   and settings (KEEP-2's period among them). Rows name things (the school, the course, the student)
   rather than showing ids, and only the teacher's own rows are in it
-  (OWNER-1). Attached files are listed by name, not included.
+  (OWNER-1), with whom each class is shared (SHARE-1). Attached files are
+  listed by name, not included.
 - **DATA-2** Sheet names, column titles and values such as "presente" are in
   the teacher's language; dates are dates and grades are numbers, so the
   file can be sorted and filtered.
@@ -773,6 +814,55 @@ by hand (Known gaps).*
 - **KEEP-4** After a deletion, Home says how many graduates were deleted and
   when, until the teacher dismisses it.
 
+## SHARE — Sharing a class with another teacher
+
+*Enforced by `src/db/queries/shares.ts`, `src/db/queries/sharedStudent.ts`,
+`src/lib/validation.ts`, `supabase/storage.sql`. Covered by
+`src/db/queries/shares.test.ts`, `src/db/queries/sharedStudent.test.ts`,
+`src/lib/validation.test.ts`.*
+
+- **SHARE-1** A class's owner can share it, from its page, with another
+  teacher's email. The share waits for that teacher to accept. A class can't
+  be shared with the owner's own email, nor by anyone but its owner; sharing
+  again with the same email changes the share instead of adding one. The
+  owner sees whom the class is shared with, and whether each accepted.
+- **SHARE-2** Home shows the teacher signed in with that email each class
+  offered to them, by whom and which, to accept or decline. Nobody else can
+  accept it.
+- **SHARE-3** The owner chooses, per share and at any time, whether the guest
+  sees adaptations (ADAPT); not unless chosen.
+- **SHARE-4** A share ends when the owner stops it, the guest declines or
+  leaves it, the class is deleted, or either account is deleted (DATA-3).
+  Archiving the class (CLASS-8) doesn't end it.
+- **SHARE-5** A guest finds the classes shared with them under "Compartidos
+  conmigo" in Classes, by whom, and opens each with the same tabs its owner
+  has, showing the owner's data and grading rules, with a notice that it is
+  read-only: nothing on it can be added, changed, saved or deleted, and the
+  server refuses it anyway (OWNER-1). Without leave to see adaptations
+  (SHARE-3), none shows: no notes, adapted tasks, own standards or adapted
+  marks. Shared classes stay out of the guest's Home, Students, Previas and
+  follow-up.
+- **SHARE-6** From a shared class the guest opens its files (adapted ones
+  and a student's own standards' only with leave to see adaptations) and
+  each student's page, which shows only the shared classes of that student,
+  read-only. Storage enforces the same (`supabase/storage.sql`).
+
+## DUPLA — A student seen in both teachers' classes
+
+*Enforced by `src/lib/dupla.ts`, `src/db/queries/dupla.ts`. Covered by
+`src/lib/dupla.test.ts`, `src/db/queries/dupla.test.ts`.*
+
+- **DUPLA-1** A teacher's own student is taken to be the same as a student
+  of a class shared with them (SHARE-5) when their first and last names
+  match, ignoring case and accents, in the same school year. The student's
+  page then shows, for each such class, by cuatrimestre the grade (or the
+  average so far) and the attendance, the final grade and the result,
+  read-only, with a way to that student's page in the shared class
+  (SHARE-6). A class with two students of that name shows nothing rather
+  than guess.
+- **DUPLA-2** A shared class's student's page leads back to the teacher's
+  own student of the same name and school year, when there is exactly one.
+
 ## OWNER — Each teacher's data
 
 *Enforced by `src/db/queries/`. Covered by `src/db/queries/*.test.ts`.*
@@ -799,14 +889,25 @@ by hand (Known gaps).*
   checked by hand: print preview on a computer and a phone, light and dark.
 - **COPY-3**'s copying in Storage runs in Supabase and is checked by hand; the
   tests cover which files are named and the unlinking of a failed one.
+- **OFFLINE-1**'s waiting and retrying are Next.js's own (`experimental.useOffline`),
+  and **OFFLINE-2**'s and **OFFLINE-4**'s keeping and sending run in the
+  browser; they are checked by hand with the phone in airplane mode. The tests
+  cover the rules for what is kept, sent and settled, and the server's
+  versions and clashes.
+- **SHARE-5**'s read-only pages (every field disabled and every button hidden
+  for a guest) are checked by hand with two accounts. **SHARE-6**'s Storage
+  rule runs in Supabase; it was checked on dev for a guest with and without
+  adaptations and for a stranger.
 - **NAV-4**'s sign-out runs in Supabase Auth, like sign-in, and is checked by
   hand.
 - **NAV-1**'s collapsing and phone menu bar, **NAV-2**'s whole-row links and
   **NAV-3**'s section button are interface behaviour, checked by hand in the
   browser; there are no component tests yet.
 - **LAND-3**'s page — its sections, the phone menu (closed until opened) and
-  the language switch — is checked by hand in the browser, light and dark, on
-  a phone and a computer.
+  the language switch — **LAND-6**'s links, **LAND-7**'s motion and
+  **LAND-8**'s questions are checked by hand in the browser, light and dark,
+  on a phone and a computer, and with reduced motion; only LAND-7's totals
+  have a test.
 - **DATA-1**'s Excel file itself is written in the download route and
   checked by hand; the tests cover what goes into each sheet. **DATA-3**'s
   removal of the sign-in and of the files runs in Supabase (its `auth` schema

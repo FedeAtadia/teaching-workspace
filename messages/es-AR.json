@@ -127,7 +127,8 @@
     "views": {
       "label": "Cursos activos o archivados",
       "active": "Activos",
-      "archived": "Archivados"
+      "archived": "Archivados",
+      "shared": "Compartidos conmigo"
     },
     "emptyArchived": "No hay cursos archivados.",
     "archivedHint": "Los cursos que ya no usás, por ejemplo los del año pasado. Siguen completos y en la historia de cada estudiante; abrí uno para desarchivarlo.",
@@ -744,7 +745,8 @@
         "button": "Borrar lo cargado",
         "title": "¿Borrar lo cargado el {date}?",
         "body": "El día vuelve a quedar sin tomar, sin marcas."
-      }
+      },
+      "saving": "Guardando…"
     }
   },
   "landing": {
@@ -818,7 +820,7 @@
         },
         {
           "title": "Armá tus cursos",
-          "text": "Escuela, materia, curso y días de clase. Sumá a tus estudiantes, o traelos del año anterior en un toque."
+          "text": "Escuela, materia, curso y días de clase. Importá tu lista desde Excel, o traé unidades y tareas de un curso del año anterior."
         },
         {
           "title": "Usalo en cada clase",
@@ -829,7 +831,7 @@
     "features": {
       "eyebrow": "Funciones",
       "title": "Hecho para cómo se enseña en Argentina.",
-      "lead": "Cuatrimestres, escala del 1 al 10, nota de aprobación, jornadas institucionales y previas: Annora ya los conoce.",
+      "lead": "Cuatrimestres, tu escala y tu nota de aprobación (también una por escuela), jornadas institucionales y previas: Annora ya los conoce.",
       "groups": [
         {
           "title": "Todo en un lugar",
@@ -837,7 +839,8 @@
             "Cursos y escuelas",
             "Tareas con su archivo",
             "Criterios de aprobación",
-            "Unidades por cuatrimestre"
+            "Lista importada desde Excel",
+            "Cursos archivados, a mano"
           ]
         },
         {
@@ -845,7 +848,8 @@
           "items": [
             "Su historial de todos los años",
             "Asistencia y porcentaje",
-            "Grupos que vienen distintos días",
+            "Quién necesita seguimiento, y por qué",
+            "Informe para imprimir o PDF",
             "Adaptaciones, con su propia versión de cada tarea"
           ]
         },
@@ -853,7 +857,7 @@
           "title": "El año bajo control",
           "items": [
             "Calendario escolar con feriados y jornadas",
-            "Notas de cuatrimestre con su rango esperado",
+            "Tu escala y tu nota de aprobación",
             "Cierre del año y previas",
             "Traer estudiantes al año siguiente"
           ]
@@ -863,8 +867,9 @@
           "items": [
             "Promedios automáticos",
             "Asistencia de hoy desde Inicio",
-            "Funciona en el teléfono y la compu",
-            "En español y en inglés"
+            "Asistencia sin señal",
+            "Copiá un curso del año pasado",
+            "Instalala como app en el teléfono"
           ]
         }
       ]
@@ -875,7 +880,21 @@
       "text1": "Todos empiezan presentes: tocás solo a quien faltó o llegó tarde. Los feriados y las jornadas ya aparecen como días sin clase, y si hubo paro, lo marcás con su motivo.",
       "text2": "Cada estudiante tiene su porcentaje, y si baja del mínimo que elegís, su promedio te lo avisa.",
       "day": "Lunes 19/10",
-      "save": "Guardar"
+      "save": "Guardar",
+      "offlineTitle": "¿Sin señal en el aula? Igual la tomás.",
+      "offlineText": "Cada toque queda guardado en el teléfono y se envía solo cuando vuelve la conexión.",
+      "offlineStrip": "Sin señal · se guarda en el teléfono",
+      "hint": "Probalo: tocá las letras",
+      "demo": "Probá tomar asistencia",
+      "untaken": "Sin tomar",
+      "unsaved": "Sin guardar",
+      "saved": "Guardado",
+      "totals": {
+        "present": "{count, plural, one {# presente} other {# presentes}}",
+        "absent": "{count, plural, one {# ausente} other {# ausentes}}",
+        "late": "{count} tarde",
+        "excused": "{count, plural, one {# justificado} other {# justificados}}"
+      }
     },
     "data": {
       "eyebrow": "Tus datos",
@@ -892,8 +911,21 @@
         {
           "title": "Adaptaciones sin diagnósticos",
           "text": "Se guarda qué contenido se adapta, nunca un diagnóstico. El aviso solo dice «Adaptación»."
+        },
+        {
+          "title": "Todo en un Excel, cuando quieras",
+          "text": "Desde Configuración descargás todo lo que cargaste en un solo archivo."
+        },
+        {
+          "title": "Los egresados se borran solos",
+          "text": "Pasado el plazo que elegís, con aviso antes. Quien debe materias se queda."
+        },
+        {
+          "title": "Tu cuenta, borrable",
+          "text": "Si te vas, borrás tu cuenta y todo lo que cargaste, en un paso."
         }
-      ]
+      ],
+      "lead": "Y es tuyo: lo descargás cuando quieras y lo borrás cuando quieras."
     },
     "faq": {
       "title": "Preguntas frecuentes",
@@ -926,7 +958,70 @@
     },
     "footer": {
       "madeBy": "Hecho en Argentina, por un docente.",
-      "privacy": "Privacidad"
+      "privacy": "Privacidad",
+      "social": "Redes",
+      "instagram": "Annora en Instagram (@annora_app)",
+      "x": "Annora en X (@annora_app)"
+    },
+    "followUp": {
+      "eyebrow": "Seguimiento e informes",
+      "title": "Sabé a quién mirar antes de que sea tarde.",
+      "text1": "En el cuatrimestre en curso, Annora te señala a quien tiene la asistencia por debajo del mínimo, el promedio por debajo de la aprobación o varias tareas sin entregar, y te dice por qué.",
+      "text2": "Y cuando tenés que contarlo, el informe de cada estudiante sale listo para imprimir o guardar como PDF: notas, asistencia y previas, sin armar nada a mano.",
+      "card": "Para seguir de cerca",
+      "students": [
+        {
+          "name": "Benítez, Juan",
+          "course": "4° A · Matemática",
+          "reasons": [
+            "Asistencia 68%",
+            "3 tareas sin entregar"
+          ]
+        },
+        {
+          "name": "Díaz, Martina",
+          "course": "5° B · Física",
+          "reasons": [
+            "Promedio 5,2"
+          ]
+        },
+        {
+          "name": "Ruiz, Tomás",
+          "course": "4° A · Matemática",
+          "reasons": [
+            "Asistencia 71%",
+            "Promedio 6,1"
+          ]
+        }
+      ],
+      "report": "Informe",
+      "reportStudent": "Gómez, Lucía · 4° A",
+      "reportRows": [
+        [
+          "1° cuatr.",
+          "8"
+        ],
+        [
+          "2° cuatr.",
+          "7"
+        ],
+        [
+          "Asistencia",
+          "92%"
+        ]
+      ],
+      "reportResult": "Aprobada"
+    },
+    "import": {
+      "eyebrow": "Para arrancar el año",
+      "title": "Tu lista, de la planilla a Annora en un paso.",
+      "text1": "Copiá las celdas de Excel o Google Sheets y pegalas, o subí un CSV. Antes de guardar ves quién se agrega, y nadie queda repetido.",
+      "text2": "¿Mismo programa que el año pasado? Copiá las unidades, los criterios y las tareas de otro curso, con sus archivos.",
+      "lastName": "Apellido",
+      "firstName": "Nombre",
+      "add": "Se agrega",
+      "already": "Ya está en el curso",
+      "button": "Agregar 3 estudiantes"
     }
   },
   "privacy": {
@@ -935,7 +1030,7 @@
       "description": "Qué datos usa Annora, para qué, dónde se guardan y cómo pedir verlos, corregirlos o borrarlos."
     },
     "title": "Política de privacidad",
-    "updated": "Última actualización: 12/11/2026",
+    "updated": "Última actualización: 19/11/2026",
     "intro": "Esta política explica qué datos usa Annora, para qué, dónde se guardan y qué podés hacer con ellos. Está escrita para docentes, que son quienes usan Annora.",
     "sections": [
       {
@@ -958,7 +1053,8 @@
         "title": "Lo que cargás en Annora",
         "paragraphs": [
           "Annora guarda lo que cargás vos: tus escuelas y su calendario, tus cursos, tus estudiantes (nombre y apellido, notas, asistencia, observaciones y adaptaciones), tus tareas y sus archivos, y tus preferencias.",
-          "Son tus registros como docente, como lo eran tus planillas: vos decidís qué cargás y sos responsable de tenerlo. Annora los guarda para mostrártelos a vos y a nadie más: ningún otro docente ni otra persona puede verlos.",
+          "Son tus registros como docente, como lo eran tus planillas: vos decidís qué cargás y sos responsable de tenerlo. Annora los guarda para mostrártelos a vos: ningún otro docente ni otra persona puede verlos, salvo un curso que vos decidas compartir.",
+          "Si vos lo decidís, podés compartir un curso con otro docente que use Annora (por ejemplo, tu dupla o pareja pedagógica). Esa persona lo ve en solo lectura, sin las adaptaciones salvo que lo indiques, y deja de verlo en cuanto dejás de compartirlo. Nadie más puede ver tus datos.",
           "Tus estudiantes no tienen cuenta en Annora y Annora no se comunica con ellos. De las adaptaciones se guarda qué contenido se adapta, nunca un diagnóstico. Te pedimos que no cargues diagnósticos ni otros datos de salud."
         ]
       },
@@ -1018,7 +1114,8 @@
       "groups": "Grupos",
       "calendars": "Calendarios",
       "daysOff": "Días sin clase",
-      "settings": "Configuración"
+      "settings": "Configuración",
+      "shares": "Cursos compartidos"
     },
     "columns": {
       "schoolYear": "Ciclo lectivo",
@@ -1058,7 +1155,10 @@
       "name": "Nombre",
       "setting": "Ajuste",
       "value": "Valor",
-      "archivedOn": "Archivado el"
+      "archivedOn": "Archivado el",
+      "guestEmail": "Compartido con",
+      "guestName": "Nombre",
+      "includeAdaptations": "Ve adaptaciones"
     },
     "shift": {
       "morning": "Mañana",
@@ -1111,7 +1211,11 @@
       "graduateRetentionMonths": "Meses que se guardan los egresados"
     },
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "share": {
+      "pending": "Pendiente",
+      "accepted": "Aceptó"
+    }
   },
   "rosterImport": {
     "title": "Importar una lista de estudiantes",
@@ -1259,5 +1363,65 @@
       "average": "promedio {average}",
       "missing": "{count, plural, one {# tarea sin entregar} other {# tareas sin entregar}}"
     }
+  },
+  "offline": {
+    "banner": "Sin conexión. Lo que guardes se envía cuando vuelva la señal; la asistencia queda guardada en este teléfono aunque cierres Annora.",
+    "pending": "{count, plural, one {# día de asistencia guardado en este teléfono, sin enviar.} other {# días de asistencia guardados en este teléfono, sin enviar.}}",
+    "pendingOffline": "Se envían solos cuando vuelva la señal.",
+    "sending": "Enviando…",
+    "sendNow": "Enviar ahora",
+    "conflictShort": "se cambió desde otro dispositivo después de que tomaste asistencia acá.",
+    "failed": "no se pudo guardar: el curso o la fecha ya no existen.",
+    "review": "Revisar",
+    "discard": "Descartar",
+    "conflictTitle": "Este día se cambió desde otro dispositivo después de que tomaste asistencia en este teléfono.",
+    "conflictBody": "{count, plural, =0 {Las marcas coinciden.} one {Difiere en # estudiante.} other {Difiere en # estudiantes.}} ¿Cuál querés conservar?",
+    "conflictNotHeld": "Ahí figura como «no hubo clase». ¿Cuál querés conservar?",
+    "keepPhone": "Guardar la de este teléfono",
+    "keepSaved": "Conservar la guardada",
+    "dayPending": "Esta asistencia está guardada en este teléfono y todavía no llegó a Annora. Se envía sola cuando haya señal.",
+    "dayUnsaved": "Tenés marcas de este día en este teléfono que todavía no guardaste.",
+    "waiting": "Esperando señal…",
+    "savedOnPhone": "Sin conexión: quedó guardada en este teléfono y se envía sola cuando vuelva la señal. Podés seguir usando Annora."
+  },
+  "shares": {
+    "button": "Compartir",
+    "title": "Compartir este curso",
+    "intro": "Para duplas y EPA: el otro docente ve este curso tal como está (estudiantes, tareas, notas, asistencia y cierre), sin poder cambiar nada. Necesita una cuenta de Annora con ese email.",
+    "email": "Email del otro docente",
+    "emailPlaceholder": "nombre@gmail.com",
+    "adaptations": "Puede ver las adaptaciones",
+    "adaptationsHint": "Qué se adapta para cada estudiante, sus tareas adaptadas y sus criterios propios. Podés cambiarlo cuando quieras.",
+    "readOnly": "Solo lectura: no puede editar, borrar ni cargar nada. Podés dejar de compartir cuando quieras.",
+    "submit": "Compartir",
+    "sent": "Listo. Cuando esa persona entre a Annora, va a ver la invitación en Inicio.",
+    "status": {
+      "pending": "Pendiente",
+      "accepted": "Aceptó"
+    },
+    "revoke": "Dejar de compartir",
+    "errors": {
+      "self": "Ese es tu propio email.",
+      "notFound": "No se encontró el curso. Recargá la página."
+    },
+    "invitation": "{owner} te compartió {course} {name} ({school}, {year}). Lo vas a ver en solo lectura.",
+    "someone": "Otro docente",
+    "accept": "Aceptar",
+    "decline": "Rechazar",
+    "readOnlyBanner": "Curso de {owner}, compartido con vos: lo ves tal como está y no podés cambiar nada.",
+    "studentBanner": "Estudiante de {owner}: ves solo los cursos que te compartió, sin poder cambiar nada.",
+    "back": "Compartidos conmigo",
+    "sharedHint": "Cursos que otros docentes te compartieron, por ejemplo tu dupla. Los ves en solo lectura mientras te los compartan.",
+    "sharedEmpty": "Todavía nadie te compartió un curso.",
+    "by": "De {owner}",
+    "archived": "Archivado",
+    "seeOwn": "Verlo en tus cursos",
+    "leave": "Dejar de ver este curso"
+  },
+  "dupla": {
+    "title": "En dupla",
+    "intro": "El mismo estudiante en los cursos que te compartieron, en solo lectura. Se lo reconoce por el nombre y el ciclo lectivo.",
+    "attendance": "Asist. {rate} %",
+    "final": "Nota final"
   }
 }

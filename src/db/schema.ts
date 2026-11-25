@@ -506,6 +506,9 @@ export const classSessions = pgTable(
     // ATT-3: why it wasn't held; null when it was.
     reason: sessionReason("reason"),
     note: text("note"),
+    // OFFLINE-3: goes up by one with every save of the day, so a save made from
+    // an older copy of it can be told apart.
+    version: integer("version").notNull().default(1),
     createdAt: createdAt(),
   },
   (t) => [unique().on(t.classId, t.date)],
@@ -527,4 +530,36 @@ export const attendance = pgTable(
     status: attendanceStatus("status").notNull(),
   },
   (t) => [primaryKey({ columns: [t.sessionId, t.studentId] })],
+).enableRLS();
+
+// ─── Sharing a class ────────────────────────────────────────────────────────
+
+export const shareStatus = pgEnum("share_status", ["pending", "accepted"]);
+
+/**
+ * SHARE-1..6: a class its owner (`teacher_id`, like every row) lets another
+ * teacher see, read-only. The guest is known by email until they accept, and
+ * by their id from then on.
+ */
+export const classShares = pgTable(
+  "class_shares",
+  {
+    id: id(),
+    teacherId: teacherId(),
+    classId: uuid("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    // Lowercase, as Google gives it.
+    guestEmail: text("guest_email").notNull(),
+    guestId: uuid("guest_id"),
+    status: shareStatus("status").notNull().default("pending"),
+    // SHARE-3: whether the guest sees what is adapted for each student.
+    includeAdaptations: boolean("include_adaptations").notNull().default(false),
+    // How each one is named to the other, from their Google account.
+    ownerName: text("owner_name"),
+    guestName: text("guest_name"),
+    createdAt: createdAt(),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+  },
+  (t) => [unique().on(t.classId, t.guestEmail)],
 ).enableRLS();

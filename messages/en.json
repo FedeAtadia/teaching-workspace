@@ -127,7 +127,8 @@
     "views": {
       "label": "Active or archived classes",
       "active": "Active",
-      "archived": "Archived"
+      "archived": "Archived",
+      "shared": "Shared with me"
     },
     "emptyArchived": "No archived classes.",
     "archivedHint": "The classes you no longer use, such as last year's. They are still complete and in each student's history; open one to unarchive it.",
@@ -744,7 +745,8 @@
         "button": "Clear this day",
         "title": "Clear what was saved on {date}?",
         "body": "The day goes back to not taken, with no marks."
-      }
+      },
+      "saving": "Saving…"
     }
   },
   "landing": {
@@ -818,7 +820,7 @@
         },
         {
           "title": "Set up your classes",
-          "text": "School, subject, year and class days. Add your students, or bring them over from last year in one tap."
+          "text": "School, subject, year and class days. Import your list from Excel, or bring units and tasks over from last year's class."
         },
         {
           "title": "Use it every class",
@@ -829,7 +831,7 @@
     "features": {
       "eyebrow": "Features",
       "title": "Built for how teaching works in Argentina.",
-      "lead": "Terms, the 1 to 10 scale, the passing grade, school-wide days off and owed subjects: Annora already knows them.",
+      "lead": "Terms, your scale and your passing grade (one per school, too), school-wide days off and owed subjects: Annora already knows them.",
       "groups": [
         {
           "title": "Everything in one place",
@@ -837,7 +839,8 @@
             "Classes and schools",
             "Tasks with their file",
             "Passing standards",
-            "Units per term"
+            "Your list imported from Excel",
+            "Archived classes, at hand"
           ]
         },
         {
@@ -845,7 +848,8 @@
           "items": [
             "Their history across every year",
             "Attendance and percentage",
-            "Groups that come on different days",
+            "Who needs following up, and why",
+            "A report to print or save as PDF",
             "Adaptations, with their own version of each task"
           ]
         },
@@ -853,7 +857,7 @@
           "title": "The year under control",
           "items": [
             "School calendar with holidays and days off",
-            "Term grades with their expected range",
+            "Your scale and your passing grade",
             "Closing the year and owed subjects",
             "Bringing students into next year"
           ]
@@ -863,8 +867,9 @@
           "items": [
             "Automatic averages",
             "Today's attendance from Home",
-            "Works on your phone and computer",
-            "In Spanish and English"
+            "Attendance without signal",
+            "Copy last year's class",
+            "Install it as an app on your phone"
           ]
         }
       ]
@@ -875,7 +880,21 @@
       "text1": "Everyone starts present: you only tap whoever was absent or late. Holidays and days off already show as days without class, and if there was a strike, you mark it with its reason.",
       "text2": "Each student has their percentage, and if it drops below the minimum you choose, their average tells you.",
       "day": "Monday 19/10",
-      "save": "Save"
+      "save": "Save",
+      "offlineTitle": "No signal in the classroom? Take it anyway.",
+      "offlineText": "Every tap is kept on the phone and sent by itself when the connection is back.",
+      "offlineStrip": "No signal · kept on the phone",
+      "hint": "Try it: tap the letters",
+      "demo": "Try taking attendance",
+      "untaken": "Not taken",
+      "unsaved": "Not saved",
+      "saved": "Saved",
+      "totals": {
+        "present": "{count} present",
+        "absent": "{count} absent",
+        "late": "{count} late",
+        "excused": "{count} excused"
+      }
     },
     "data": {
       "eyebrow": "Your data",
@@ -892,8 +911,21 @@
         {
           "title": "Adaptations without diagnoses",
           "text": "What's stored is which content is adapted, never a diagnosis. The label only says “Adaptation”."
+        },
+        {
+          "title": "Everything in one Excel file, any time",
+          "text": "From Settings you download everything you entered in a single file."
+        },
+        {
+          "title": "Graduates are deleted by themselves",
+          "text": "After the period you choose, with a notice first. Anyone who owes a subject stays."
+        },
+        {
+          "title": "Your account, deletable",
+          "text": "If you leave, you delete your account and everything you entered, in one step."
         }
-      ]
+      ],
+      "lead": "And it's yours: download it whenever you want, delete it whenever you want."
     },
     "faq": {
       "title": "Frequently asked questions",
@@ -926,7 +958,70 @@
     },
     "footer": {
       "madeBy": "Made in Argentina, by a teacher.",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "social": "Social media",
+      "instagram": "Annora on Instagram (@annora_app)",
+      "x": "Annora on X (@annora_app)"
+    },
+    "followUp": {
+      "eyebrow": "Follow-up and reports",
+      "title": "Know who to watch before it's too late.",
+      "text1": "In the term under way, Annora points out whoever's attendance is below the minimum, whose average is below the passing grade or who has several tasks not handed in, and tells you why.",
+      "text2": "And when you need to report it, each student's report comes out ready to print or save as PDF: grades, attendance and owed subjects, nothing put together by hand.",
+      "card": "To follow closely",
+      "students": [
+        {
+          "name": "Benítez, Juan",
+          "course": "4th A · Math",
+          "reasons": [
+            "Attendance 68%",
+            "3 tasks not handed in"
+          ]
+        },
+        {
+          "name": "Díaz, Martina",
+          "course": "5th B · Physics",
+          "reasons": [
+            "Average 5.2"
+          ]
+        },
+        {
+          "name": "Ruiz, Tomás",
+          "course": "4th A · Math",
+          "reasons": [
+            "Attendance 71%",
+            "Average 6.1"
+          ]
+        }
+      ],
+      "report": "Report",
+      "reportStudent": "Gómez, Lucía · 4th A",
+      "reportRows": [
+        [
+          "1st term",
+          "8"
+        ],
+        [
+          "2nd term",
+          "7"
+        ],
+        [
+          "Attendance",
+          "92%"
+        ]
+      ],
+      "reportResult": "Passed"
+    },
+    "import": {
+      "eyebrow": "To start the year",
+      "title": "Your list, from the spreadsheet to Annora in one step.",
+      "text1": "Copy the cells from Excel or Google Sheets and paste them, or upload a CSV. Before saving you see who is added, and nobody ends up twice.",
+      "text2": "Same syllabus as last year? Copy the units, standards and tasks from another class, files included.",
+      "lastName": "Last name",
+      "firstName": "First name",
+      "add": "Added",
+      "already": "Already in the class",
+      "button": "Add 3 students"
     }
   },
   "privacy": {
@@ -935,7 +1030,7 @@
       "description": "What data Annora uses, what for, where it is stored and how to ask to see, correct or delete it."
     },
     "title": "Privacy policy",
-    "updated": "Last updated: 12/11/2026",
+    "updated": "Last updated: 19/11/2026",
     "intro": "This policy explains what data Annora uses, what for, where it is stored and what you can do about it. It is written for teachers, who are the people who use Annora. The Spanish version is the one that applies.",
     "sections": [
       {
@@ -958,7 +1053,8 @@
         "title": "What you enter in Annora",
         "paragraphs": [
           "Annora stores what you enter: your schools and their calendar, your classes, your students (name, grades, attendance, notes and adaptations), your tasks and their files, and your preferences.",
-          "They are your records as a teacher, as your spreadsheets were: you decide what to enter and are responsible for having it. Annora keeps them to show them to you and nobody else: no other teacher or person can see them.",
+          "They are your records as a teacher, as your spreadsheets were: you decide what to enter and are responsible for having it. Annora keeps them to show them to you: no other teacher or person can see them, except a class you choose to share.",
+          "If you choose to, you can share a class with another teacher who uses Annora (your co-teacher, for instance). They see it read-only, without adaptations unless you say so, and stop seeing it as soon as you stop sharing it. Nobody else can see your data.",
           "Your students have no account in Annora and Annora never contacts them. For adaptations, what is stored is which content is adapted, never a diagnosis. Please don't enter diagnoses or other health data."
         ]
       },
@@ -1018,7 +1114,8 @@
       "groups": "Groups",
       "calendars": "Calendars",
       "daysOff": "Days without class",
-      "settings": "Settings"
+      "settings": "Settings",
+      "shares": "Shared classes"
     },
     "columns": {
       "schoolYear": "School year",
@@ -1058,7 +1155,10 @@
       "name": "Name",
       "setting": "Setting",
       "value": "Value",
-      "archivedOn": "Archived on"
+      "archivedOn": "Archived on",
+      "guestEmail": "Shared with",
+      "guestName": "Name",
+      "includeAdaptations": "Sees adaptations"
     },
     "shift": {
       "morning": "Morning",
@@ -1111,7 +1211,11 @@
       "graduateRetentionMonths": "Months graduates are kept"
     },
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "share": {
+      "pending": "Pending",
+      "accepted": "Accepted"
+    }
   },
   "rosterImport": {
     "title": "Import a list of students",
@@ -1259,5 +1363,65 @@
       "average": "average {average}",
       "missing": "{count, plural, one {# task not handed in} other {# tasks not handed in}}"
     }
+  },
+  "offline": {
+    "banner": "No connection. What you save is sent when the signal returns; attendance stays on this phone even if you close Annora.",
+    "pending": "{count, plural, one {# day of attendance kept on this phone, not sent yet.} other {# days of attendance kept on this phone, not sent yet.}}",
+    "pendingOffline": "They are sent by themselves when the signal returns.",
+    "sending": "Sending…",
+    "sendNow": "Send now",
+    "conflictShort": "was changed from another device after you took attendance here.",
+    "failed": "couldn't be saved: the class or the date no longer exists.",
+    "review": "Review",
+    "discard": "Discard",
+    "conflictTitle": "This day was changed from another device after you took attendance on this phone.",
+    "conflictBody": "{count, plural, =0 {The marks match.} one {It differs for # student.} other {It differs for # students.}} Which one do you want to keep?",
+    "conflictNotHeld": "There it shows as “no class”. Which one do you want to keep?",
+    "keepPhone": "Save this phone's",
+    "keepSaved": "Keep the saved one",
+    "dayPending": "This attendance is kept on this phone and hasn't reached Annora yet. It is sent by itself when there is signal.",
+    "dayUnsaved": "You have marks for this day on this phone that you haven't saved yet.",
+    "waiting": "Waiting for signal…",
+    "savedOnPhone": "No connection: it was kept on this phone and is sent by itself when the signal returns. You can keep using Annora."
+  },
+  "shares": {
+    "button": "Share",
+    "title": "Share this class",
+    "intro": "For co-taught classes: the other teacher sees this class as it is (students, tasks, grades, attendance and year-end), without being able to change anything. They need an Annora account with that email.",
+    "email": "The other teacher's email",
+    "emailPlaceholder": "name@gmail.com",
+    "adaptations": "Can see adaptations",
+    "adaptationsHint": "What is adapted for each student, their adapted tasks and their own standards. You can change it any time.",
+    "readOnly": "Read-only: they can't edit, delete or add anything. You can stop sharing any time.",
+    "submit": "Share",
+    "sent": "Done. When that person signs in to Annora, they'll see the invitation on Home.",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted"
+    },
+    "revoke": "Stop sharing",
+    "errors": {
+      "self": "That's your own email.",
+      "notFound": "The class wasn't found. Reload the page."
+    },
+    "invitation": "{owner} shared {course} {name} ({school}, {year}) with you. You'll see it read-only.",
+    "someone": "Another teacher",
+    "accept": "Accept",
+    "decline": "Decline",
+    "readOnlyBanner": "{owner}'s class, shared with you: you see it as it is and can't change anything.",
+    "studentBanner": "{owner}'s student: you only see the classes shared with you, and can't change anything.",
+    "back": "Shared with me",
+    "sharedHint": "Classes other teachers shared with you, such as your co-teacher. You see them read-only while they're shared.",
+    "sharedEmpty": "Nobody has shared a class with you yet.",
+    "by": "From {owner}",
+    "archived": "Archived",
+    "seeOwn": "See them in your classes",
+    "leave": "Stop seeing this class"
+  },
+  "dupla": {
+    "title": "Co-taught",
+    "intro": "The same student in the classes shared with you, read-only. They are recognised by name and school year.",
+    "attendance": "Att. {rate}%",
+    "final": "Final grade"
   }
 }

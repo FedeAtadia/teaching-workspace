@@ -73,7 +73,7 @@ async function groupWeekdays(db: Db, teacherId: string, classId: string): Promis
   return new Map(rows.map((g) => [g.id, g.weekdays]));
 }
 
-type SessionRow = Session & { id: string };
+type SessionRow = Session & { id: string; version: number };
 
 async function listSessions(db: Db, teacherId: string, classId: string, from: string, to: string) {
   return db
@@ -83,6 +83,7 @@ async function listSessions(db: Db, teacherId: string, classId: string, from: st
       held: classSessions.held,
       reason: classSessions.reason,
       note: classSessions.note,
+      version: classSessions.version,
     })
     .from(classSessions)
     .where(
@@ -190,6 +191,8 @@ export type AttendanceDay = {
   term: 1 | 2;
   dayOff: DayOff | null;
   session: Session | null;
+  /** OFFLINE-3: the day's version; null with nothing saved. */
+  version: number | null;
   rows: AttendanceDayRow[];
 };
 
@@ -229,6 +232,8 @@ export async function getAttendanceDay(
     term,
     dayOff: dayOffOn(date, loaded.daysOff),
     session: session ? { date: session.date, held: session.held, reason: session.reason, note: session.note } : null,
+    // OFFLINE-3: the version the form's marks come from; null with nothing saved.
+    version: session?.version ?? null,
     rows,
   };
 }
@@ -240,23 +245,42 @@ async function upsertSession(
   classId: string,
   date: string,
   state: { held: boolean; reason: SessionReason | null; note: string | null },
-): Promise<string> {
+): Promise<{ id: string; version: number }> {
   const [row] = await tx
     .insert(classSessions)
     .values({ teacherId, classId, date, ...state })
-    .onConflictDoUpdate({ target: [classSessions.classId, classSessions.date], set: state })
-    .returning({ id: classSessions.id });
-  return row.id;
+    .onConflictDoUpdate({
+      target: [classSessions.classId, classSessions.date],
+      // OFFLINE-3: every save makes a new version of the day.
+      set: { ...state, version: sql`${classSessions.version} + 1` },
+    })
+    .returning({ id: classSessions.id, version: classSessions.version });
+  return row;
 }
 
-/** ATT-2: saves the marks sent, for active students of the course; the day is held. */
+export type DayConflict = {
+  ok: false;
+  error: "conflict";
+  /** The day as it is saved now, to show next to the copy that couldn't be saved. */
+  current: { version: number; held: boolean; marks: AttendanceMark[] };
+};
+
+/**
+ * ATT-2: saves the marks sent, for active students of the course; the day is held.
+ *
+ * OFFLINE-3: `baseVersion` is the version of the day the marks were taken
+ * from (null: it had nothing saved). If the day was saved again since, with
+ * something different from what is sent, nothing is saved and the day as it
+ * is now comes back, unless `force`. Sending the same marks twice is fine.
+ */
 export async function saveAttendance(
   db: Db,
   teacherId: string,
   cls: Cls,
   date: string,
   marks: AttendanceMark[],
-): Promise<{ ok: true } | NotFound | NoCalendar | typeof outsideYear> {
+  options: { baseVersion?: number | null; force?: boolean } = {},
+): Promise<{ ok: true; version: number } | DayConflict | NotFound | NoCalendar | typeof outsideYear> {
   const loaded = await loadCalendar(db, teacherId, cls);
   if (!loaded.ok) return loaded;
   if (termOfDate(date, loaded.calendar) === null) return outsideYear;
@@ -278,19 +302,41 @@ export async function saveAttendance(
   const allowed = new Set(active.map((a) => a.id));
   const save = marks.filter((m) => allowed.has(m.studentId));
 
-  await db.transaction(async (tx) => {
-    const sessionId = await upsertSession(tx, teacherId, cls.id, date, { held: true, reason: null, note: null });
+  return db.transaction(async (tx) => {
+    // OFFLINE-3: the day as saved now, locked until this save ends.
+    const [existing] = await tx
+      .select({ id: classSessions.id, version: classSessions.version, held: classSessions.held })
+      .from(classSessions)
+      .where(and(eq(classSessions.classId, cls.id), eq(classSessions.date, date), eq(classSessions.teacherId, teacherId)))
+      .for("update");
+    if (existing && options.baseVersion !== undefined && !options.force && existing.version !== options.baseVersion) {
+      const saved = await tx
+        .select({ studentId: attendance.studentId, status: attendance.status })
+        .from(attendance)
+        .where(eq(attendance.sessionId, existing.id));
+      const now = new Map(saved.map((m) => [m.studentId, m.status]));
+      const same = existing.held && save.every((m) => now.get(m.studentId) === m.status);
+      // The same marks again (a save sent twice) are already there.
+      if (same) return { ok: true, version: existing.version } as const;
+      return {
+        ok: false,
+        error: "conflict",
+        current: { version: existing.version, held: existing.held, marks: saved },
+      } as const;
+    }
+
+    const session = await upsertSession(tx, teacherId, cls.id, date, { held: true, reason: null, note: null });
     if (save.length > 0) {
       await tx
         .insert(attendance)
-        .values(save.map((m) => ({ teacherId, sessionId, ...m })))
+        .values(save.map((m) => ({ teacherId, sessionId: session.id, ...m })))
         .onConflictDoUpdate({
           target: [attendance.sessionId, attendance.studentId],
           set: { status: sql`excluded.status` },
         });
     }
+    return { ok: true, version: session.version } as const;
   });
-  return { ok: true };
 }
 
 /** ATT-3: the day wasn't held; its marks go. */
@@ -304,12 +350,12 @@ export async function saveNoClass(
   if (!loaded.ok) return loaded;
   if (termOfDate(input.date, loaded.calendar) === null) return outsideYear;
   await db.transaction(async (tx) => {
-    const sessionId = await upsertSession(tx, teacherId, cls.id, input.date, {
+    const session = await upsertSession(tx, teacherId, cls.id, input.date, {
       held: false,
       reason: input.reason,
       note: input.note,
     });
-    await tx.delete(attendance).where(eq(attendance.sessionId, sessionId));
+    await tx.delete(attendance).where(eq(attendance.sessionId, session.id));
   });
   return { ok: true };
 }

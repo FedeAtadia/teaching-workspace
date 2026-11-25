@@ -7,7 +7,9 @@ import {
   classInput,
   dayOffEdit,
   dayOffInput,
+  attendanceSave,
   examInputFor,
+  shareInput,
   followUpInput,
   retentionInput,
   rulesInput,
@@ -557,5 +559,41 @@ describe("a new class copied from another (COPY-1)", () => {
     const id = crypto.randomUUID();
     expect(classCreate.parse({ ...base, copyFrom: id }).copyFrom).toBe(id);
     expect(classCreate.safeParse({ ...base, copyFrom: "nope" }).success).toBe(false);
+  });
+});
+
+describe("a day's marks sent from the form or the phone's queue (OFFLINE-3)", () => {
+  const base = { classId: crypto.randomUUID(), date: "2026-11-13", baseVersion: null };
+  it("takes known marks and the version they came from", () => {
+    const studentId = crypto.randomUUID();
+    expect(attendanceSave.parse({ ...base, marks: [{ studentId, status: "late" }], baseVersion: 3, force: true })).toEqual({
+      ...base,
+      marks: [{ studentId, status: "late" }],
+      baseVersion: 3,
+      force: true,
+    });
+  });
+  it("refuses an unknown mark, a bad date or a bad version", () => {
+    const studentId = crypto.randomUUID();
+    expect(attendanceSave.safeParse({ ...base, marks: [{ studentId, status: "maybe" }] }).success).toBe(false);
+    expect(attendanceSave.safeParse({ ...base, date: "13/11/2026", marks: [] }).success).toBe(false);
+    expect(attendanceSave.safeParse({ ...base, marks: [], baseVersion: 0 }).success).toBe(false);
+  });
+});
+
+describe("sharing a class with an email (SHARE-1)", () => {
+  const classId = crypto.randomUUID();
+  it("takes an email, written any way, and whether adaptations are seen", () => {
+    expect(shareInput.parse({ classId, email: "  Ana.Lopez@Gmail.com ", includeAdaptations: "on" })).toEqual({
+      classId,
+      email: "ana.lopez@gmail.com",
+      includeAdaptations: true,
+    });
+    expect(shareInput.parse({ classId, email: "ana@gmail.com" }).includeAdaptations).toBe(false);
+  });
+  it("refuses what isn't an email", () => {
+    for (const email of ["", "ana", "ana@", "@gmail.com"]) {
+      expect(shareInput.safeParse({ classId, email }).success, email).toBe(false);
+    }
   });
 });

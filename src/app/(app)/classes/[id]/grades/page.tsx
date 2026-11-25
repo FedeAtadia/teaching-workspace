@@ -3,7 +3,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { AdaptedBadge } from "@/components/classes/Adaptation";
 import { GroupFilter } from "@/components/classes/GroupFilter";
 import { Initials } from "@/components/Initials";
-import { getAdaptations } from "@/db/queries/adaptations";
 import { getAttendanceRates } from "@/db/queries/attendance";
 import { listTerms } from "@/db/queries/classDetail";
 import { listGroups } from "@/db/queries/groups";
@@ -12,18 +11,18 @@ import { getGradebook, listTasks } from "@/db/queries/tasks";
 import { belowMinimum } from "@/lib/attendance";
 import { formatGrade } from "@/lib/format";
 import { isPassing } from "@/lib/grading";
-import { loadClass } from "../data";
+import { loadAdaptations, loadClass } from "../data";
 
 /** BOOK-1..3, TERM-7: one cuatrimestre at a time, chosen with ?term=1 or ?term=2. */
 export default async function GradesPage({ params, searchParams }: PageProps<"/classes/[id]/grades">) {
   const { id } = await params;
   const { term: termParam, group } = await searchParams;
-  const { db, teacherId, cls, rules } = await loadClass(id);
+  const { db, teacherId, cls, rules, showAdaptations } = await loadClass(id);
   const [terms, tasks, groups, adaptations] = await Promise.all([
     listTerms(db, teacherId, cls),
     listTasks(db, teacherId, cls),
     listGroups(db, teacherId, id),
-    getAdaptations(db, teacherId, id),
+    loadAdaptations(id),
   ]);
   // GROUP-6: one group, or all.
   const groupId = typeof group === "string" && groups.some((g) => g.id === group) ? group : undefined;
@@ -135,7 +134,7 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                           ) : (
                             <span className={isPassing(cell.value, rules) ? "" : "text-destructive"}>
                               {formatGrade(cell.value, locale)}
-                              {cell.adapted && (
+                              {cell.adapted && showAdaptations && (
                                 <abbr title={t("adapted")} className="ml-0.5 align-super text-[0.65rem] text-highlight no-underline">
                                   {t("adaptedShort")}
                                 </abbr>
@@ -226,7 +225,7 @@ export default async function GradesPage({ params, searchParams }: PageProps<"/c
                           <span className={isPassing(cell.value, rules) ? "" : "font-medium text-destructive"}>
                             {formatGrade(cell.value, locale)}
                             {/* ADAPT-4 */}
-                            {cell.adapted && (
+                            {cell.adapted && showAdaptations && (
                               <abbr title={t("adapted")} className="ml-0.5 align-super text-[0.65rem] text-highlight no-underline">
                                 {t("adaptedShort")}
                               </abbr>
