@@ -1362,7 +1362,10 @@
       "attendance": "asistencia {rate} %",
       "average": "promedio {average}",
       "missing": "{count, plural, one {# tarea sin entregar} other {# tareas sin entregar}}"
-    }
+    },
+    "dismiss": "Quitar del seguimiento",
+    "restore": "Volver a seguir",
+    "dismissedLine": "Quitado del seguimiento en {name} ({term})."
   },
   "offline": {
     "banner": "Sin conexión. Lo que guardes se envía cuando vuelva la señal; la asistencia queda guardada en este teléfono aunque cierres Annora.",

@@ -1362,7 +1362,10 @@
       "attendance": "attendance {rate}%",
       "average": "average {average}",
       "missing": "{count, plural, one {# task not handed in} other {# tasks not handed in}}"
-    }
+    },
+    "dismiss": "Stop following",
+    "restore": "Follow again",
+    "dismissedLine": "Taken out of follow-up in {name} ({term})."
   },
   "offline": {
     "banner": "No connection. What you save is sent when the signal returns; attendance stays on this phone even if you close Annora.",

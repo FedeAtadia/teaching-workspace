@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { createStudent, deleteStudent, importStudents, moveStudent, updateStudent } from "@/db/queries/students";
+import { setFollowUpDismissed } from "@/db/queries/followUp";
 import { requireTeacherId } from "@/lib/auth";
 import { removeStoredFiles } from "@/lib/supabase/storage";
 import type { FormState } from "@/lib/formState";
@@ -83,4 +84,22 @@ export async function moveStudentAction(_prev: FormState, formData: FormData): P
   if (!result.ok) return { status: "error", formError: result.error, values };
   revalidatePath("/", "layout");
   return { status: "saved" };
+}
+
+/** FOLLOW-6 */
+export async function setFollowUpDismissedAction(input: {
+  classId: string;
+  studentId: string;
+  term: number;
+  dismissed: boolean;
+}): Promise<{ ok: boolean }> {
+  const result = await setFollowUpDismissed(getDb(), await requireTeacherId(), {
+    classId: String(input.classId),
+    studentId: String(input.studentId),
+    term: Number(input.term),
+    dismissed: input.dismissed === true,
+  });
+  // Home, Students and the student's page all show follow-up.
+  if (result.ok) revalidatePath("/", "layout");
+  return { ok: result.ok };
 }

@@ -563,3 +563,23 @@ export const classShares = pgTable(
   },
   (t) => [unique().on(t.classId, t.guestEmail)],
 ).enableRLS();
+
+/**
+ * FOLLOW-6: a student the teacher took out of follow-up in one class, for one
+ * cuatrimestre. The next cuatrimestre starts afresh.
+ */
+export const followUpDismissals = pgTable(
+  "follow_up_dismissals",
+  {
+    teacherId: teacherId(),
+    classId: uuid("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => students.id, { onDelete: "cascade" }),
+    term: integer("term").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.classId, t.studentId, t.term] })],
+).enableRLS();

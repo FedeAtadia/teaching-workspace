@@ -4,6 +4,7 @@ import { BackLink } from "@/components/BackLink";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { FormDialog } from "@/components/forms/FormDialog";
 import { FollowUpReasons } from "@/components/students/FollowUpReasons";
+import { FollowUpToggle } from "@/components/students/FollowUpToggle";
 import { listCourses } from "@/db/queries/classes";
 import { getFollowUp } from "@/db/queries/followUp";
 import { getSharedStudentHistory } from "@/db/queries/sharedStudent";
@@ -56,6 +57,7 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
   const tShares = await getTranslations("shares");
   const tFollow = await getTranslations("followUp");
   const following = followUp.students.find((s) => s.studentId === id);
+  const dismissedHere = followUp.dismissed.filter((d) => d.studentId === id);
   const tShift = await getTranslations("shifts");
   const tTerm = await getTranslations("terms");
   const tGrades = await getTranslations("classPage.grades");
@@ -164,15 +166,31 @@ export default async function StudentPage({ params }: PageProps<"/students/[id]"
           <h2 className="text-lg font-bold">{tFollow("boxTitle")}</h2>
           <ul className="mt-2 grid gap-1 text-sm">
             {following.classes.map((c) => (
-              <li key={c.classId}>
-                <Link href={`/classes/${c.classId}/grades`} className="font-bold underline-offset-4 hover:underline">
-                  {tFollow("classLine", { name: c.name, term: tTerm(String(c.term)) })}
-                </Link>
-                : <FollowUpReasons reasons={c.reasons} />
+              <li key={c.classId} className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span>
+                  <Link href={`/classes/${c.classId}/grades`} className="font-bold underline-offset-4 hover:underline">
+                    {tFollow("classLine", { name: c.name, term: tTerm(String(c.term)) })}
+                  </Link>
+                  : <FollowUpReasons reasons={c.reasons} />
+                </span>
+                {/* FOLLOW-6 */}
+                <FollowUpToggle classId={c.classId} studentId={id} term={c.term} dismissed={false} />
               </li>
             ))}
           </ul>
         </section>
+      )}
+
+      {/* FOLLOW-6: taken out this cuatrimestre, with a way back. */}
+      {!readOnly && dismissedHere.length > 0 && (
+        <ul className="-mt-4 mb-8 grid gap-1 text-sm text-muted-foreground">
+          {dismissedHere.map((d) => (
+            <li key={d.classId} className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>{tFollow("dismissedLine", { name: d.name, term: tTerm(String(d.term)) })}</span>
+              <FollowUpToggle classId={d.classId} studentId={id} term={d.term} dismissed />
+            </li>
+          ))}
+        </ul>
       )}
 
       {courses.length === 0 && <p className="text-sm text-muted-foreground">{t("noCourses")}</p>}
